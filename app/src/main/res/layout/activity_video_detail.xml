@@ -10,5 +10,25 @@
         android:id="@+id/detail_player"
         android:layout_width="match_parent"
         android:layout_height="240dp"
+        app:layout_constraintBottom_toTopOf="@id/detail_tab"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TableLayout
+        android:id="@+id/detail_tab"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        app:layout_constraintBottom_toTopOf="@id/detail_scroll"
+        app:layout_constraintTop_toBottomOf="@id/detail_player" />
+
+    <ScrollView
+        android:id="@+id/detail_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/detail_tab">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/detail_viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,5 +50,7 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
     //video player
     implementation 'com.shuyu:GSYVideoPlayer:7.1.8'
+    //tagView
+    implementation 'co.lujun:androidtagview:1.1.7'
 
 }

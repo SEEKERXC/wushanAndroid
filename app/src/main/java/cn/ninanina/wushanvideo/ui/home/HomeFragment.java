@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.ui.home;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -32,7 +33,9 @@ public class HomeFragment extends Fragment {
         add("推荐");
         add("亚洲");
         add("欧美");
-        add("女性专区");
+        add("女同");
+        add("男同");
+        add("免广告");
     }};
 
     private List<Fragment> fragments = new ArrayList<>();

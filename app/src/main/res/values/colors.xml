@@ -6,5 +6,6 @@
 
     <color name="theme_color_primary">#9FAFF6</color>
     <color name="white">#ffffff</color>
+    <color name="divider">#72D1E8</color>
 
 </resources>

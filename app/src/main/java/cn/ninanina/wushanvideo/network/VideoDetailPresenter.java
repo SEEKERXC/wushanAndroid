@@ -1,5 +1,7 @@
 package cn.ninanina.wushanvideo.network;
 
+import android.widget.Toast;
+
 import cn.ninanina.wushanvideo.model.bean.Result;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
@@ -18,6 +20,12 @@ public class VideoDetailPresenter extends BasePresenter {
         getVideoService().getVideoDetail(id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Toast.makeText(videoDetailActivity, "出了点问题，请稍后再试哦！", Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .subscribe(new Consumer<Result<VideoDetail>>() {
                     @Override
                     public void accept(Result<VideoDetail> videoDetailResult) {

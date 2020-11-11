@@ -10,7 +10,8 @@ import retrofit2.http.Query;
 
 public interface VideoService {
     @GET("video/recommend")
-    Observable<Result<List<VideoDetail>>> getRecommend(@Query("appKey") String appKey);
+    Observable<Result<List<VideoDetail>>> getRecommend(@Query("appKey") String appKey,
+                                                       @Query("limit") int limit);
 
     @GET("video/detail")
     Observable<Result<VideoDetail>> getVideoDetail(@Query("id") Long id);

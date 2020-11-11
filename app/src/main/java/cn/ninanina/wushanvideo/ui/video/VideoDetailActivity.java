@@ -1,16 +1,27 @@
 package cn.ninanina.wushanvideo.ui.video;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
+
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
+import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
 import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,8 +30,21 @@ import cn.ninanina.wushanvideo.network.VideoDetailPresenter;
 
 public class VideoDetailActivity extends AppCompatActivity {
     @BindView(R.id.detail_player)
-    StandardGSYVideoPlayer player;
+    StandardGSYVideoPlayer detailPlayer;
+    @BindView(R.id.detail_tab)
+    TabLayout tabLayout;
+    @BindView(R.id.detail_viewpager)
+    ViewPager2 viewPager2;
+
+    private List<Fragment> fragments = new ArrayList<>(2);
+    private List<String> tabTitles = new ArrayList<String>() {{
+        add("详情");
+        add("评论");
+    }};
+
     OrientationUtils orientationUtils;
+    GSYVideoOptionBuilder gsyVideoOption;
+
 
     private long videoId;
     private String title;
@@ -35,8 +59,38 @@ public class VideoDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_detail);
         ButterKnife.bind(this);
-        player.getTitleTextView().setVisibility(View.VISIBLE);
-        player.getBackButton().setVisibility(View.GONE);
+
+        initDetail();
+        initPlayer();
+    }
+
+    private void initDetail() {
+        fragments.add(new DetailFragment(videoId, title, viewed, tags));
+        fragments.add(new CommentFragment());
+        viewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        viewPager2.setAdapter(new FragmentStateAdapter(this) {
+            @NonNull
+            @Override
+            public Fragment createFragment(int position) {
+                return fragments.get(position);
+            }
+
+            @Override
+            public int getItemCount() {
+                return fragments.size();
+            }
+        });
+        new TabLayoutMediator(tabLayout, viewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
+            @Override
+            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                tab.setText(tabTitles.get(position));
+            }
+        }).attach();
+    }
+
+    private void initPlayer() {
+        detailPlayer.getTitleTextView().setVisibility(View.VISIBLE);
+        detailPlayer.getBackButton().setVisibility(View.GONE);
 
         Intent intent = getIntent();
         videoId = intent.getLongExtra("id", 0);
@@ -45,17 +99,54 @@ public class VideoDetailActivity extends AppCompatActivity {
         coverUrl = intent.getStringExtra("coverUrl");
         tags = intent.getStringArrayListExtra("tags");
 
-        //设置旋转
-        orientationUtils = new OrientationUtils(this, player);
-        //设置全屏按键功能,这是使用的是选择屏幕，而不是全屏
-        player.getFullscreenButton().setOnClickListener(new View.OnClickListener() {
+        //外部辅助的旋转，帮助全屏
+        orientationUtils = new OrientationUtils(this, detailPlayer);
+        orientationUtils.setEnable(false);
+
+        gsyVideoOption = new GSYVideoOptionBuilder();
+        gsyVideoOption.setIsTouchWiget(true)
+                .setRotateViewAuto(false)
+                .setRotateWithSystem(false)
+                .setAutoFullWithSize(true)
+                .setShowFullAnimation(false)
+                .setCacheWithPlay(true)
+                .setVideoTitle(title)
+                .setSeekRatio(2.5f)
+                .setVideoAllCallBack(new GSYSampleCallBack() {
+                    @Override
+                    public void onPrepared(String url, Object... objects) {
+                        super.onPrepared(url, objects);
+                    }
+
+                    @Override
+                    public void onQuitFullscreen(String url, Object... objects) {
+                        super.onQuitFullscreen(url, objects);
+                        if (orientationUtils != null) {
+                            orientationUtils.backToProtVideo();
+                        }
+                        ViewGroup.LayoutParams params = detailPlayer.getLayoutParams();
+                        params.height = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics()));
+                        detailPlayer.setLayoutParams(params);
+                    }
+
+                    @Override
+                    public void onEnterFullscreen(String url, Object... objects) {
+                        super.onEnterFullscreen(url, objects);
+                        ViewGroup.LayoutParams params = detailPlayer.getLayoutParams();
+                        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                        detailPlayer.setLayoutParams(params);
+                    }
+                });
+        detailPlayer.getFullscreenButton().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //直接横屏
                 orientationUtils.resolveByClick();
+
+                //第一个true是否需要隐藏actionbar，第二个true是否需要隐藏statusbar
+                detailPlayer.startWindowFullscreen(VideoDetailActivity.this, true, true);
             }
         });
-        //是否可以滑动调整
-        player.setIsTouchWiget(true);
 
         new VideoDetailPresenter(this).access(videoId);
     }
@@ -63,7 +154,7 @@ public class VideoDetailActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        player.onVideoPause();
+        detailPlayer.onVideoPause();
     }
 
     @Override
@@ -77,13 +168,13 @@ public class VideoDetailActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        player.onVideoResume();
+        detailPlayer.onVideoResume();
     }
 
     public void startPlaying(String src) {
         this.src = src;
-        player.setUp(src, true, title);
-        player.startPlayLogic();
+        gsyVideoOption.setUrl(src).build(detailPlayer);
+        detailPlayer.startPlayLogic();
     }
 
 }
