@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">WushanVideo</string>
+    <string name="navigation_home">主页</string>
+    <string name="navigation_tag">标签</string>
+    <string name="navigation_community">社区</string>
+    <string name="navigation_me">我的</string>
+</resources>
