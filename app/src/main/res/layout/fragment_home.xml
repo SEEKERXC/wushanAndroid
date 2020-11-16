@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -19,7 +19,7 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="@color/tagColor"
                 app:cardCornerRadius="15dp"
                 app:cardElevation="0dp"
                 app:cardMaxElevation="0dp">
@@ -40,21 +40,21 @@
 
                     <TextView
                         android:id="@+id/home_search_hint"
-                        android:layout_width="180dp"
+                        android:layout_width="150dp"
                         android:layout_height="match_parent"
                         android:layout_marginStart="5dp"
                         android:layout_marginEnd="10dp"
                         android:gravity="center_vertical"
                         android:text="搜索"
-                        android:textColor="@color/theme_color_primary" />
+                        android:textColor="@color/tabColor" />
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
             <ImageButton
                 android:id="@+id/home_ranking"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="10dp"
                 android:background="@color/theme_color_primary"
@@ -64,10 +64,10 @@
 
             <ImageButton
                 android:id="@+id/home_download"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="12dp"
                 android:background="@color/theme_color_primary"
                 android:contentDescription="下载按钮"
                 android:scaleType="centerInside"
@@ -75,10 +75,10 @@
 
             <ImageButton
                 android:id="@+id/home_history"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="12dp"
                 android:background="@color/theme_color_primary"
                 android:contentDescription="历史按钮"
                 android:scaleType="centerInside"
@@ -89,7 +89,10 @@
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/home_tab"
             android:layout_width="match_parent"
-            android:layout_height="25dp" />
+            android:layout_height="32dp"
+            app:tabIndicatorHeight="2dp"
+            app:tabSelectedTextColor="@color/colorPrimary"
+            app:tabTextColor="@color/tabColor" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -98,6 +101,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        app:layout_constraintTop_toBottomOf="@id/home_appbar"/>
+        app:layout_constraintTop_toBottomOf="@id/home_appbar" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

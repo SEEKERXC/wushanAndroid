@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.network;
 
+import cn.ninanina.wushanvideo.model.api.CommonService;
 import cn.ninanina.wushanvideo.model.api.VideoService;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -14,11 +15,17 @@ public abstract class BasePresenter {
 
     private VideoService videoService = getRetrofit().create(VideoService.class);
 
-    protected Retrofit getRetrofit(){
+    private CommonService commonService = getRetrofit().create(CommonService.class);
+
+    protected Retrofit getRetrofit() {
         return retrofit;
     }
 
-    protected VideoService getVideoService(){
+    protected VideoService getVideoService() {
         return videoService;
+    }
+
+    protected CommonService getCommonService() {
+        return commonService;
     }
 }

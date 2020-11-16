@@ -20,6 +20,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -51,6 +56,17 @@ dependencies {
     //video player
     implementation 'com.shuyu:GSYVideoPlayer:7.1.8'
     //tagView
-    implementation 'co.lujun:androidtagview:1.1.7'
+    implementation 'me.gujun.android.taggroup:library:1.4@aar'
+    //lang util
+    implementation 'org.apache.commons:commons-lang3:3.5'
+    //google admob
+    implementation 'com.google.android.gms:play-services-ads:19.5.0'
+    //androidx lifecycle
+    def lifecycle_version = "2.2.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    //轮播
+    implementation 'com.youth.banner:banner:2.1.0'
 
 }

@@ -6,8 +6,8 @@ import lombok.Data;
 
 @Data
 public class Tag implements Serializable {
-    private int id;
+    private Integer id;
     private String tag;
     private String tagZh;
-    private int videoCount;
+    private Integer videoCount;
 }

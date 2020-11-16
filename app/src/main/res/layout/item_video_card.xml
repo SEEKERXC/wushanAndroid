@@ -4,9 +4,9 @@
     xmlns:fresco="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
+    android:layout_marginStart="12dp"
     android:layout_marginTop="4dp"
-    android:layout_marginEnd="8dp"
+    android:layout_marginEnd="12dp"
     android:layout_marginBottom="4dp"
     android:clickable="true"
     android:elevation="1dp"
@@ -18,12 +18,13 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3">
 
             <com.facebook.drawee.view.SimpleDraweeView
                 android:id="@+id/video_cover"
@@ -31,21 +32,50 @@
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                fresco:placeholderImage="@drawable/loading.gif"
+                app:placeholderImage="@drawable/tv"
                 fresco:viewAspectRatio="1.78" />
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_alignParentBottom="true"
+                android:layout_height="32dp"
+                android:background="@drawable/shadow_reverse"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
                 android:background="@drawable/shadow"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/video_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="3dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/video_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_marginBottom="4dp"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <ImageView
                 android:id="@+id/video_views_icon"
                 android:layout_width="14dp"
                 android:layout_height="14dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="6dp"
                 android:layout_marginBottom="6dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/play"
@@ -64,53 +94,67 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/video_views_icon" />
 
-            <TextView
-                android:id="@+id/video_duration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:layout_marginBottom="4dp"
-                android:textColor="@color/white"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/video_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            android:layout_marginTop="3dp"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="16sp" />
-
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:paddingBottom="4dp">
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:id="@+id/video_tags"
-                android:layout_width="wrap_content"
+            <me.gujun.android.taggroup.TagGroup
+                android:id="@+id/video_item_tags"
+                style="@style/TagGroup"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="3dp"
-                android:orientation="horizontal"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                app:atg_backgroundColor="@color/divider"
+                app:atg_borderColor="@color/divider"
+                app:atg_textColor="@color/exo_black_opacity_30"
+                app:atg_textSize="14sp"
+                app:atg_verticalSpacing="6dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageButton
-                android:id="@+id/video_dislike"
-                android:layout_width="20dip"
-                android:layout_height="20dp"
-                android:layout_marginEnd="4dp"
-                android:background="@color/white"
-                android:scaleType="centerInside"
-                android:src="@drawable/close"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <ImageButton
+                    android:id="@+id/video_download"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/download" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="16dp"
+                    android:layout_marginTop="2dp"
+                    android:background="@color/divider" />
+
+                <ImageButton
+                    android:id="@+id/video_close"
+                    android:layout_width="0dp"
+                    android:layout_height="20dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:background="@color/white"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/close" />
+            </LinearLayout>
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     </LinearLayout>
 

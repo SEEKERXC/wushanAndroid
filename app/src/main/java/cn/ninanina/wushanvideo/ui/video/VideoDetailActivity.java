@@ -1,10 +1,13 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -48,6 +51,7 @@ public class VideoDetailActivity extends AppCompatActivity {
 
     private long videoId;
     private String title;
+    private String titleZh;
     private int viewed;
     private String coverUrl;
     private ArrayList<String> tags;
@@ -57,15 +61,28 @@ public class VideoDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_video_detail);
+
         ButterKnife.bind(this);
+
+        Intent intent = getIntent();
+        videoId = intent.getLongExtra("id", 0);
+        title = intent.getStringExtra("title");
+        titleZh = intent.getStringExtra("titleZh");
+        viewed = intent.getIntExtra("viewed", 0);
+        coverUrl = intent.getStringExtra("coverUrl");
+        tags = intent.getStringArrayListExtra("tags");
 
         initDetail();
         initPlayer();
     }
 
     private void initDetail() {
-        fragments.add(new DetailFragment(videoId, title, viewed, tags));
+        tabLayout.setTabIndicatorFullWidth(false);
+        tabLayout.setSelectedTabIndicatorGravity(TabLayout.INDICATOR_GRAVITY_BOTTOM);
+        fragments.add(new DetailFragment(videoId, title, titleZh, viewed, tags));
         fragments.add(new CommentFragment());
         viewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager2.setAdapter(new FragmentStateAdapter(this) {
@@ -80,24 +97,12 @@ public class VideoDetailActivity extends AppCompatActivity {
                 return fragments.size();
             }
         });
-        new TabLayoutMediator(tabLayout, viewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                tab.setText(tabTitles.get(position));
-            }
-        }).attach();
+        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
     }
 
     private void initPlayer() {
         detailPlayer.getTitleTextView().setVisibility(View.VISIBLE);
         detailPlayer.getBackButton().setVisibility(View.GONE);
-
-        Intent intent = getIntent();
-        videoId = intent.getLongExtra("id", 0);
-        title = intent.getStringExtra("title");
-        viewed = intent.getIntExtra("viewed", 0);
-        coverUrl = intent.getStringExtra("coverUrl");
-        tags = intent.getStringArrayListExtra("tags");
 
         //外部辅助的旋转，帮助全屏
         orientationUtils = new OrientationUtils(this, detailPlayer);
@@ -137,15 +142,12 @@ public class VideoDetailActivity extends AppCompatActivity {
                         detailPlayer.setLayoutParams(params);
                     }
                 });
-        detailPlayer.getFullscreenButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //直接横屏
-                orientationUtils.resolveByClick();
+        detailPlayer.getFullscreenButton().setOnClickListener(v -> {
+            //直接横屏
+            orientationUtils.resolveByClick();
 
-                //第一个true是否需要隐藏actionbar，第二个true是否需要隐藏statusbar
-                detailPlayer.startWindowFullscreen(VideoDetailActivity.this, true, true);
-            }
+            //第一个true是否需要隐藏actionbar，第二个true是否需要隐藏statusbar
+            detailPlayer.startWindowFullscreen(VideoDetailActivity.this, true, true);
         });
 
         new VideoDetailPresenter(this).access(videoId);
@@ -163,6 +165,7 @@ public class VideoDetailActivity extends AppCompatActivity {
         GSYVideoManager.releaseAllVideos();
         if (orientationUtils != null)
             orientationUtils.releaseListener();
+
     }
 
     @Override

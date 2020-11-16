@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/register_username_frag"
+        android:layout_width="280dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:background="@color/tagColor">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="5dp"
+            android:contentDescription="@string/zhanghao"
+            android:scaleType="centerInside"
+            android:src="@drawable/wode_26bdbb" />
+
+        <EditText
+            android:id="@+id/register_username"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="32dp"
+            android:autofillHints="no"
+            android:background="@color/transparent"
+            android:hint="@string/username_hint"
+            android:inputType="textVisiblePassword"
+            android:lines="1"
+            android:maxLength="16"
+            android:textSize="13sp" />
+
+        <ImageView
+            android:id="@+id/register_username_ok"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@string/ok"
+            android:scaleType="centerInside"
+            android:src="@drawable/ok"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/register_username_exists"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:text="@string/username_exists"
+            android:textColor="@color/red"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/register_password_frag"
+        android:layout_width="280dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:background="@color/tagColor">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="5dp"
+            android:contentDescription="@string/mima"
+            android:scaleType="centerInside"
+            android:src="@drawable/mima" />
+
+        <EditText
+            android:id="@+id/register_password"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="32dp"
+            android:autofillHints="no"
+            android:background="@color/transparent"
+            android:hint="@string/password_hint"
+            android:inputType="textPassword"
+            android:lines="1"
+            android:maxLength="16"
+            android:textSize="13sp" />
+
+        <ImageView
+            android:id="@+id/register_password_ok"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@string/ok"
+            android:scaleType="centerInside"
+            android:src="@drawable/ok"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/register_nickname_frag"
+        android:layout_width="280dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:background="@color/tagColor">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="5dp"
+            android:contentDescription="@string/zhanghao"
+            android:scaleType="centerInside"
+            android:src="@drawable/nickname" />
+
+        <EditText
+            android:id="@+id/register_nickname"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="32dp"
+            android:autofillHints="no"
+            android:background="@color/transparent"
+            android:hint="@string/nickname_hint"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLength="16"
+            android:textSize="13sp" />
+
+        <ImageView
+            android:id="@+id/register_nickname_ok"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="5dp"
+            android:contentDescription="@string/ok"
+            android:scaleType="centerInside"
+            android:src="@drawable/ok"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="280dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:background="@color/tagColor">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="5dp"
+            android:contentDescription="@string/zhanghao"
+            android:scaleType="centerInside"
+            android:src="@drawable/gender_26bdbb" />
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="32dp"
+            android:autofillHints="no"
+            android:background="@color/transparent"
+            android:enabled="false"
+            android:hint="@string/gender"
+            android:inputType="text"
+            android:textSize="13sp" />
+
+        <RadioGroup
+            android:id="@+id/register_gender"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:layout_marginEnd="10dp"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/register_gender_male"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:text="@string/male"
+                android:textSize="13sp" />
+
+            <RadioButton
+                android:id="@+id/register_gender_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/female"
+                android:textSize="13sp" />
+        </RadioGroup>
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="280dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:background="@color/tagColor">
+
+        <Button
+            android:id="@+id/register_button"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/transparent"
+            android:enabled="false"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:text="@string/register" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/zhucebiaoshi"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/protocol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/yonghuxieyi"
+            android:textColor="@color/colorPrimaryDark" />
+    </LinearLayout>
+
+</LinearLayout>

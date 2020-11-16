@@ -6,13 +6,14 @@ import lombok.Data;
 
 @Data
 public class VideoDetail {
-    private long id;
+    private Long id;
     private String title;
+    private String titleZh;
     private String url;
     private String src;
     private String coverUrl;
     private String duration;
-    private int viewed;
+    private Integer viewed;
     private Integer approved;
     private Boolean valid;
     private List<Tag> tags;

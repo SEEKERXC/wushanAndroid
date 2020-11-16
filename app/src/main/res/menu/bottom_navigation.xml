@@ -3,18 +3,18 @@
 
     <item
         android:id="@+id/navigation_home"
-        android:icon="@drawable/ic_home_unselected"
+        android:icon="@drawable/zhuye"
         android:title="@string/navigation_home" />
     <item
         android:id="@+id/navigation_tag"
-        android:icon="@drawable/ic_category_unselected"
+        android:icon="@drawable/biaoqian"
         android:title="@string/navigation_tag" />
     <item
         android:id="@+id/navigation_community"
-        android:icon="@drawable/ic_dynamic_unselected"
+        android:icon="@drawable/shequ"
         android:title="@string/navigation_community" />
     <item
         android:id="@+id/navigation_me"
-        android:icon="@drawable/ic_me_unselected"
-        android:title="@string/navigation_me"/>
+        android:icon="@drawable/wode"
+        android:title="@string/navigation_me" />
 </menu>

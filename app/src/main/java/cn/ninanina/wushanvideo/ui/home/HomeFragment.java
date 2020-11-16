@@ -1,7 +1,5 @@
 package cn.ninanina.wushanvideo.ui.home;
 
-import android.content.res.Resources;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,15 +28,15 @@ public class HomeFragment extends Fragment {
     public ViewPager2 viewPager2;
 
     private List<String> tabTitles = new ArrayList<String>() {{
-        add("推荐");
+        add("精选");
         add("亚洲");
         add("欧美");
         add("女同");
-        add("男同");
         add("免广告");
+        add("其他");
     }};
 
-    private List<Fragment> fragments = new ArrayList<>();
+    private List<VideoListFragment> fragments = new ArrayList<>(6);
 
     @Nullable
     @Override
@@ -53,7 +51,8 @@ public class HomeFragment extends Fragment {
         for (String ignored : tabTitles) {
             fragments.add(new VideoListFragment());
         }
-        tabLayout.setSelectedTabIndicatorColor(getResources().getColor(R.color.colorPrimaryDark));
+        tabLayout.setSelectedTabIndicatorColor(getResources().getColor(R.color.colorPrimary, null));
+        tabLayout.setTabIndicatorFullWidth(false);
         viewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
         viewPager2.setAdapter(new FragmentStateAdapter(this) {
             @NonNull
@@ -67,11 +66,6 @@ public class HomeFragment extends Fragment {
                 return fragments.size();
             }
         });
-        new TabLayoutMediator(tabLayout, viewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                tab.setText(tabTitles.get(position));
-            }
-        }).attach();
+        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
     }
 }

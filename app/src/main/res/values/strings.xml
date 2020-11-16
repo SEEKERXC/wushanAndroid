@@ -1,7 +1,34 @@
 <resources>
-    <string name="app_name">WushanVideo</string>
+    <string name="app_name">巫山小视频</string>
     <string name="navigation_home">主页</string>
     <string name="navigation_tag">标签</string>
     <string name="navigation_community">社区</string>
     <string name="navigation_me">我的</string>
+    <string name="welcome">欢迎来到巫山小视频 ~ 请注册或者登录</string>
+    <string name="button_login_register">注册/登录</string>
+    <string name="lishi">历史</string>
+    <string name="richeng">日程</string>
+    <string name="xiazai">下载</string>
+    <string name="shoucang">收藏</string>
+    <string name="shezhi">设置</string>
+    <string name="guanyu">关于我们</string>
+    <string name="zhanghao">请输入账号</string>
+    <string name="mima">请输入密码</string>
+    <string name="confirm">请确认密码</string>
+    <string name="username_hint">账号（5–16个字符，不建议使用手机号）</string>
+    <string name="password_hint">密码（5–16个字符）</string>
+    <string name="nickname_hint">昵称（可选，小于16字符）</string>
+    <string name="gender">性别</string>
+    <string name="register">注册</string>
+    <string name="male">男</string>
+    <string name="female">女</string>
+    <string name="zhucebiaoshi">注册即表示已同意</string>
+    <string name="yonghuxieyi">用户协议</string>
+    <string name="username">账号</string>
+    <string name="password">密码</string>
+    <string name="login">登录</string>
+    <string name="forgot_password">忘记密码</string>
+    <string name="ok">OK</string>
+    <string name="username_exists">账号已存在</string>
+    <string name="profile">账号</string>
 </resources>

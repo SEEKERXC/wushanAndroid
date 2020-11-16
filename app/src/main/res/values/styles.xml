@@ -9,4 +9,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="AppTheme.Full" parent="AppTheme">
+        <item name="android:windowFullscreen">true</item>
+    </style>
 </resources>
