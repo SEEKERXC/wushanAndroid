@@ -9,7 +9,6 @@ import com.google.android.gms.ads.MobileAds;
 
 import org.apache.commons.lang3.StringUtils;
 
-import cn.ninanina.wushanvideo.network.CommonPresenter;
 import cn.ninanina.wushanvideo.util.AppOpenManager;
 
 public class WushanApp extends Application {
@@ -28,9 +27,7 @@ public class WushanApp extends Application {
         });
         appOpenManager = new AppOpenManager(this);
         profile = getSharedPreferences("profile", MODE_PRIVATE);
-        if (!StringUtils.isEmpty(profile.getString("username", ""))) {
-            CommonPresenter.getInstance().checkForLogin();
-        }
+
     }
 
     @Override
@@ -48,5 +45,9 @@ public class WushanApp extends Application {
 
     public static String getAppKey() {
         return getProfile().getString("appKey", "jdfohewk");
+    }
+
+    public static boolean loggedIn() {
+        return !StringUtils.isEmpty(getProfile().getString("username", ""));
     }
 }

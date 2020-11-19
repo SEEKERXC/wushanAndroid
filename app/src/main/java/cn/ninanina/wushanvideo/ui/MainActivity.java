@@ -13,9 +13,13 @@ import com.githang.statusbar.StatusBarCompat;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.apache.commons.lang3.StringUtils;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.network.CommonPresenter;
 import cn.ninanina.wushanvideo.ui.community.CommunityFragment;
 import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
@@ -75,6 +79,18 @@ public class MainActivity extends AppCompatActivity {
                 transaction.show(fragments[index]).commitAllowingStateLoss();
             }
         });
+
+        if (!StringUtils.isEmpty(WushanApp.getProfile().getString("username", ""))) {
+            CommonPresenter.getInstance().checkForLogin();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!StringUtils.isEmpty(WushanApp.getProfile().getString("username", ""))) {
+            CommonPresenter.getInstance().checkForLogin();
+        }
     }
 
     private void initFragments() {

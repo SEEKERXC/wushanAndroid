@@ -31,6 +31,8 @@ public class MeFragment extends Fragment {
     Button login_register_button;
     @BindView(R.id.me_menu)
     LinearLayout menu;
+    @BindView(R.id.menu_profile)
+    LinearLayout menuProfile;
     @BindView(R.id.menu_collect)
     LinearLayout menuCollect;
     @BindView(R.id.menu_download)
@@ -39,6 +41,11 @@ public class MeFragment extends Fragment {
     LinearLayout menuHistory;
     @BindView(R.id.menu_calendar)
     LinearLayout menuCalendar;
+    @BindView(R.id.menu_setting)
+    LinearLayout menuSetting;
+    @BindView(R.id.menu_info)
+    LinearLayout menuInfo;
+
 
     @Nullable
     @Override
@@ -70,12 +77,24 @@ public class MeFragment extends Fragment {
             String nickname = profile.getString("nickname", "");
             top.removeView(login_register_button);
             welcome.setText("欢迎来到巫山小视频 ~ " + nickname);
-            CommonPresenter.getInstance().checkForLogin();
         }
     }
 
     private void initMenu() {
+        menuProfile.setOnClickListener(v -> {
+            if (WushanApp.loggedIn()) {
+                Intent intent = new Intent(getContext(), ProfileActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            }
 
+        });
+        menuSetting.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), SettingsActivity.class);
+            startActivity(intent);
+        });
     }
 
 }

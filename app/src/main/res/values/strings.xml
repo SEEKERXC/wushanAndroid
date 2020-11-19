@@ -31,4 +31,35 @@
     <string name="ok">OK</string>
     <string name="username_exists">账号已存在</string>
     <string name="profile">账号</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="profile_info">账号信息</string>
+    <string name="nickname">昵称</string>
+    <string name="register_time">注册时间</string>
+    <string name="last_login_time">上次登录时间</string>
+    <string name="click_to_set">（点击修改）</string>
+    <string name="logout">退出登录</string>
+    <string name="age">年龄</string>
+    <string name="zero">0</string>
+    <string name="orientation">性取向</string>
+    <string name="straight">直</string>
+    <string name="click_to_show">（点击查看）</string>
+    <string name="cancel">取消</string>
+    <string name="search">搜索</string>
+    <string name="search_rank">默认排序</string>
+    <string name="search_all_duration">全部时长</string>
 </resources>

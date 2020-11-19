@@ -21,6 +21,7 @@
             android:src="@drawable/wode_26bdbb" />
 
         <EditText
+            android:id="@+id/login_username"
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_gravity="center_vertical"
@@ -51,6 +52,7 @@
             android:src="@drawable/mima" />
 
         <EditText
+            android:id="@+id/login_password"
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_gravity="center_vertical"
@@ -72,10 +74,12 @@
         android:background="@color/tagColor">
 
         <Button
+            android:id="@+id/login_button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/transparent"
             android:foreground="?android:attr/selectableItemBackground"
+            android:enabled="false"
             android:text="@string/login" />
     </FrameLayout>
 
@@ -86,8 +90,9 @@
         android:layout_marginTop="40dp">
 
         <TextView
+            android:id="@+id/login_forgot"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:text="@string/forgot_password" />
     </FrameLayout>

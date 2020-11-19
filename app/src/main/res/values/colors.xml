@@ -12,7 +12,6 @@
     <color name="divider">#E5EDEC</color>
     <color name="tagColor">#F3E7F4</color>
     <color name="tabColor">#8a8a8a</color>
-    <color name="buttonColor">#7887F3</color>
-    <color name="buttonClickColor">#A2AAED</color>
-
+    <color name="buttonColor">#EA5A5A</color>
+    <color name="buttonClickColor">#F89898</color>
 </resources>

@@ -1,10 +1,12 @@
 package cn.ninanina.wushanvideo.network;
 
+import android.os.Looper;
 import android.widget.Toast;
 
 import java.util.concurrent.TimeUnit;
 
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -19,13 +21,20 @@ public class VideoDetailPresenter extends BasePresenter {
 
     public void access(long id) {
         getVideoService().getVideoDetail(WushanApp.getAppKey(), id)
-                .timeout(15, TimeUnit.SECONDS)
+                .timeout(20, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io())
-                .doOnError(throwable -> Toast.makeText(videoDetailActivity, "出了点问题，请稍后再试哦！", Toast.LENGTH_SHORT).show())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(videoDetailActivity, "出了点问题，请稍后再试哦！", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(videoDetailResult -> {
                     VideoDetail detail = videoDetailResult.getData();
-                    videoDetailActivity.startPlaying(detail.getSrc());
+                    if (VideoListAdapter.isSrcValid(detail.getSrc()))
+                        videoDetailActivity.startPlaying(detail.getSrc());
+                    else
+                        Toast.makeText(videoDetailActivity, "视频已经被原作者删除了，抱歉！", Toast.LENGTH_SHORT).show();
                 });
     }
 }

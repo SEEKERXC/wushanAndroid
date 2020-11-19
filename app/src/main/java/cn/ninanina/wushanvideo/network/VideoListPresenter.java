@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.network;
 
+import android.os.Looper;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,7 +16,9 @@ import java.util.concurrent.TimeUnit;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
+import cn.ninanina.wushanvideo.ui.video.DetailFragment;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -29,27 +32,24 @@ public class VideoListPresenter extends BasePresenter {
         return presenter;
     }
 
-    public void getVideoList(RecyclerView recyclerView, SwipeRefreshLayout swipeRefreshLayout, Op op) {
-        getVideoService().getRecommend(WushanApp.getAppKey(), 10)
+    public void getVideoList(VideoListFragment fragment, SwipeRefreshLayout swipeRefreshLayout, Op op, String type) {
+        RecyclerView recyclerView = fragment.getRecyclerView();
+        VideoListAdapter.ItemClickListener listener = fragment.getClickListener();
+        getVideoService().getRecommend(WushanApp.getAppKey(), type, 10)
                 .subscribeOn(Schedulers.io())
-                .doOnError(throwable -> Toast.makeText(recyclerView.getContext(), "出了点问题，请稍后刷新试试！", Toast.LENGTH_SHORT).show())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(recyclerView.getContext(), "出了点问题，请稍后刷新试试！", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
                     List<VideoDetail> videoDetails = listResult.getData();
-                    List<Object> dataList = new ArrayList<>();
                     //1个广告+3个视频（开头也是广告）
-                    for (int i = 0; i < videoDetails.size(); i++) {
-                        if (dataList.size() % VideoListAdapter.ITEMS_PER_AD == 0) {
-                            AdView adView = new AdView(recyclerView.getContext());
-                            adView.setAdSize(AdSize.BANNER);
-                            adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
-                            dataList.add(adView);
-                        }
-                        dataList.add(videoDetails.get(i));
-                    }
+                    List<Object> dataList = new ArrayList<>(videoDetails);
                     switch (op) {
                         case INIT:
-                            VideoListAdapter adapter = new VideoListAdapter(dataList, VideoListFragment.getClickListener());
+                            VideoListAdapter adapter = new VideoListAdapter(dataList, listener);
                             recyclerView.setAdapter(adapter);
                             break;
                         case SWIPE:
@@ -80,15 +80,28 @@ public class VideoListPresenter extends BasePresenter {
                     List<Object> dataList = new ArrayList<>();
                     //1个广告+3个视频（开头也是广告）
                     for (int i = 0; i < videoDetails.size(); i++) {
-                        if (dataList.size() % VideoListAdapter.ITEMS_PER_AD == 0) {
-                            AdView adView = new AdView(recyclerView.getContext());
-                            adView.setAdSize(AdSize.BANNER);
-                            adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
-                            dataList.add(adView);
-                        }
                         dataList.add(videoDetails.get(i));
                     }
-                    recyclerView.setAdapter(new VideoListAdapter(dataList, VideoListFragment.getClickListener()));
+
+                });
+    }
+
+    public void searchForVideo(SearchActivity searchActivity, String query, int offset, int limit) {
+        RecyclerView recyclerView = searchActivity.getRecyclerView();
+        VideoListAdapter.ItemClickListener listener = searchActivity.getClickListener();
+        String appKey = WushanApp.getAppKey();
+        getVideoService().search(appKey, query, offset, limit)
+                .subscribeOn(Schedulers.io())
+                .timeout(5, TimeUnit.SECONDS)
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(searchActivity, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(listResult -> {
+                    List<Object> dataList = new ArrayList<>(listResult.getData());
+                    recyclerView.setAdapter(new VideoListAdapter(dataList, listener));
                 });
     }
 

@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -14,8 +16,13 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,17 +30,18 @@ import cn.ninanina.wushanvideo.R;
 
 public class HomeFragment extends Fragment {
     @BindView(R.id.home_tab)
-    public TabLayout tabLayout;
+    TabLayout tabLayout;
     @BindView(R.id.home_viewpager)
-    public ViewPager2 viewPager2;
+    ViewPager2 viewPager2;
+    @BindView(R.id.home_search_button)
+    CardView searchButton;
 
-    private List<String> tabTitles = new ArrayList<String>() {{
-        add("精选");
-        add("亚洲");
-        add("欧美");
-        add("女同");
-        add("免广告");
-        add("其他");
+    private List<Pair<String, String>> tabTitles = new ArrayList<Pair<String, String>>() {{
+        add(Pair.of("hot", "热门"));
+        add(Pair.of("rihan", "日韩"));
+        add(Pair.of("china", "国产"));
+        add(Pair.of("west", "欧美"));
+        add(Pair.of("lesbian", "女同"));
     }};
 
     private List<VideoListFragment> fragments = new ArrayList<>(6);
@@ -48,8 +56,8 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
-        for (String ignored : tabTitles) {
-            fragments.add(new VideoListFragment());
+        for (Pair<String, String> title : tabTitles) {
+            fragments.add(new VideoListFragment(title.getLeft()));
         }
         tabLayout.setSelectedTabIndicatorColor(getResources().getColor(R.color.colorPrimary, null));
         tabLayout.setTabIndicatorFullWidth(false);
@@ -66,6 +74,11 @@ public class HomeFragment extends Fragment {
                 return fragments.size();
             }
         });
-        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
+        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position).getRight())).attach();
+
+        searchButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), SearchActivity.class);
+            startActivity(intent);
+        });
     }
 }

@@ -114,7 +114,7 @@ public class VideoDetailActivity extends AppCompatActivity {
                 .setRotateWithSystem(false)
                 .setAutoFullWithSize(true)
                 .setShowFullAnimation(false)
-                .setCacheWithPlay(true)
+                .setCacheWithPlay(false)
                 .setVideoTitle(title)
                 .setSeekRatio(2.5f)
                 .setVideoAllCallBack(new GSYSampleCallBack() {

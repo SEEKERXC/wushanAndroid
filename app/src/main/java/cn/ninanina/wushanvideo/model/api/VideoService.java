@@ -8,6 +8,7 @@ import java.util.List;
 import cn.ninanina.wushanvideo.model.bean.Result;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.model.bean.video.VideoDir;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -20,6 +21,7 @@ public interface VideoService {
     //获取推荐视频
     @GET("video/recommend")
     Observable<Result<List<VideoDetail>>> getRecommend(@Query("appKey") String appKey,
+                                                       @Query("type") String type,
                                                        @Query("limit") int limit);
 
     //获取视频链接
@@ -49,4 +51,43 @@ public interface VideoService {
     Observable<Result<Comment>> commentOn(@Query("id") long id,
                                           @Query("content") String content,
                                           @Query("parentId") Long parentId);
+
+    //创建收藏夹
+    @POST("video/collect/create")
+    Observable<Result<VideoDir>> createVideoDir(@Query("appKey") String appKey,
+                                                @Query("name") String name);
+
+    //删除收藏夹
+    @POST("video/collect/delete")
+    Observable<Result<ObjectUtils.Null>> deleteVideoDir(@Query("appKey") String appKey,
+                                                        @Query("dirId") Long dirId);
+
+    //重命名收藏夹
+    @POST("video/collect/rename")
+    Observable<Result<VideoDir>> renameVideoDir(@Query("appKey") String appKey,
+                                                @Query("dirId") Long dirId,
+                                                @Query("name") String name);
+
+    //获取收藏夹列表
+    @GET("video/collect")
+    Observable<Result<List<VideoDir>>> collectList(@Query("appKey") String appKey);
+
+    //收藏视频
+    @POST("video/collect")
+    Observable<Result<ObjectUtils.Null>> collectVideo(@Query("appKey") String appKey,
+                                                      @Query("videoId") Long videoId,
+                                                      @Query("dirId") Long dirId);
+
+    //取消收藏视频
+    @POST("video/collect/cancel")
+    Observable<Result<ObjectUtils.Null>> cancelCollect(@Query("appKey") String appKey,
+                                                       @Query("videoId") Long videoId,
+                                                       @Query("dirId") Long dirId);
+
+    //搜索视频
+    @GET("video/search")
+    Observable<Result<List<VideoDetail>>> search(@Query("appKey") String appKey,
+                                                 @Query("query") String query,
+                                                 @Query("offset") Integer offset,
+                                                 @Query("limit") Integer limit);
 }

@@ -32,7 +32,12 @@ public class VideoListFragment extends Fragment {
     @BindView(R.id.swipe_video_list)
     SwipeRefreshLayout swipeRefreshLayout;
 
-    private static VideoListAdapter.ItemClickListener clickListener;
+    public VideoListFragment(String type) {
+        this.type = type;
+    }
+
+    private String type;
+    private VideoListAdapter.ItemClickListener clickListener;
 
     @Nullable
     @Override
@@ -48,7 +53,7 @@ public class VideoListFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         swipeRefreshLayout.setColorSchemeResources(R.color.tabColor);
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            VideoListPresenter.getInstance().getVideoList(recyclerView, swipeRefreshLayout, VideoListPresenter.Op.SWIPE);
+            VideoListPresenter.getInstance().getVideoList(this, swipeRefreshLayout, VideoListPresenter.Op.SWIPE, type);
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -56,7 +61,7 @@ public class VideoListFragment extends Fragment {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 //列表中LastVisibleItem为倒数第二行时，加载更多
                 if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount()) {
-                    VideoListPresenter.getInstance().getVideoList(recyclerView, swipeRefreshLayout, VideoListPresenter.Op.APPEND);
+                    VideoListPresenter.getInstance().getVideoList(VideoListFragment.this, swipeRefreshLayout, VideoListPresenter.Op.APPEND, type);
                 }
                 super.onScrolled(recyclerView, dx, dy);
             }
@@ -79,11 +84,15 @@ public class VideoListFragment extends Fragment {
             intent.putStringArrayListExtra("tags", tags);
             startActivity(intent);
         };
-        VideoListPresenter.getInstance().getVideoList(recyclerView, swipeRefreshLayout, VideoListPresenter.Op.INIT);
+        VideoListPresenter.getInstance().getVideoList(this, swipeRefreshLayout, VideoListPresenter.Op.INIT, type);
     }
 
-    public static VideoListAdapter.ItemClickListener getClickListener() {
+    public VideoListAdapter.ItemClickListener getClickListener() {
         return clickListener;
+    }
+
+    public RecyclerView getRecyclerView() {
+        return recyclerView;
     }
 
     //视频列表类型

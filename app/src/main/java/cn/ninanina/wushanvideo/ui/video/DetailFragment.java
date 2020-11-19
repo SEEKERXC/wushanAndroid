@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.ui.video;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.network.VideoListPresenter;
 import me.gujun.android.taggroup.TagGroup;
 
@@ -90,6 +93,7 @@ public class DetailFragment extends Fragment {
         titleTextView.setText(title);
         videoTags.setTags(tags);
 
+        relatedVideos.setLayoutManager(new LinearLayoutManager(getContext()));
         VideoListPresenter.getInstance().getRelatedVideos(relatedVideos, videoId);
 
         dislikeButton.setBackground(titleTextView.getBackground());
@@ -136,6 +140,7 @@ public class DetailFragment extends Fragment {
                 Toast.makeText(getContext(), "已经下载了", Toast.LENGTH_SHORT).show();
                 downloaded = false;
             } else {
+                Toast.makeText(getContext(), "开始下载视频", Toast.LENGTH_SHORT).show();
                 downloadButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.xiazai_clicked));
                 downloadNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
                 downloaded = true;
@@ -157,4 +162,5 @@ public class DetailFragment extends Fragment {
             }
         }
     };
+
 }
