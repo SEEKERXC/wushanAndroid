@@ -1,13 +1,12 @@
 package cn.ninanina.wushanvideo.ui.home;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.githang.statusbar.StatusBarCompat;
+import com.orhanobut.dialogplus.DialogPlus;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -25,9 +25,9 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
-import cn.ninanina.wushanvideo.network.VideoListPresenter;
-import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class SearchActivity extends AppCompatActivity {
     @BindView(R.id.search_edit)
@@ -39,14 +39,15 @@ public class SearchActivity extends AppCompatActivity {
     RecyclerView recyclerView;
 
     private VideoListAdapter.ItemClickListener clickListener;
+    private VideoListAdapter.OptionsClickListener optionsClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-        StatusBarCompat.setStatusBarColor(SearchActivity.this, getResources().getColor(R.color.white, null), true);
+        StatusBarCompat.setStatusBarColor(SearchActivity.this, getResources().getColor(android.R.color.white, null), true);
         ButterKnife.bind(this);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         init();
     }
 
@@ -69,6 +70,10 @@ public class SearchActivity extends AppCompatActivity {
             intent.putStringArrayListExtra("tags", tags);
             startActivity(intent);
         };
+        optionsClickListener = videoDetail -> {
+            DialogPlus dialog = DialogManager.getInstance().newVideoOptionDialog(this, videoDetail);
+            dialog.show();
+        };
         searchEdit.setFocusable(true);
         searchEdit.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -81,7 +86,7 @@ public class SearchActivity extends AppCompatActivity {
                     Toast.makeText(this, "搜索字数请小于15，谢谢！", Toast.LENGTH_SHORT).show();
                     return false;
                 }
-                VideoListPresenter.getInstance().searchForVideo(this, query, 0, 10);
+                VideoPresenter.getInstance().searchForVideo(this, query, 0, 20);
                 return true;
             }
             return false;
@@ -90,6 +95,10 @@ public class SearchActivity extends AppCompatActivity {
 
     public VideoListAdapter.ItemClickListener getClickListener() {
         return clickListener;
+    }
+
+    public VideoListAdapter.OptionsClickListener getOptionsClickListener() {
+        return optionsClickListener;
     }
 
     public RecyclerView getRecyclerView() {

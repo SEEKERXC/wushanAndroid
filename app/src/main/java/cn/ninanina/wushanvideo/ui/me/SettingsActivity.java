@@ -25,7 +25,7 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle("设置");
         }
-        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.transparent, null), true);
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.model.api;
 import org.apache.commons.lang3.ObjectUtils;
 
 import cn.ninanina.wushanvideo.model.bean.Result;
+import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.common.User;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
@@ -21,17 +22,22 @@ public interface CommonService {
                                           @Query("username") String username);
 
     @POST("user/register")
-    Observable<Result<User>> register(@Query("appKey") String appKey,
-                                      @Query("username") String username,
-                                      @Query("password") String password,
-                                      @Query("nickname") String nickname,
-                                      @Query("gender") String gender);
+    Observable<Result<Pair<String, User>>> register(@Query("appKey") String appKey,
+                                                    @Query("username") String username,
+                                                    @Query("password") String password,
+                                                    @Query("nickname") String nickname,
+                                                    @Query("gender") String gender);
 
     @GET("user/loggedIn")
-    Observable<Result<User>> checkLogin(@Query("appKey") String appKey);
+    Observable<Result<ObjectUtils.Null>> checkLogin(@Query("appKey") String appKey,
+                                                    @Query("token") String token);
 
     @POST("user/login")
-    Observable<Result<User>> login(@Query("appKey") String appKey,
-                                   @Query("username") String username,
-                                   @Query("password") String password);
+    Observable<Result<Pair<String, User>>> login(@Query("appKey") String appKey,
+                                                 @Query("username") String username,
+                                                 @Query("password") String password);
+
+    @POST("user/logout")
+    Observable<Result<ObjectUtils.Null>> logout(@Query("appKey") String appKey,
+                                                @Query("token") String token);
 }

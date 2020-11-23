@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:background="@android:color/transparent"
     android:layout_height="match_parent">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -9,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@id/home_viewpager"
+        android:background="@android:color/white"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
@@ -61,7 +63,7 @@
                 android:layout_height="25dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="10dp"
-                android:background="@color/theme_color_primary"
+                android:background="@android:color/transparent"
                 android:contentDescription="榜单按钮"
                 android:scaleType="centerInside"
                 android:src="@drawable/ranking" />
@@ -72,10 +74,10 @@
                 android:layout_height="25dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="12dp"
-                android:background="@color/theme_color_primary"
+                android:background="@android:color/transparent"
                 android:contentDescription="下载按钮"
                 android:scaleType="centerInside"
-                android:src="@drawable/download" />
+                android:src="@drawable/xiazai_clicked" />
 
             <ImageButton
                 android:id="@+id/home_history"
@@ -83,7 +85,7 @@
                 android:layout_height="25dp"
                 android:layout_gravity="end"
                 android:layout_marginEnd="12dp"
-                android:background="@color/theme_color_primary"
+                android:background="@android:color/transparent"
                 android:contentDescription="历史按钮"
                 android:scaleType="centerInside"
                 android:src="@drawable/history" />
@@ -96,6 +98,7 @@
             android:layout_height="32dp"
             app:tabIndicatorHeight="2dp"
             app:tabSelectedTextColor="@color/colorPrimary"
+            android:background="@android:color/white"
             app:tabTextColor="@color/tabColor" />
 
     </com.google.android.material.appbar.AppBarLayout>

@@ -1,20 +1,21 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
@@ -29,15 +30,23 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
-import cn.ninanina.wushanvideo.network.VideoDetailPresenter;
+import cn.ninanina.wushanvideo.network.VideoPresenter;
 
 public class VideoDetailActivity extends AppCompatActivity {
     @BindView(R.id.detail_player)
     StandardGSYVideoPlayer detailPlayer;
+    @BindView(R.id.detail_cover)
+    SimpleDraweeView cover;
     @BindView(R.id.detail_tab)
     TabLayout tabLayout;
+    @BindView(R.id.video_detail_loading_shadow)
+    View shadow;
+    @BindView(R.id.video_detail_loading)
+    TextView loading;
     @BindView(R.id.detail_viewpager)
     ViewPager2 viewPager2;
+    @BindView(R.id.video_detail_parent)
+    ConstraintLayout parent;
 
     private List<Fragment> fragments = new ArrayList<>(2);
     private List<String> tabTitles = new ArrayList<String>() {{
@@ -48,6 +57,7 @@ public class VideoDetailActivity extends AppCompatActivity {
     OrientationUtils orientationUtils;
     GSYVideoOptionBuilder gsyVideoOption;
 
+    FragmentStateAdapter adapter;
 
     private long videoId;
     private String title;
@@ -55,8 +65,6 @@ public class VideoDetailActivity extends AppCompatActivity {
     private int viewed;
     private String coverUrl;
     private ArrayList<String> tags;
-
-    private String src;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,7 +93,7 @@ public class VideoDetailActivity extends AppCompatActivity {
         fragments.add(new DetailFragment(videoId, title, titleZh, viewed, tags));
         fragments.add(new CommentFragment());
         viewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-        viewPager2.setAdapter(new FragmentStateAdapter(this) {
+        adapter = new FragmentStateAdapter(this) {
             @NonNull
             @Override
             public Fragment createFragment(int position) {
@@ -96,25 +104,27 @@ public class VideoDetailActivity extends AppCompatActivity {
             public int getItemCount() {
                 return fragments.size();
             }
-        });
+        };
+        viewPager2.setAdapter(adapter);
         new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
     }
 
     private void initPlayer() {
         detailPlayer.getTitleTextView().setVisibility(View.VISIBLE);
         detailPlayer.getBackButton().setVisibility(View.GONE);
-
+        shadow.setVisibility(View.VISIBLE);
+        loading.setText("视频地址解析中，请等待几秒...");
         //外部辅助的旋转，帮助全屏
         orientationUtils = new OrientationUtils(this, detailPlayer);
         orientationUtils.setEnable(false);
-
+        cover.setImageURI(coverUrl);
         gsyVideoOption = new GSYVideoOptionBuilder();
         gsyVideoOption.setIsTouchWiget(true)
                 .setRotateViewAuto(false)
                 .setRotateWithSystem(false)
                 .setAutoFullWithSize(true)
                 .setShowFullAnimation(false)
-                .setCacheWithPlay(false)
+                .setCacheWithPlay(true)
                 .setVideoTitle(title)
                 .setSeekRatio(2.5f)
                 .setVideoAllCallBack(new GSYSampleCallBack() {
@@ -132,6 +142,8 @@ public class VideoDetailActivity extends AppCompatActivity {
                         ViewGroup.LayoutParams params = detailPlayer.getLayoutParams();
                         params.height = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics()));
                         detailPlayer.setLayoutParams(params);
+                        viewPager2.setAdapter(adapter);
+                        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
                     }
 
                     @Override
@@ -150,7 +162,7 @@ public class VideoDetailActivity extends AppCompatActivity {
             detailPlayer.startWindowFullscreen(VideoDetailActivity.this, true, true);
         });
 
-        new VideoDetailPresenter(this).access(videoId);
+        VideoPresenter.getInstance().getSrc(this, videoId);
     }
 
     @Override
@@ -175,7 +187,9 @@ public class VideoDetailActivity extends AppCompatActivity {
     }
 
     public void startPlaying(String src) {
-        this.src = src;
+        parent.removeView(loading);
+        parent.removeView(shadow);
+        parent.removeView(cover);
         gsyVideoOption.setUrl(src).build(detailPlayer);
         detailPlayer.startPlayLogic();
     }

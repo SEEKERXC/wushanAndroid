@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.transparent, null), true);
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
         ButterKnife.bind(this);
         initFragments();
         banner.addBannerLifecycleObserver(this)

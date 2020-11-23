@@ -2,6 +2,7 @@ package cn.ninanina.wushanvideo.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Looper;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,11 +17,10 @@ import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
 import cn.ninanina.wushanvideo.model.bean.common.User;
 import cn.ninanina.wushanvideo.ui.me.LoginFragment;
+import cn.ninanina.wushanvideo.ui.me.ProfileActivity;
 import cn.ninanina.wushanvideo.ui.me.RegisterFragment;
 import cn.ninanina.wushanvideo.util.EncodeUtil;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -92,22 +92,24 @@ public class CommonPresenter extends BasePresenter {
         String nickname = fragment.getNicknameEdit().getText().toString();
         getCommonService().register(appKey, username, password, nickname, gender)
                 .subscribeOn(Schedulers.io())
-                .doOnError(throwable ->
-                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络出错，请稍后试试", Toast.LENGTH_SHORT).show())
+                .doOnError(throwable -> {
+                            Looper.prepare();
+                            Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络出错，请稍后试试", Toast.LENGTH_SHORT).show();
+                            Looper.loop();
+                        }
+                )
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(userResult -> {
-                    String code = userResult.getRspCode();
+                .subscribe(pairResult -> {
+                    String code = pairResult.getRspCode();
                     if (code.equals(ResultMsg.APPKEY_INVALID.getCode())) {
-
                     } else if (code.equals(ResultMsg.USER_EXIST.getCode())) {
                         Toast.makeText(fragment.getContext(), "用户已存在，请换个账号", Toast.LENGTH_SHORT).show();
                     } else if (code.equals(ResultMsg.SUCCESS.getCode())) {
-                        User user = userResult.getData();
-                        if (user != null) {
-                            Toast.makeText(fragment.getContext(), "注册成功！", Toast.LENGTH_SHORT).show();
-                            updateUserProfile(user);
-                            Objects.requireNonNull(fragment.getActivity()).finish();
-                        }
+                        SharedPreferences.Editor editor = WushanApp.getProfile().edit();
+                        editor.putString("token", pairResult.getData().getFirst()).apply();
+                        Toast.makeText(fragment.getContext(), "注册成功！", Toast.LENGTH_SHORT).show();
+                        updateUserProfile(pairResult.getData().getSecond());
+                        Objects.requireNonNull(fragment.getActivity()).finish();
                     }
                 });
     }
@@ -115,23 +117,16 @@ public class CommonPresenter extends BasePresenter {
     /**
      * 检查登录状态，保证开启应用的时候处于登录
      */
-    public void checkForLogin() {
-        String appKey = WushanApp.getAppKey();
-        long userId = WushanApp.getProfile().getLong("userId", 0);
-        getCommonService().checkLogin(appKey)
+    public void checkForLogin(Context context) {
+        getCommonService().checkLogin(getAppKey(), getToken())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login();
-                    else if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
-                        if (userId != result.getData().getId()) {
-                            //TODO:检查登录返回的user与本地保存的user不一致，错误处理，低优先级
-                        }
-                    }
+                    if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login(context);
                 });
     }
 
-    private void login() {
+    private void login(Context context) {
         String appKey = WushanApp.getAppKey();
         SharedPreferences profile = WushanApp.getProfile();
         String username = profile.getString("username", "");
@@ -140,8 +135,15 @@ public class CommonPresenter extends BasePresenter {
             getCommonService().login(appKey, username, password)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(userResult -> {
-                        updateUserProfile(userResult.getData());
+                    .subscribe(pairResult -> {
+                        String resCode = pairResult.getRspCode();
+                        if (resCode.equals(ResultMsg.FAILED.getCode())) {
+                            Toast.makeText(context, "登录失败，用户名或密码不对", Toast.LENGTH_SHORT).show();
+                        } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
+                            SharedPreferences.Editor editor = WushanApp.getProfile().edit();
+                            editor.putString("token", pairResult.getData().getFirst()).apply();
+                            updateUserProfile(pairResult.getData().getSecond());
+                        }
                     });
     }
 
@@ -153,13 +155,14 @@ public class CommonPresenter extends BasePresenter {
             getCommonService().login(appKey, username, password)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(userResult -> {
-                        String resCode = userResult.getRspCode();
+                    .subscribe(pairResult -> {
+                        String resCode = pairResult.getRspCode();
                         if (resCode.equals(ResultMsg.FAILED.getCode())) {
                             Toast.makeText(fragment.getContext(), "登录失败，用户名或密码不对", Toast.LENGTH_SHORT).show();
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
-                            User user = userResult.getData();
-                            updateUserProfile(user);
+                            SharedPreferences.Editor editor = WushanApp.getProfile().edit();
+                            editor.putString("token", pairResult.getData().getFirst()).apply();
+                            updateUserProfile(pairResult.getData().getSecond());
                             Toast.makeText(fragment.getContext(), "登录成功，欢迎回来！", Toast.LENGTH_SHORT).show();
                             Objects.requireNonNull(fragment.getActivity()).finish();
                         }
@@ -167,21 +170,37 @@ public class CommonPresenter extends BasePresenter {
     }
 
     //TODO:logout
-    public void logout() {
+    public void logout(ProfileActivity activity) {
+        SharedPreferences profile = WushanApp.getProfile();
+        SharedPreferences.Editor editor = profile.edit();
+        getCommonService().logout(getAppKey(), getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(activity, "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(nullResult -> {
+                    Toast.makeText(activity, "成功退出登录", Toast.LENGTH_SHORT).show();
+                    editor.remove("token").remove("userId").remove("username").remove("password").remove("nickname")
+                            .remove("userAge").remove("gender").remove("registerTime").remove("lastLoginTime").apply();
+                    activity.finish();
+                });
     }
 
     private void updateUserProfile(User user) {
         SharedPreferences profile = WushanApp.getProfile();
         SharedPreferences.Editor editor = profile.edit();
-        editor.putLong("userId", user.getId());
-        editor.putString("username", user.getUsername());
-        editor.putString("password", user.getPassword());
-        editor.putString("nickname", user.getNickname());
-        editor.putInt("userAge", user.getAge());
-        editor.putString("gender", user.getGender());
-        editor.putLong("registerTime", user.getRegisterTime());
-        editor.putLong("lastLoginTime", user.getLastLoginTime());
-        editor.apply();
+        editor.putLong("userId", user.getId())
+                .putString("username", user.getUsername())
+                .putString("password", user.getPassword())
+                .putString("nickname", user.getNickname())
+                .putInt("userAge", user.getAge())
+                .putString("gender", user.getGender())
+                .putLong("registerTime", user.getRegisterTime())
+                .putLong("lastLoginTime", user.getLastLoginTime())
+                .apply();
     }
 
     public static CommonPresenter getInstance() {

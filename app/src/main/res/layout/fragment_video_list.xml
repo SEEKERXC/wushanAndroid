@@ -3,6 +3,7 @@
     android:id="@+id/swipe_video_list"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     android:orientation="vertical">
 
     <androidx.recyclerview.widget.RecyclerView
@@ -10,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:paddingStart="3dp"
-        android:paddingEnd="3dp">
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp">
 
     </androidx.recyclerview.widget.RecyclerView>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

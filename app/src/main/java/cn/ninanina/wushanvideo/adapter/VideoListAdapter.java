@@ -3,10 +3,13 @@ package cn.ninanina.wushanvideo.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -25,10 +28,12 @@ import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Object> dataList;
     private ItemClickListener listener;
+    private OptionsClickListener optionsClickListener;
 
-    public VideoListAdapter(List<Object> dataList, ItemClickListener listener) {
+    public VideoListAdapter(List<Object> dataList, ItemClickListener itemClickListener, OptionsClickListener optionsClickListener) {
         this.dataList = dataList;
-        this.listener = listener;
+        this.listener = itemClickListener;
+        this.optionsClickListener = optionsClickListener;
     }
 
     @NonNull
@@ -64,23 +69,25 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             if (isSrcValid(videoDetail.getSrc())) {
                 videoCardHolder.label1.setText("不限次");
                 videoCardHolder.label1.setVisibility(View.VISIBLE);
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) videoCardHolder.label3.getLayoutParams();
-                params.leftMargin = 5;
+                videoCardHolder.label1.setPadding(8, 0, 0, 8);
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) videoCardHolder.label3.getLayoutParams();
+                params.leftMargin = 4;
                 videoCardHolder.label3.setLayoutParams(params);
             }
             for (Tag tag : videoDetail.getTags()) {
                 if (!StringUtils.isEmpty(tag.getTagZh())) {
                     strTag.append(tag.getTagZh()).append("·");
                 }
-                if (strTag.length() >= 12) break;
+                if (strTag.length() >= 10)
+                    break;
             }
             if (strTag.toString().isEmpty() && videoDetail.getTags().size() > 0)
                 strTag.append(videoDetail.getTags().get(0).getTag());
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
             videoCardHolder.label3.setText(sTag);
-            videoCardHolder.cover.setOnClickListener(v -> listener.onItemClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
-            videoCardHolder.videoTitle.setOnClickListener(v -> listener.onItemClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoCard.setOnClickListener(v -> listener.onItemClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onOptionsClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }
     }
 
@@ -104,11 +111,15 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         @BindView(R.id.video_duration)
         TextView videoDuration;
         @BindView(R.id.tag_group)
-        LinearLayout tagGroup;
+        ConstraintLayout tagGroup;
         @BindView(R.id.video_label1)
         TextView label1;
         @BindView(R.id.video_label3)
         TextView label3;
+        @BindView(R.id.video_more)
+        ImageButton videoMore;
+        @BindView(R.id.video_card)
+        CardView videoCard;
 
         private VideoCardHolder(View itemView) {
             super(itemView);
@@ -119,6 +130,10 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     public interface ItemClickListener {
         void onItemClicked(VideoDetail videoDetail);
+    }
+
+    public interface OptionsClickListener {
+        void onOptionsClicked(VideoDetail videoDetail);
     }
 
     public void append(List<Object> newData) {

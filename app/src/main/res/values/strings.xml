@@ -62,4 +62,9 @@
     <string name="search">搜索</string>
     <string name="search_rank">默认排序</string>
     <string name="search_all_duration">全部时长</string>
+    <string name="today_left">今日剩余观看次数</string>
+    <string name="click_to_show_left">查看如何增加次数</string>
+    <string name="collect_video">收藏视频</string>
+    <string name="new_dir">新建收藏夹</string>
+    <string name="zhunquemingming">准确命名更容易被别人发现哦~</string>
 </resources>

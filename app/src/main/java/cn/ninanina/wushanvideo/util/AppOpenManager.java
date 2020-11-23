@@ -17,11 +17,14 @@ import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.appopen.AppOpenAd;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Date;
 
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
 
+import static androidx.lifecycle.Lifecycle.Event.ON_RESUME;
 import static androidx.lifecycle.Lifecycle.Event.ON_START;
 
 /**
@@ -132,6 +135,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, L
         showAdIfAvailable();
         //request for appKey
         CommonPresenter.getInstance().requestForProfile(wushanApp.getProfile());
+
+        if (currentActivity != null && !StringUtils.isEmpty(WushanApp.getProfile().getString("username", ""))) {
+            CommonPresenter.getInstance().checkForLogin(currentActivity);
+        }
     }
 
     /**

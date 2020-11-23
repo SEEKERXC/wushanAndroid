@@ -2,17 +2,18 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fresco="http://schemas.android.com/tools"
+    android:id="@+id/video_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="3dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginEnd="3dp"
-    android:layout_marginBottom="4dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginTop="6dp"
+    android:layout_marginEnd="4dp"
+    android:layout_marginBottom="6dp"
     android:clickable="true"
     android:elevation="1dp"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@android:color/white"
     app:cardCornerRadius="5dp"
     app:cardPreventCornerOverlap="false">
 
@@ -47,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_marginBottom="4dp"
-                android:textColor="@color/white"
+                android:textColor="@android:color/white"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
@@ -70,7 +71,7 @@
                 android:layout_marginStart="3dp"
                 android:layout_marginBottom="5dp"
                 android:gravity="center"
-                android:textColor="@color/white"
+                android:textColor="@android:color/white"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/video_views_icon" />
@@ -81,14 +82,14 @@
             android:id="@+id/video_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="2dp"
             android:layout_marginTop="6dp"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="标题"
+            android:textColor="@color/black"
             android:textSize="14sp" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/tag_group"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -100,14 +101,15 @@
                 android:id="@+id/video_label1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="3dp"
+                android:layout_marginStart="4dp"
                 android:background="@drawable/label1"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp"
                 android:paddingTop="2dp"
                 android:paddingBottom="2dp"
                 android:textSize="13sp"
-                android:visibility="invisible" />
+                android:visibility="invisible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/video_label3"
@@ -115,10 +117,25 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textSize="12sp" />
-        </LinearLayout>
+                android:textColor="@color/tabColor"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/video_label1"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/video_more"
+                android:layout_width="30dp"
+                android:layout_height="18dp"
+                android:background="@android:color/transparent"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:scaleType="centerInside"
+                android:src="@drawable/more"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
-
 
 </androidx.cardview.widget.CardView>

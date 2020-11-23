@@ -11,20 +11,32 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+import com.google.android.gms.common.util.CollectionUtils;
+import com.orhanobut.dialogplus.DialogPlus;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
-import cn.ninanina.wushanvideo.network.VideoListPresenter;
+import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.ui.me.LoginActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import me.gujun.android.taggroup.TagGroup;
 
 public class DetailFragment extends Fragment {
@@ -32,16 +44,22 @@ public class DetailFragment extends Fragment {
     TextView titleTextView;
     @BindView(R.id.video_detail_info)
     TextView infoTextView;
-    @BindView(R.id.video_detail_collect)
-    ImageButton collectButton;
+    @BindView(R.id.video_detail_collect_button)
+    ConstraintLayout collectButton;
+    @BindView(R.id.video_detail_collect_img)
+    ImageButton collectImg;
     @BindView(R.id.video_detail_collect_num)
     TextView collectNum;
-    @BindView(R.id.video_detail_download)
-    ImageButton downloadButton;
+    @BindView(R.id.video_detail_download_button)
+    ConstraintLayout downloadButton;
+    @BindView(R.id.video_detail_download_img)
+    ImageButton downloadImg;
     @BindView(R.id.video_detail_download_num)
     TextView downloadNum;
-    @BindView(R.id.video_detail_dislike)
-    ImageButton dislikeButton;
+    @BindView(R.id.video_detail_dislike_button)
+    ConstraintLayout dislikeButton;
+    @BindView(R.id.video_detail_dislike_img)
+    ImageButton dislikeImg;
     @BindView(R.id.video_detail_dislike_num)
     TextView dislikeNum;
     @BindView(R.id.video_detail_tags)
@@ -58,12 +76,41 @@ public class DetailFragment extends Fragment {
     private boolean downloaded;
     private boolean disliked;
 
+    YoYo.YoYoString downloadAnimation;
+
+    AlertDialog.Builder loginDialog;
+
+    List<Object> dataList = new ArrayList<>();
+
+    SingleVideoListAdapter.ItemClickListener itemClickListener = videoDetail -> {
+        Intent intent = new Intent(getActivity(), VideoDetailActivity.class);
+        intent.putExtra("id", videoDetail.getId());
+        intent.putExtra("title", videoDetail.getTitle());
+        intent.putExtra("titleZh", videoDetail.getTitleZh());
+        intent.putExtra("viewed", videoDetail.getViewed());
+        intent.putExtra("coverUrl", videoDetail.getCoverUrl());
+        ArrayList<String> tags = new ArrayList<>();
+        for (Tag tag : videoDetail.getTags()) {
+            if (!StringUtils.isEmpty(tag.getTagZh()) && !tags.contains(tag.getTagZh()))
+                tags.add(tag.getTagZh());
+            else tags.add(tag.getTag());
+        }
+        if (videoDetail.getTags().isEmpty()) tags.add("无标签");
+        intent.putStringArrayListExtra("tags", tags);
+        startActivity(intent);
+    };
+
+    SingleVideoListAdapter.OptionsClickListener optionsClickListener = videoDetail -> {
+        DialogPlus dialog = DialogManager.getInstance().newVideoOptionDialog(getContext(), videoDetail);
+        dialog.show();
+    };
+
     public DetailFragment(long videoId, String title, String titleZh, int viewed, ArrayList<String> tags) {
         super();
         this.videoId = videoId;
         this.title = title;
         this.titleZh = titleZh;
-        this.viewed = viewed;
+        this.viewed = viewed / 100;
         this.tags = tags;
     }
 
@@ -78,7 +125,6 @@ public class DetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
 
-        viewed = viewed / 100;
         StringBuilder strViewed = new StringBuilder();
         if (viewed >= 10000) {
             int wan = viewed / 10000;
@@ -89,44 +135,55 @@ public class DetailFragment extends Fragment {
         } else strViewed.append(viewed);
         strViewed.append("播放");
         infoTextView.setText(strViewed.toString());
-        if (!StringUtils.isEmpty(titleZh)) title += ("（机翻：" + titleZh + "）");
-        titleTextView.setText(title);
+        StringBuilder titleBuilder = new StringBuilder(title);
+        if (!StringUtils.isEmpty(titleZh)) titleBuilder.append("（机翻：").append(titleZh).append("）");
+        titleTextView.setText(titleBuilder.toString());
         videoTags.setTags(tags);
 
         relatedVideos.setLayoutManager(new LinearLayoutManager(getContext()));
-        VideoListPresenter.getInstance().getRelatedVideos(relatedVideos, videoId);
-
-        dislikeButton.setBackground(titleTextView.getBackground());
-        downloadButton.setBackground(titleTextView.getBackground());
-        collectButton.setBackground(titleTextView.getBackground());
+        if (CollectionUtils.isEmpty(dataList))
+            VideoPresenter.getInstance().getRelatedVideos(this, videoId);
+        else
+            relatedVideos.setAdapter(new SingleVideoListAdapter(dataList, itemClickListener, optionsClickListener));
+        initLoginDialog();
 
         if (collected)
-            collectButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_clicked));
+            collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_clicked));
         if (downloaded)
-            downloadButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.xiazai_clicked));
+            downloadImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.xiazai_clicked));
         if (disliked)
-            dislikeButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike_clicked));
+            downloadImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike_clicked));
         bindEvents();
     }
 
     private void bindEvents() {
         collectButton.setOnClickListener(collectListener);
+        collectImg.setOnClickListener(collectListener);
         collectNum.setOnClickListener(collectListener);
         downloadButton.setOnClickListener(downloadListener);
+        downloadImg.setOnClickListener(downloadListener);
         downloadNum.setOnClickListener(downloadListener);
         dislikeButton.setOnClickListener(dislikeListener);
+        dislikeImg.setOnClickListener(dislikeListener);
         dislikeNum.setOnClickListener(dislikeListener);
     }
 
     View.OnClickListener collectListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!WushanApp.loggedIn()) {
+                loginDialog.show();
+                return;
+            }
+            YoYo.with(Techniques.RubberBand)
+                    .duration(500)
+                    .playOn(collectImg);
             if (collected) {
-                collectButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang));
+                collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang));
                 collectNum.setTextColor(getResources().getColor(R.color.tabColor, getContext().getTheme()));
                 collected = false;
             } else {
-                collectButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_clicked));
+                collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_clicked));
                 collectNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
                 collected = true;
             }
@@ -136,12 +193,19 @@ public class DetailFragment extends Fragment {
     View.OnClickListener downloadListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!WushanApp.loggedIn()) {
+                loginDialog.show();
+                return;
+            }
+            downloadAnimation = YoYo.with(Techniques.SlideOutDown)
+                    .duration(1000)
+                    .repeat(9999)
+                    .playOn(downloadImg);
             if (downloaded) {
                 Toast.makeText(getContext(), "已经下载了", Toast.LENGTH_SHORT).show();
-                downloaded = false;
             } else {
                 Toast.makeText(getContext(), "开始下载视频", Toast.LENGTH_SHORT).show();
-                downloadButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.xiazai_clicked));
+                downloadImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.xiazai_clicked));
                 downloadNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
                 downloaded = true;
             }
@@ -151,16 +215,50 @@ public class DetailFragment extends Fragment {
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (!WushanApp.loggedIn()) {
+                loginDialog.show();
+                return;
+            }
+            YoYo.with(Techniques.Tada)
+                    .duration(500)
+                    .playOn(dislikeImg);
             if (disliked) {
-                dislikeButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike));
+                dislikeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike));
                 dislikeNum.setTextColor(getResources().getColor(R.color.tabColor, getContext().getTheme()));
                 disliked = false;
             } else {
-                dislikeButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike_clicked));
+                dislikeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike_clicked));
                 dislikeNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
                 disliked = true;
             }
         }
     };
 
+    private void initLoginDialog() {
+        loginDialog = new AlertDialog.Builder(getContext());
+        loginDialog.setIcon(R.drawable.wode_ea5a5a);
+        loginDialog.setMessage("是否立即注册/登录？");
+        loginDialog.setPositiveButton("确定", (dialog, which) -> {
+            Intent intent = new Intent(getContext(), LoginActivity.class);
+            startActivity(intent);
+        });
+        loginDialog.setNegativeButton("取消", ((dialog, which) -> {
+        }));
+    }
+
+    public RecyclerView getRelatedRecyclerView() {
+        return relatedVideos;
+    }
+
+    public SingleVideoListAdapter.ItemClickListener getItemClickListener() {
+        return itemClickListener;
+    }
+
+    public SingleVideoListAdapter.OptionsClickListener getOptionsClickListener() {
+        return optionsClickListener;
+    }
+
+    public List<Object> getDataList() {
+        return dataList;
+    }
 }

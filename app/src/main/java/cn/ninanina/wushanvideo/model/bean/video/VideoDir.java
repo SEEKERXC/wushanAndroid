@@ -10,8 +10,10 @@ import java.util.List;
 public class VideoDir {
     private Long id;
     private String name;
+    private String cover;
     private Long createTime;
     private Long updateTime;
     private Integer count;
+    private Boolean isPublic;
     private List<VideoDetail> collectedVideos;
 }

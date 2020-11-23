@@ -117,7 +117,7 @@ public class RegisterFragment extends Fragment {
             registerButton.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.buttonClickColor, null));
             registerButton.setEnabled(true);
         } else {
-            registerButton.setBackgroundColor(ResourcesCompat.getColor(getResources(), R.color.transparent, null));
+            registerButton.setBackgroundColor(ResourcesCompat.getColor(getResources(), android.R.color.transparent, null));
             registerButton.setEnabled(false);
         }
     }

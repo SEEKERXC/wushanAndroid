@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/transparent">
 
     <FrameLayout
         android:id="@+id/register_username_frag"
@@ -28,7 +29,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="32dp"
             android:autofillHints="no"
-            android:background="@color/transparent"
+            android:background="@android:color/transparent"
             android:hint="@string/username_hint"
             android:inputType="textVisiblePassword"
             android:lines="1"
@@ -84,7 +85,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="32dp"
             android:autofillHints="no"
-            android:background="@color/transparent"
+            android:background="@android:color/transparent"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
             android:lines="1"
@@ -128,7 +129,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="32dp"
             android:autofillHints="no"
-            android:background="@color/transparent"
+            android:background="@android:color/transparent"
             android:hint="@string/nickname_hint"
             android:inputType="text"
             android:lines="1"
@@ -170,7 +171,7 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="32dp"
             android:autofillHints="no"
-            android:background="@color/transparent"
+            android:background="@android:color/transparent"
             android:enabled="false"
             android:hint="@string/gender"
             android:inputType="text"
@@ -214,7 +215,7 @@
             android:id="@+id/register_button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/transparent"
+            android:background="@android:color/transparent"
             android:enabled="false"
             android:foreground="?android:attr/selectableItemBackground"
             android:text="@string/register" />

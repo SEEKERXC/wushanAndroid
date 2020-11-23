@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     tools:context=".ui.MainActivity">
 
     <FrameLayout
@@ -20,10 +21,11 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="bottom"
-        android:background="@color/theme_color_primary"
+        android:background="@android:color/white"
         app:itemIconTint="@drawable/color_selector"
         app:itemRippleColor="@color/black"
         app:itemTextColor="@drawable/color_selector"
+        app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/main_container"
         app:menu="@menu/bottom_navigation" />

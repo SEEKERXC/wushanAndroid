@@ -15,6 +15,5 @@ public class VideoDetail {
     private String duration;
     private Integer viewed;
     private Integer approved;
-    private Boolean valid;
     private List<Tag> tags;
 }

@@ -22,17 +22,21 @@ public interface VideoService {
     @GET("video/recommend")
     Observable<Result<List<VideoDetail>>> getRecommend(@Query("appKey") String appKey,
                                                        @Query("type") String type,
-                                                       @Query("limit") int limit);
+                                                       @Query("limit") int limit,
+                                                       @Query("token") String token);
 
     //获取视频链接
     @GET("video/detail")
     Observable<Result<VideoDetail>> getVideoDetail(@Query("appKey") String appKey,
-                                                   @Query("id") long id);
+                                                   @Query("id") long id,
+                                                   @Query("token") String token);
 
     //获取相关视频
     @GET("video/related")
     Observable<Result<List<VideoDetail>>> getRelatedVideos(@Query("appKey") String appKey,
-                                                           @Query("id") long id);
+                                                           @Query("id") long id,
+                                                           @Query("offset") int offset,
+                                                           @Query("limit") int limit);
 
     //获取当前观影人数
     @GET("video/audience")
@@ -50,39 +54,46 @@ public interface VideoService {
     @POST("video/comment")
     Observable<Result<Comment>> commentOn(@Query("id") long id,
                                           @Query("content") String content,
-                                          @Query("parentId") Long parentId);
+                                          @Query("parentId") Long parentId,
+                                          @Query("token") String token);
 
     //创建收藏夹
     @POST("video/collect/create")
     Observable<Result<VideoDir>> createVideoDir(@Query("appKey") String appKey,
-                                                @Query("name") String name);
+                                                @Query("name") String name,
+                                                @Query("token") String token);
 
     //删除收藏夹
     @POST("video/collect/delete")
     Observable<Result<ObjectUtils.Null>> deleteVideoDir(@Query("appKey") String appKey,
-                                                        @Query("dirId") Long dirId);
+                                                        @Query("dirId") Long dirId,
+                                                        @Query("token") String token);
 
     //重命名收藏夹
     @POST("video/collect/rename")
     Observable<Result<VideoDir>> renameVideoDir(@Query("appKey") String appKey,
                                                 @Query("dirId") Long dirId,
-                                                @Query("name") String name);
+                                                @Query("name") String name,
+                                                @Query("token") String token);
 
     //获取收藏夹列表
     @GET("video/collect")
-    Observable<Result<List<VideoDir>>> collectList(@Query("appKey") String appKey);
+    Observable<Result<List<VideoDir>>> collectList(@Query("appKey") String appKey,
+                                                   @Query("token") String token);
 
     //收藏视频
     @POST("video/collect")
     Observable<Result<ObjectUtils.Null>> collectVideo(@Query("appKey") String appKey,
                                                       @Query("videoId") Long videoId,
-                                                      @Query("dirId") Long dirId);
+                                                      @Query("dirId") Long dirId,
+                                                      @Query("token") String token);
 
     //取消收藏视频
     @POST("video/collect/cancel")
     Observable<Result<ObjectUtils.Null>> cancelCollect(@Query("appKey") String appKey,
                                                        @Query("videoId") Long videoId,
-                                                       @Query("dirId") Long dirId);
+                                                       @Query("dirId") Long dirId,
+                                                       @Query("token") String token);
 
     //搜索视频
     @GET("video/search")

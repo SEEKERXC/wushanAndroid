@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,6 +14,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.orhanobut.dialogplus.DialogPlus;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,8 +26,9 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
-import cn.ninanina.wushanvideo.network.VideoListPresenter;
+import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class VideoListFragment extends Fragment {
     @BindView(R.id.video_list)
@@ -38,6 +42,9 @@ public class VideoListFragment extends Fragment {
 
     private String type;
     private VideoListAdapter.ItemClickListener clickListener;
+    private VideoListAdapter.OptionsClickListener optionsClickListener;
+
+    private boolean isLoading = false;
 
     @Nullable
     @Override
@@ -50,18 +57,20 @@ public class VideoListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
         swipeRefreshLayout.setColorSchemeResources(R.color.tabColor);
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            VideoListPresenter.getInstance().getVideoList(this, swipeRefreshLayout, VideoListPresenter.Op.SWIPE, type);
+            if (!isLoading)
+                VideoPresenter.getInstance().getRecommendVideoList(this, VideoPresenter.RecyclerViewOp.SWIPE);
+            else Toast.makeText(getContext(), "正在加载，请稍等~", Toast.LENGTH_SHORT).show();
         });
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 //列表中LastVisibleItem为倒数第二行时，加载更多
-                if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount()) {
-                    VideoListPresenter.getInstance().getVideoList(VideoListFragment.this, swipeRefreshLayout, VideoListPresenter.Op.APPEND, type);
+                if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !isLoading) {
+                    VideoPresenter.getInstance().getRecommendVideoList(VideoListFragment.this, VideoPresenter.RecyclerViewOp.APPEND);
                 }
                 super.onScrolled(recyclerView, dx, dy);
             }
@@ -84,15 +93,31 @@ public class VideoListFragment extends Fragment {
             intent.putStringArrayListExtra("tags", tags);
             startActivity(intent);
         };
-        VideoListPresenter.getInstance().getVideoList(this, swipeRefreshLayout, VideoListPresenter.Op.INIT, type);
+        optionsClickListener = videoDetail -> {
+            DialogPlus dialog = DialogManager.getInstance().newVideoOptionDialog(getContext(), videoDetail);
+            dialog.show();
+        };
+        VideoPresenter.getInstance().getRecommendVideoList(this, VideoPresenter.RecyclerViewOp.INIT);
     }
 
     public VideoListAdapter.ItemClickListener getClickListener() {
         return clickListener;
     }
 
+    public VideoListAdapter.OptionsClickListener getOptionsClickListener() {
+        return optionsClickListener;
+    }
+
     public RecyclerView getRecyclerView() {
         return recyclerView;
+    }
+
+    public SwipeRefreshLayout getSwipeRefreshLayout() {
+        return swipeRefreshLayout;
+    }
+
+    public String getType() {
+        return type;
     }
 
     //视频列表类型
@@ -103,4 +128,13 @@ public class VideoListFragment extends Fragment {
         LESBIAN,//首页女同
         NO_AD,//首页免广告
     }
+
+    public boolean isLoading() {
+        return isLoading;
+    }
+
+    public void setLoading(boolean loading) {
+        isLoading = loading;
+    }
+
 }

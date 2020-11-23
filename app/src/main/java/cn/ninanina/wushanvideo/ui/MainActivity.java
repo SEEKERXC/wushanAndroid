@@ -1,6 +1,9 @@
 package cn.ninanina.wushanvideo.ui;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -10,20 +13,19 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.githang.statusbar.StatusBarCompat;
-import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
-import cn.ninanina.wushanvideo.network.CommonPresenter;
 import cn.ninanina.wushanvideo.ui.community.CommunityFragment;
 import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class MainActivity extends AppCompatActivity {
     private Fragment[] fragments;
@@ -35,12 +37,14 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.bottom_navigation)
     public BottomNavigationView bottomNavigationView;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        StatusBarCompat.setStatusBarColor(this, getResources().getColor(R.color.theme_color_primary, null), true);
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
 
         //初始化fragments
         initFragments();
@@ -53,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()) {
                     case R.id.navigation_home:
                         switchFragment(0);
-                        StatusBarCompat.setStatusBarColor(MainActivity.this, getResources().getColor(R.color.theme_color_primary, null), true);
+                        StatusBarCompat.setStatusBarColor(MainActivity.this, getResources().getColor(android.R.color.white, null), true);
                         break;
                     case R.id.navigation_tag:
                         switchFragment(1);
@@ -63,7 +67,8 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.navigation_me:
                         switchFragment(3);
-                        StatusBarCompat.setStatusBarColor(MainActivity.this, getResources().getColor(R.color.transparent, null), true);
+                        StatusBarCompat.setStatusBarColor(MainActivity.this, getResources().getColor(android.R.color.transparent, null), true);
+                        meFragment.refresh();
                         break;
                 }
                 return true;
@@ -79,18 +84,6 @@ public class MainActivity extends AppCompatActivity {
                 transaction.show(fragments[index]).commitAllowingStateLoss();
             }
         });
-
-        if (!StringUtils.isEmpty(WushanApp.getProfile().getString("username", ""))) {
-            CommonPresenter.getInstance().checkForLogin();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (!StringUtils.isEmpty(WushanApp.getProfile().getString("username", ""))) {
-            CommonPresenter.getInstance().checkForLogin();
-        }
     }
 
     private void initFragments() {
@@ -107,6 +100,15 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
 
         bottomNavigationView.setItemTextColor(AppCompatResources.getColorStateList(this, R.color.black));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (WushanApp.loggedIn()) {
+            if (DialogManager.getInstance() != null && DialogManager.getInstance().getLoginDialog() != null)
+                DialogManager.getInstance().getLoginDialog().superDismiss();
+        }
     }
 
 }

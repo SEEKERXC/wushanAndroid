@@ -3,6 +3,10 @@ package cn.ninanina.wushanvideo;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Message;
+
+import androidx.annotation.NonNull;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.android.gms.ads.MobileAds;

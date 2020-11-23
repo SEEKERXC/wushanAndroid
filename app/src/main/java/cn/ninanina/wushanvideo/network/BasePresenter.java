@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.network;
 
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.api.CommonService;
 import cn.ninanina.wushanvideo.model.api.VideoService;
 import retrofit2.Retrofit;
@@ -27,5 +28,13 @@ public abstract class BasePresenter {
 
     protected CommonService getCommonService() {
         return commonService;
+    }
+
+    protected String getAppKey() {
+        return WushanApp.getAppKey();
+    }
+
+    protected String getToken() {
+        return WushanApp.getProfile().getString("token", "");
     }
 }

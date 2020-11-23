@@ -8,10 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +23,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
-import cn.ninanina.wushanvideo.network.CommonPresenter;
+import cn.ninanina.wushanvideo.adapter.CollectItemAdapter;
+import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class MeFragment extends Fragment {
     @BindView(R.id.fragment_me_top)
@@ -35,6 +40,10 @@ public class MeFragment extends Fragment {
     LinearLayout menuProfile;
     @BindView(R.id.menu_collect)
     LinearLayout menuCollect;
+    @BindView(R.id.collect_new_dir)
+    ConstraintLayout newCollectDir;
+    @BindView(R.id.collect_list)
+    ListView collectList;
     @BindView(R.id.menu_download)
     LinearLayout menuDownload;
     @BindView(R.id.menu_history)
@@ -66,8 +75,8 @@ public class MeFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    public void onStart() {
+        super.onStart();
         checkForUser();
     }
 
@@ -77,6 +86,11 @@ public class MeFragment extends Fragment {
             String nickname = profile.getString("nickname", "");
             top.removeView(login_register_button);
             welcome.setText("欢迎来到巫山小视频 ~ " + nickname);
+        } else {
+            if (top.indexOfChild(login_register_button) < 0) {
+                top.addView(login_register_button, 1);
+            }
+            welcome.setText(R.string.welcome);
         }
     }
 
@@ -95,6 +109,31 @@ public class MeFragment extends Fragment {
             Intent intent = new Intent(getContext(), SettingsActivity.class);
             startActivity(intent);
         });
+        newCollectDir.setOnClickListener(v -> {
+            if (WushanApp.loggedIn())
+                DialogManager.getInstance().newCreateDirDialog(getContext(), collectList).show();
+            else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
+        });
     }
 
+    public void refresh() {
+        if (WushanApp.loggedIn())
+            VideoPresenter.getInstance().getVideoDirsForMe(this);
+        else if (collectList != null && collectList.getAdapter() != null) {
+            CollectItemAdapter adapter = (CollectItemAdapter) collectList.getAdapter();
+            adapter.clear();
+            adapter.notifyDataSetChanged();
+        }
+
+    }
+
+    public ListView getCollectList() {
+        return collectList;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refresh();
+    }
 }

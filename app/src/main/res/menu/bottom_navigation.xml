@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/navigation_home"
         android:icon="@drawable/zhuye"
-        android:title="@string/navigation_home" />
+        android:title="@string/navigation_home"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/navigation_tag"
         android:icon="@drawable/biaoqian"
-        android:title="@string/navigation_tag" />
+        android:title="@string/navigation_tag"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/navigation_community"
         android:icon="@drawable/shequ"
-        android:title="@string/navigation_community" />
+        android:title="@string/navigation_community"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/navigation_me"
         android:icon="@drawable/wode"
-        android:title="@string/navigation_me" />
+        android:title="@string/navigation_me"
+        app:showAsAction="ifRoom" />
 </menu>
