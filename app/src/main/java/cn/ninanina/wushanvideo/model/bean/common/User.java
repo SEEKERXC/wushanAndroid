@@ -10,6 +10,7 @@ public class User {
     private String nickname;
     private String gender;
     private int age;
+    private String photo;
     private Long registerTime;
     private Long lastLoginTime;
 }

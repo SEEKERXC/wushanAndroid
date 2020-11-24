@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.google.android.gms.common.util.CollectionUtils;
-import com.orhanobut.dialogplus.DialogPlus;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,10 +32,10 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
-import cn.ninanina.wushanvideo.model.bean.video.Tag;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.me.LoginActivity;
-import cn.ninanina.wushanvideo.util.DialogManager;
 import me.gujun.android.taggroup.TagGroup;
 
 public class DetailFragment extends Fragment {
@@ -82,29 +81,6 @@ public class DetailFragment extends Fragment {
 
     List<Object> dataList = new ArrayList<>();
 
-    SingleVideoListAdapter.ItemClickListener itemClickListener = videoDetail -> {
-        Intent intent = new Intent(getActivity(), VideoDetailActivity.class);
-        intent.putExtra("id", videoDetail.getId());
-        intent.putExtra("title", videoDetail.getTitle());
-        intent.putExtra("titleZh", videoDetail.getTitleZh());
-        intent.putExtra("viewed", videoDetail.getViewed());
-        intent.putExtra("coverUrl", videoDetail.getCoverUrl());
-        ArrayList<String> tags = new ArrayList<>();
-        for (Tag tag : videoDetail.getTags()) {
-            if (!StringUtils.isEmpty(tag.getTagZh()) && !tags.contains(tag.getTagZh()))
-                tags.add(tag.getTagZh());
-            else tags.add(tag.getTag());
-        }
-        if (videoDetail.getTags().isEmpty()) tags.add("无标签");
-        intent.putStringArrayListExtra("tags", tags);
-        startActivity(intent);
-    };
-
-    SingleVideoListAdapter.OptionsClickListener optionsClickListener = videoDetail -> {
-        DialogPlus dialog = DialogManager.getInstance().newVideoOptionDialog(getContext(), videoDetail);
-        dialog.show();
-    };
-
     public DetailFragment(long videoId, String title, String titleZh, int viewed, ArrayList<String> tags) {
         super();
         this.videoId = videoId;
@@ -144,7 +120,7 @@ public class DetailFragment extends Fragment {
         if (CollectionUtils.isEmpty(dataList))
             VideoPresenter.getInstance().getRelatedVideos(this, videoId);
         else
-            relatedVideos.setAdapter(new SingleVideoListAdapter(dataList, itemClickListener, optionsClickListener));
+            relatedVideos.setAdapter(new SingleVideoListAdapter(dataList, new DefaultVideoClickListener(getContext()), new DefaultVideoOptionClickListener(getContext())));
         initLoginDialog();
 
         if (collected)
@@ -248,14 +224,6 @@ public class DetailFragment extends Fragment {
 
     public RecyclerView getRelatedRecyclerView() {
         return relatedVideos;
-    }
-
-    public SingleVideoListAdapter.ItemClickListener getItemClickListener() {
-        return itemClickListener;
-    }
-
-    public SingleVideoListAdapter.OptionsClickListener getOptionsClickListener() {
-        return optionsClickListener;
     }
 
     public List<Object> getDataList() {

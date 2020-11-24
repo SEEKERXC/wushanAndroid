@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import cn.ninanina.wushanvideo.R;
 
 public class CommunityFragment extends Fragment {
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

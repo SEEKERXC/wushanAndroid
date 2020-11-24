@@ -22,15 +22,17 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.VideoOptionClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 
 public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Object> dataList;
-    private ItemClickListener listener;
-    private OptionsClickListener optionsClickListener;
+    private VideoClickListener listener;
+    private VideoOptionClickListener optionsClickListener;
 
-    public VideoListAdapter(List<Object> dataList, ItemClickListener itemClickListener, OptionsClickListener optionsClickListener) {
+    public VideoListAdapter(List<Object> dataList, VideoClickListener itemClickListener, VideoOptionClickListener optionsClickListener) {
         this.dataList = dataList;
         this.listener = itemClickListener;
         this.optionsClickListener = optionsClickListener;
@@ -69,7 +71,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             if (isSrcValid(videoDetail.getSrc())) {
                 videoCardHolder.label1.setText("不限次");
                 videoCardHolder.label1.setVisibility(View.VISIBLE);
-                videoCardHolder.label1.setPadding(8, 0, 0, 8);
+                videoCardHolder.label1.setPadding(8, 0, 8, 0);
                 ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) videoCardHolder.label3.getLayoutParams();
                 params.leftMargin = 4;
                 videoCardHolder.label3.setLayoutParams(params);
@@ -86,8 +88,8 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
             videoCardHolder.label3.setText(sTag);
-            videoCardHolder.videoCard.setOnClickListener(v -> listener.onItemClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
-            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onOptionsClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }
     }
 
@@ -126,14 +128,6 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             if (!(itemView instanceof AdView))
                 ButterKnife.bind(this, itemView);
         }
-    }
-
-    public interface ItemClickListener {
-        void onItemClicked(VideoDetail videoDetail);
-    }
-
-    public interface OptionsClickListener {
-        void onOptionsClicked(VideoDetail videoDetail);
     }
 
     public void append(List<Object> newData) {

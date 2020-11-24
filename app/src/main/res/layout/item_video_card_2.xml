@@ -10,7 +10,7 @@
     android:layout_marginEnd="4dp"
     android:layout_marginBottom="3dp"
     android:clickable="true"
-    android:elevation="1dp"
+    android:elevation="0dp"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardBackgroundColor="@android:color/white"
@@ -115,7 +115,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
-                android:layout_marginBottom="6dp"
+                android:layout_marginBottom="3dp"
                 android:orientation="horizontal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
@@ -141,8 +141,8 @@
             <ImageButton
                 android:id="@+id/video_action"
                 android:layout_width="30dp"
-                android:layout_height="18dp"
-                android:layout_marginBottom="6dp"
+                android:layout_height="20dp"
+                android:layout_marginBottom="3dp"
                 android:background="@android:color/transparent"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:scaleType="centerInside"

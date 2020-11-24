@@ -2,33 +2,32 @@ package cn.ninanina.wushanvideo.util;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.flyco.dialog.widget.MaterialDialog;
-import com.orhanobut.dialogplus.DialogPlus;
-import com.orhanobut.dialogplus.ListHolder;
-import com.orhanobut.dialogplus.ViewHolder;
+import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
-import cn.ninanina.wushanvideo.adapter.CollectItemAdapter;
+import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.VideoOptionAdapter;
-import cn.ninanina.wushanvideo.model.bean.common.VideoOptionItem;
+import cn.ninanina.wushanvideo.adapter.listener.CollectPlaylistClickListener;
+import cn.ninanina.wushanvideo.model.bean.common.VideoOption;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
-import cn.ninanina.wushanvideo.model.bean.video.VideoDir;
+import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.me.LoginActivity;
 
@@ -47,67 +46,31 @@ public class DialogManager {
         return instance;
     }
 
-    private DialogPlus videoOptionDialog;
-    private DialogPlus collectDialog;
     private MaterialDialog loginDialog;
     private AlertDialog newDirDialog;
 
-    private List<VideoOptionItem> videoOptionItems = new ArrayList<VideoOptionItem>() {{
-        add(new VideoOptionItem(R.drawable.video, "添加至稍后看"));
-        add(new VideoOptionItem(R.drawable.shoucang, "收藏"));
-        add(new VideoOptionItem(R.drawable.xiazai_clicked, "下载"));
-        add(new VideoOptionItem(R.drawable.dislike, "不喜欢"));
-    }};
-
-    //标记被点击的videoOptionItem
-    private int videoOptionClickedIndex = -1;
-    //大于0表示optionDialog隐藏结束
-    private int optionDialogDismissed = 0;
-    //大于0表示collectDialog创建完成
-    private int collectDialogFinished = 0;
-
-    public Handler handler = new Handler(Objects.requireNonNull(Looper.myLooper())) {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MessageType.OPTION_DIALOG_DISMISSED:
-                    optionDialogDismissed++;
-                    break;
-                case MessageType.COLLECT_DIALOG_FINISHED:
-                    collectDialogFinished++;
-                    break;
-            }
-            if (collectDialogFinished > 0 && optionDialogDismissed > 0) {
-                collectDialog.show();
-                optionDialogDismissed--;
-                collectDialogFinished--;
-            }
-        }
-    };
-
     /**
-     * 收藏列表对话框
+     * 收藏列表对话框，点击项目收藏视频
      */
-    public void newCollectDialog(Context context, VideoDetail videoDetail, List<VideoDir> videoDirs) {
-        ListView listView = (ListView) LayoutInflater.from(context).inflate(R.layout.dialog_collect_dir_list, null, false);
-        listView.setAdapter(new CollectItemAdapter(context, R.layout.item_collect_dir, videoDirs));
-        ConstraintLayout header = (ConstraintLayout) LayoutInflater.from(context).inflate(R.layout.header_dialog_collect, null, false);
-        collectDialog = DialogPlus.newDialog(context)
-                .setContentHolder(new ViewHolder(listView))
-                .setHeader(header)
-                .setExpanded(true)
+    public AlertDialog newCollectDialog(Context context, VideoDetail videoDetail, List<Playlist> playlists) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_list, null, false);
+        RecyclerView recyclerView = frameLayout.findViewById(R.id.playlists);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        if (!CollectionUtils.isEmpty(playlists))
+            recyclerView.setAdapter(new PlaylistAdapter(playlists, new CollectPlaylistClickListener(context, videoDetail)));
+        AlertDialog collectDialog = new AlertDialog.Builder(context)
+                .setTitle("收藏视频")
+                .setIcon(R.drawable.directory)
+                .setView(frameLayout)
                 .create();
-        listView.setOnItemClickListener((parent, view, position, id) -> {
-            VideoDir dir = videoDirs.get(position);
-            VideoPresenter.getInstance().collectVideo(context, videoDetail.getId(), dir.getId());
-            collectDialog.dismiss();
-        });
+        return collectDialog;
     }
 
     /**
      * 视频选项对话框
      */
-    public DialogPlus newVideoOptionDialog(Context context, VideoDetail videoDetail) {
+    public AlertDialog newVideoOptionDialog(Context context, VideoDetail videoDetail) {
+        AlertDialog videoOptionDialog;
         if (loginDialog == null) {
             loginDialog = new MaterialDialog(context).title("请先登录")
                     .content("客官还没登录哦~ 登录后，我们会为您提供更好的服务")
@@ -120,69 +83,65 @@ public class DialogManager {
                 context.startActivity(intent);
             });
         }
-        videoOptionDialog = DialogPlus.newDialog(context)
-                .setContentHolder(new ListHolder())
-                .setAdapter(new VideoOptionAdapter(context, R.layout.item_video_option, videoOptionItems))
-                .setPadding(0, 0, 0, 10)
-                .setExpanded(false)
-                .setOnItemClickListener((dialog1, item, view, position) -> {
-                    dialog1.dismiss();
-                    videoOptionClickedIndex = position;
-                    if (!WushanApp.loggedIn()) {
-                        loginDialog.show();
-                        videoOptionClickedIndex = -1;
-                        return;
-                    }
-                    switch (position) {
-                        case 0:
-                            break;
-                        case 1:
-                            VideoPresenter.getInstance().getVideoDirsForDialog(context, videoDetail);
-                            break;
-                        case 3:
-                        case 4:
-                    }
-                })
-                .setOnDismissListener(dialog -> {
-                    switch (videoOptionClickedIndex) {
-                        case 1: //点击的是收藏
-                            Message message = new Message();
-                            message.what = MessageType.OPTION_DIALOG_DISMISSED;
-                            handler.sendMessage(message);
-                    }
-                    videoOptionClickedIndex = -1;
-                })
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_list, null, false);
+        videoOptionDialog = new AlertDialog.Builder(context)
+                .setView(frameLayout)
                 .create();
+        RecyclerView recyclerView = frameLayout.findViewById(R.id.playlists);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        List<VideoOption> videoOptions = new ArrayList<VideoOption>() {{
+            add(new VideoOption(R.drawable.video, "添加至稍后看"));
+            add(new VideoOption(R.drawable.shoucang, "收藏"));
+            add(new VideoOption(R.drawable.xiazai_clicked, "下载"));
+            add(new VideoOption(R.drawable.dislike, "不喜欢"));
+        }};
+        List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
+            add(v -> {
+                Toast.makeText(context, "已添加到稍后看列表", Toast.LENGTH_SHORT).show();
+                videoOptionDialog.dismiss();
+            });
+            add(v -> {
+                VideoPresenter.getInstance().getPlaylistForDialog(context, videoDetail);
+                videoOptionDialog.dismiss();
+            });
+            add(v -> {
+                Toast.makeText(context, "开始下载", Toast.LENGTH_SHORT).show();
+                videoOptionDialog.dismiss();
+            });
+            add(v -> {
+                Toast.makeText(context, "将减少此类视频推荐", Toast.LENGTH_SHORT).show();
+                videoOptionDialog.dismiss();
+            });
+        }};
+        recyclerView.setAdapter(new VideoOptionAdapter(videoOptions, listeners));
         return videoOptionDialog;
     }
 
     /**
      * 创建收藏夹对话框
      */
-    public AlertDialog newCreateDirDialog(Context context, ListView listView) {
+    public AlertDialog newCreatePlaylistDialog(Context context, RecyclerView list) {
         newDirDialog = new AlertDialog.Builder(context)
                 .setTitle("新建收藏夹")
                 .setIcon(R.drawable.new_directory)
                 .setView(R.layout.dialog_new_collect)
                 .setPositiveButton("完成", (dialog, which) -> {
                     EditText editText = newDirDialog.findViewById(R.id.collect_name);
-                    if (editText != null) {
-                        String name = editText.getText().toString();
-                        if (name.length() <= 0) return;
-                        VideoPresenter.getInstance().createVideoDir(context, listView, name);
-                    }
+                    assert editText != null;
+                    String name = editText.getText().toString();
+                    if (name.length() <= 0) return;
+                    VideoPresenter.getInstance().createPlaylist(context, list, name);
                 })
                 .create();
         newDirDialog.setOnShowListener(dialog -> {
             EditText editText = newDirDialog.findViewById(R.id.collect_name);
             if (editText != null) {
                 editText.requestFocus();
-                Handler handler = editText.getHandler();
-                handler.postDelayed(() -> {
+                editText.postDelayed(() -> {
                     InputMethodManager inputManager = (InputMethodManager) editText
                             .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     inputManager.showSoftInput(editText, 0);
-                }, 100);
+                }, 50);
             }
         });
         return newDirDialog;
@@ -190,14 +149,6 @@ public class DialogManager {
 
     public MaterialDialog getLoginDialog() {
         return loginDialog;
-    }
-
-    /**
-     * 定义消息类型
-     */
-    public static class MessageType {
-        public static final int COLLECT_DIALOG_FINISHED = 1000; //收藏夹dialog创建完成
-        public static final int OPTION_DIALOG_DISMISSED = 1001;//视频选项dialog隐藏完成
     }
 
 }

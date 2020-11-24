@@ -12,7 +12,5 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:paddingStart="4dp"
-        android:paddingEnd="4dp">
-
-    </androidx.recyclerview.widget.RecyclerView>
+        android:paddingEnd="4dp" />
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,15 +15,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
-import cn.ninanina.wushanvideo.adapter.CollectItemAdapter;
+import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
+import cn.ninanina.wushanvideo.adapter.listener.PlaylistClickListener;
+import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.ui.video.PlaylistActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class MeFragment extends Fragment {
@@ -43,7 +49,7 @@ public class MeFragment extends Fragment {
     @BindView(R.id.collect_new_dir)
     ConstraintLayout newCollectDir;
     @BindView(R.id.collect_list)
-    ListView collectList;
+    RecyclerView playlist;
     @BindView(R.id.menu_download)
     LinearLayout menuDownload;
     @BindView(R.id.menu_history)
@@ -55,6 +61,7 @@ public class MeFragment extends Fragment {
     @BindView(R.id.menu_info)
     LinearLayout menuInfo;
 
+    List<Playlist> playlists;
 
     @Nullable
     @Override
@@ -67,17 +74,18 @@ public class MeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
         initMenu();
+        playlist.setLayoutManager(new LinearLayoutManager(getContext()));
         login_register_button.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), LoginActivity.class);
             startActivity(intent);
         });
-        checkForUser();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         checkForUser();
+        refresh();
     }
 
     private void checkForUser() {
@@ -111,29 +119,26 @@ public class MeFragment extends Fragment {
         });
         newCollectDir.setOnClickListener(v -> {
             if (WushanApp.loggedIn())
-                DialogManager.getInstance().newCreateDirDialog(getContext(), collectList).show();
+                DialogManager.getInstance().newCreatePlaylistDialog(getContext(), playlist).show();
             else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
         });
     }
 
     public void refresh() {
-        if (WushanApp.loggedIn())
-            VideoPresenter.getInstance().getVideoDirsForMe(this);
-        else if (collectList != null && collectList.getAdapter() != null) {
-            CollectItemAdapter adapter = (CollectItemAdapter) collectList.getAdapter();
-            adapter.clear();
-            adapter.notifyDataSetChanged();
+        if (WushanApp.loggedIn()) {
+            VideoPresenter.getInstance().getPlaylistForMe(this);
+        } else {
+            PlaylistAdapter adapter = (PlaylistAdapter) playlist.getAdapter();
+            if (adapter != null) adapter.clear();
         }
 
     }
 
-    public ListView getCollectList() {
-        return collectList;
+    public RecyclerView getPlaylist() {
+        return playlist;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        refresh();
+    public void setData(List<Playlist> playlists) {
+        this.playlists = playlists;
     }
 }

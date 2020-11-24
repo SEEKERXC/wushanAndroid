@@ -294,14 +294,12 @@
                     android:layout_marginEnd="10dp"
                     android:background="@color/divider" />
 
-                <ListView
+                <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/collect_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
-                    android:divider="@android:color/transparent"
-                    android:dividerHeight="10dp" />
+                    android:layout_marginBottom="10dp" />
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>

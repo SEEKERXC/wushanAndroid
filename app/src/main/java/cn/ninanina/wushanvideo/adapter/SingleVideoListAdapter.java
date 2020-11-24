@@ -20,15 +20,17 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.VideoOptionClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 
 public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Object> dataList;
-    private ItemClickListener listener;
-    private OptionsClickListener optionsClickListener;
+    private VideoClickListener listener;
+    private VideoOptionClickListener optionsClickListener;
 
-    public SingleVideoListAdapter(List<Object> dataList, ItemClickListener itemClickListener, OptionsClickListener optionsClickListener) {
+    public SingleVideoListAdapter(List<Object> dataList, VideoClickListener itemClickListener, VideoOptionClickListener optionsClickListener) {
         this.dataList = dataList;
         this.listener = itemClickListener;
         this.optionsClickListener = optionsClickListener;
@@ -67,7 +69,7 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             if (VideoListAdapter.isSrcValid(videoDetail.getSrc())) {
                 videoCardHolder.label1.setText("不限次");
                 videoCardHolder.label1.setVisibility(View.VISIBLE);
-                videoCardHolder.label1.setPadding(3, 0, 0, 3);
+                videoCardHolder.label1.setPadding(8, 0, 8, 0);
             }
             for (Tag tag : videoDetail.getTags()) {
                 if (!StringUtils.isEmpty(tag.getTagZh())) {
@@ -81,8 +83,8 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
             videoCardHolder.label2.setText(sTag);
-            videoCardHolder.videoCard.setOnClickListener(v -> listener.onItemClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
-            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onOptionsClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }
     }
 
@@ -120,13 +122,5 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             if (!(itemView instanceof AdView))
                 ButterKnife.bind(this, itemView);
         }
-    }
-
-    public interface ItemClickListener {
-        void onItemClicked(VideoDetail videoDetail);
-    }
-
-    public interface OptionsClickListener {
-        void onOptionsClicked(VideoDetail videoDetail);
     }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 import cn.ninanina.wushanvideo.model.bean.Result;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
-import cn.ninanina.wushanvideo.model.bean.video.VideoDir;
+import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -57,29 +57,34 @@ public interface VideoService {
                                           @Query("parentId") Long parentId,
                                           @Query("token") String token);
 
-    //创建收藏夹
-    @POST("video/collect/create")
-    Observable<Result<VideoDir>> createVideoDir(@Query("appKey") String appKey,
+    //创建播单
+    @POST("video/playlist/create")
+    Observable<Result<Playlist>> createPlaylist(@Query("appKey") String appKey,
                                                 @Query("name") String name,
                                                 @Query("token") String token);
 
-    //删除收藏夹
-    @POST("video/collect/delete")
-    Observable<Result<ObjectUtils.Null>> deleteVideoDir(@Query("appKey") String appKey,
+    //删除播单
+    @POST("video/playlist/delete")
+    Observable<Result<ObjectUtils.Null>> deletePlaylist(@Query("appKey") String appKey,
                                                         @Query("dirId") Long dirId,
                                                         @Query("token") String token);
 
-    //重命名收藏夹
-    @POST("video/collect/rename")
-    Observable<Result<VideoDir>> renameVideoDir(@Query("appKey") String appKey,
+    //重命名播单
+    @POST("video/playlist/rename")
+    Observable<Result<Playlist>> renamePlaylist(@Query("appKey") String appKey,
                                                 @Query("dirId") Long dirId,
                                                 @Query("name") String name,
                                                 @Query("token") String token);
 
-    //获取收藏夹列表
-    @GET("video/collect")
-    Observable<Result<List<VideoDir>>> collectList(@Query("appKey") String appKey,
+    //获取播单列表
+    @GET("video/playlist")
+    Observable<Result<List<Playlist>>> getPlaylist(@Query("appKey") String appKey,
                                                    @Query("token") String token);
+
+    //获取播单的视频列表
+    @GET("video/playlist/videos")
+    Observable<Result<List<VideoDetail>>> getPlaylistVideos(@Query("appKey") String appKey,
+                                                            @Query("id") Long id);
 
     //收藏视频
     @POST("video/collect")

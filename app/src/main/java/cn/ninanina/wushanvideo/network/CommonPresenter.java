@@ -59,7 +59,7 @@ public class CommonPresenter extends BasePresenter {
         TextView usernameExists = fragment.getUsernameExists();
         getCommonService().userExists(appKey, username)
                 .subscribeOn(Schedulers.io())
-                .doOnError(throwable -> Toast.makeText(fragment.getContext(), "网络出错，请稍后重试", Toast.LENGTH_SHORT).show())
+                .doOnError(throwable -> Toast.makeText(fragment.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(stringResult -> {
                     String msgCode = stringResult.getRspCode();
@@ -94,7 +94,7 @@ public class CommonPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                             Looper.prepare();
-                            Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络出错，请稍后试试", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
                             Looper.loop();
                         }
                 )
@@ -120,6 +120,11 @@ public class CommonPresenter extends BasePresenter {
     public void checkForLogin(Context context) {
         getCommonService().checkLogin(getAppKey(), getToken())
                 .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login(context);
@@ -134,6 +139,11 @@ public class CommonPresenter extends BasePresenter {
         if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))
             getCommonService().login(appKey, username, password)
                     .subscribeOn(Schedulers.io())
+                    .doOnError(throwable -> {
+                        Looper.prepare();
+                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                        Looper.loop();
+                    })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(pairResult -> {
                         String resCode = pairResult.getRspCode();
@@ -154,6 +164,11 @@ public class CommonPresenter extends BasePresenter {
         if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))
             getCommonService().login(appKey, username, password)
                     .subscribeOn(Schedulers.io())
+                    .doOnError(throwable -> {
+                        Looper.prepare();
+                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                        Looper.loop();
+                    })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(pairResult -> {
                         String resCode = pairResult.getRspCode();

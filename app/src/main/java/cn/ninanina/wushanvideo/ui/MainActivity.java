@@ -1,9 +1,6 @@
 package cn.ninanina.wushanvideo.ui;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
@@ -14,8 +11,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.githang.statusbar.StatusBarCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

@@ -1,11 +1,6 @@
 package cn.ninanina.wushanvideo.ui.home;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -13,21 +8,16 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.githang.statusbar.StatusBarCompat;
-import com.orhanobut.dialogplus.DialogPlus;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
-import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
-import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
-import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class SearchActivity extends AppCompatActivity {
     @BindView(R.id.search_edit)
@@ -37,9 +27,6 @@ public class SearchActivity extends AppCompatActivity {
 
     @BindView(R.id.search_result)
     RecyclerView recyclerView;
-
-    private VideoListAdapter.ItemClickListener clickListener;
-    private VideoListAdapter.OptionsClickListener optionsClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,32 +40,12 @@ public class SearchActivity extends AppCompatActivity {
 
     private void init() {
         cancel.setOnClickListener(v -> this.finish());
-        clickListener = videoDetail -> {
-            Intent intent = new Intent(this, VideoDetailActivity.class);
-            intent.putExtra("id", videoDetail.getId());
-            intent.putExtra("title", videoDetail.getTitle());
-            intent.putExtra("titleZh", videoDetail.getTitleZh());
-            intent.putExtra("viewed", videoDetail.getViewed());
-            intent.putExtra("coverUrl", videoDetail.getCoverUrl());
-            ArrayList<String> tags = new ArrayList<>();
-            for (Tag tag : videoDetail.getTags()) {
-                if (!StringUtils.isEmpty(tag.getTagZh()) && !tags.contains(tag.getTagZh()))
-                    tags.add(tag.getTagZh());
-                else tags.add(tag.getTag());
-            }
-            if (videoDetail.getTags().isEmpty()) tags.add("无标签");
-            intent.putStringArrayListExtra("tags", tags);
-            startActivity(intent);
-        };
-        optionsClickListener = videoDetail -> {
-            DialogPlus dialog = DialogManager.getInstance().newVideoOptionDialog(this, videoDetail);
-            dialog.show();
-        };
-        searchEdit.setFocusable(true);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+        searchEdit.requestFocus();
+        searchEdit.postDelayed(() -> imm.showSoftInput(searchEdit, 0), 50);
         searchEdit.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 //关闭软键盘
-                InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                 String query = searchEdit.getText().toString();
                 if (query.length() <= 0) return false;
@@ -91,14 +58,6 @@ public class SearchActivity extends AppCompatActivity {
             }
             return false;
         });
-    }
-
-    public VideoListAdapter.ItemClickListener getClickListener() {
-        return clickListener;
-    }
-
-    public VideoListAdapter.OptionsClickListener getOptionsClickListener() {
-        return optionsClickListener;
     }
 
     public RecyclerView getRecyclerView() {

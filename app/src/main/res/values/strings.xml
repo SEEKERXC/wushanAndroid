@@ -2,7 +2,7 @@
     <string name="app_name">巫山小视频</string>
     <string name="navigation_home">主页</string>
     <string name="navigation_tag">标签</string>
-    <string name="navigation_community">社区</string>
+    <string name="navigation_community">播单</string>
     <string name="navigation_me">我的</string>
     <string name="welcome">欢迎来到巫山小视频 ~ 请注册或者登录</string>
     <string name="button_login_register">注册/登录</string>
@@ -67,4 +67,5 @@
     <string name="collect_video">收藏视频</string>
     <string name="new_dir">新建收藏夹</string>
     <string name="zhunquemingming">准确命名更容易被别人发现哦~</string>
+    <string name="play_list">播单</string>
 </resources>

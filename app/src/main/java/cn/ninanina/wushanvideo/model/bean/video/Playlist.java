@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.model.bean.video;
 
+import cn.ninanina.wushanvideo.model.bean.common.User;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -7,7 +8,7 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(of = "id")
-public class VideoDir {
+public class Playlist {
     private Long id;
     private String name;
     private String cover;
@@ -15,5 +16,5 @@ public class VideoDir {
     private Long updateTime;
     private Integer count;
     private Boolean isPublic;
-    private List<VideoDetail> collectedVideos;
+    private User user;
 }
