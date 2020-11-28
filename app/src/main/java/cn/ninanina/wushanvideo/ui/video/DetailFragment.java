@@ -207,7 +207,7 @@ public class DetailFragment extends Fragment {
                     String src = ((VideoDetailActivity) getActivity()).getSrc();
                     String fileName = videoDetail.getTitle().trim() + ".mp4";
                     fileName = fileName.replaceAll("/", "\0");
-                    downloadTaskId = Aria.download(MainActivity.getInstance())
+                    downloadTaskId = Aria.download(MainActivity.getInstance()) //todo: 将正在下载和下载完成的区分开
                             .load(src)     //读取下载地址
                             .setFilePath(FileUtil.getVideoDir().getAbsolutePath() + "/" + fileName) //设置文件保存的完整路径
                             .create();   //启动下载

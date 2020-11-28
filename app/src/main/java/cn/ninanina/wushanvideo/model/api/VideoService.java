@@ -64,31 +64,20 @@ public interface VideoService {
 
     //点赞评论
     @POST("video/comment/approve")
-    Observable<Result<Boolean>> approveComment(@Query("appKey") String appKey,
+    Observable<Result<Comment>> approveComment(@Query("appKey") String appKey,
                                                @Query("commentId") Long commentId,
                                                @Query("token") String token);
 
-    //是否点赞过
-    @GET("video/comment/approved")
-    Observable<Result<Boolean>> approvedComment(@Query("appKey") String appKey,
-                                                @Query("commentId") Long commentId,
-                                                @Query("token") String token);
-
     //踩评论
     @POST("video/comment/disapprove")
-    Observable<Result<Boolean>> disapproveComment(@Query("appKey") String appKey,
+    Observable<Result<Comment>> disapproveComment(@Query("appKey") String appKey,
                                                   @Query("commentId") Long commentId,
                                                   @Query("token") String token);
-
-    //是否踩过
-    @GET("video/comment/disapproved")
-    Observable<Result<Boolean>> disapprovedComment(@Query("appKey") String appKey,
-                                                   @Query("commentId") Long commentId,
-                                                   @Query("token") String token);
 
     //获取视频评论
     @GET("video/comments")
     Observable<Result<List<Comment>>> getComments(@Query("appKey") String appKey,
+                                                  @Query("token") String token,
                                                   @Query("videoId") Long videoId,
                                                   @Query("page") Integer page,
                                                   @Query("size") Integer size,

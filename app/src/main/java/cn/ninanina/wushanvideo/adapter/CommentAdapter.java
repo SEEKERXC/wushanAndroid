@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -51,32 +50,15 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         commentHolder.content.setText(comment.getContent());
         commentHolder.likeNum.setText(String.valueOf(comment.getApprove()));
         commentHolder.dislikeNum.setText(String.valueOf(comment.getDisapprove()));
-        if (comment.getApproved()) commentHolder.likeIcon.setImageResource(R.drawable.like_clicked);
+        if (comment.getApproved())
+            commentHolder.likeIcon.setImageResource(R.drawable.like_clicked);
+        else commentHolder.likeIcon.setImageResource(R.drawable.like);
         if (comment.getDisapproved())
             commentHolder.dislikeIcon.setImageResource(R.drawable.dislike_clicked);
-        commentHolder.likeButton.setOnClickListener(v -> {
-            commentHolder.likeNum.setText(comment.getApprove() + 1);
-            commentHolder.likeIcon.setImageResource(R.drawable.like_clicked);
-            VideoPresenter.getInstance().approveComment(comment);
-            if (comment.getDisapproved()) {
-                commentHolder.dislikeNum.setText(comment.getDisapprove() - 1);
-                commentHolder.dislikeIcon.setImageResource(R.drawable.dislike);
-                VideoPresenter.getInstance().disapproveComment(comment);
-            }
-        });
-        commentHolder.dislikeButton.setOnClickListener(v -> {
-            commentHolder.dislikeNum.setText(comment.getDisapprove() + 1);
-            commentHolder.dislikeIcon.setImageResource(R.drawable.dislike_clicked);
-            VideoPresenter.getInstance().disapproveComment(comment);
-            if (comment.getApproved()) {
-                commentHolder.likeNum.setText(comment.getApprove() - 1);
-                commentHolder.likeIcon.setImageResource(R.drawable.like);
-                VideoPresenter.getInstance().approveComment(comment);
-            }
-        });
-        commentHolder.itemView.setOnClickListener(v -> {
-            replyListener.onCommentListener(comment);
-        });
+        else commentHolder.dislikeIcon.setImageResource(R.drawable.dislike);
+        commentHolder.likeButton.setOnClickListener(v -> VideoPresenter.getInstance().approveComment(CommentAdapter.this, position));
+        commentHolder.dislikeButton.setOnClickListener(v -> VideoPresenter.getInstance().disapproveComment(CommentAdapter.this, position));
+        commentHolder.holder.setOnClickListener(v -> replyListener.onCommentListener(comment));
     }
 
     @Override
@@ -94,9 +76,20 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
     }
 
+    public void update(Comment comment, int position) {
+        commentList.set(position, comment);
+        notifyDataSetChanged();
+    }
+
+    public List<Comment> getCommentList() {
+        return commentList;
+    }
+
     static class CommentHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.photo)
         SimpleDraweeView cover;
+        @BindView(R.id.holder)
+        LinearLayout holder;
         @BindView(R.id.nickname)
         TextView nickname;
         @BindView(R.id.level)

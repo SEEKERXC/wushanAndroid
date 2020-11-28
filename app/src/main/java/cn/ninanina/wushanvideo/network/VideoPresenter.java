@@ -254,12 +254,13 @@ public class VideoPresenter extends BasePresenter {
 
     public void loadComments(CommentFragment commentFragment) {
         commentFragment.setLoading(true);
-        getVideoService().getComments(getAppKey(), commentFragment.getVideoDetail().getId(), commentFragment.getPage(), 20, commentFragment.getSort().getCode())
+        getVideoService().getComments(getAppKey(), getToken(), commentFragment.getVideoDetail().getId(), commentFragment.getPage(), 20, commentFragment.getSort().getCode())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     Toast.makeText(commentFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
                     commentFragment.setLoading(false);
+                    throwable.printStackTrace();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -310,8 +311,8 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void approveComment(Comment comment) {
-        getVideoService().approveComment(getAppKey(), comment.getId(), getToken())
+    public void approveComment(CommentAdapter adapter, int position) {
+        getVideoService().approveComment(getAppKey(), adapter.getCommentList().get(position).getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
@@ -320,11 +321,12 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
+                    adapter.update(result.getData(), position);
                 });
     }
 
-    public void disapproveComment(Comment comment) {
-        getVideoService().disapproveComment(getAppKey(), comment.getId(), getToken())
+    public void disapproveComment(CommentAdapter adapter, int position) {
+        getVideoService().disapproveComment(getAppKey(), adapter.getCommentList().get(position).getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
@@ -333,6 +335,7 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
+                    adapter.update(result.getData(), position);
                 });
     }
 
