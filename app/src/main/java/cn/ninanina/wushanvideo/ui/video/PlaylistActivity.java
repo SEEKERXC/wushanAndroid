@@ -12,11 +12,18 @@ import android.widget.TextView;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.githang.statusbar.StatusBarCompat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
+import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
@@ -77,7 +84,8 @@ public class PlaylistActivity extends AppCompatActivity {
         nameText.setText(name);
         infoText.setText(count + "个视频 · " + (isPublic ? "公开" : "私有"));
 
-        VideoPresenter.getInstance().getVideosForPlaylist(this, id);
+        List<Object> dataList = new ArrayList<>(DataHolder.getInstance().getPlaylistVideos(id).getVideoDetails());
+        content.setAdapter(new SingleVideoListAdapter(dataList, new DefaultVideoClickListener(this), new DefaultVideoOptionClickListener(this)));
     }
 
     public RecyclerView getContent() {

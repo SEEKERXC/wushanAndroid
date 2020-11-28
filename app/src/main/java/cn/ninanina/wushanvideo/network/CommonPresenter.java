@@ -16,6 +16,7 @@ import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
 import cn.ninanina.wushanvideo.model.bean.common.User;
+import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.me.LoginFragment;
 import cn.ninanina.wushanvideo.ui.me.ProfileActivity;
 import cn.ninanina.wushanvideo.ui.me.RegisterFragment;
@@ -73,7 +74,6 @@ public class CommonPresenter extends BasePresenter {
                         fragment.setUsernameOK(true);
                     }
                 });
-
     }
 
     public void register(RegisterFragment fragment) {
@@ -108,7 +108,9 @@ public class CommonPresenter extends BasePresenter {
                         SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                         editor.putString("token", pairResult.getData().getFirst()).apply();
                         Toast.makeText(fragment.getContext(), "注册成功！", Toast.LENGTH_SHORT).show();
-                        updateUserProfile(pairResult.getData().getSecond());
+                        User user = pairResult.getData().getSecond();
+                        user.setPassword(password);
+                        updateUserProfile(user);
                         Objects.requireNonNull(fragment.getActivity()).finish();
                     }
                 });
@@ -128,6 +130,7 @@ public class CommonPresenter extends BasePresenter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login(context);
+                    else MainActivity.getInstance().initData();
                 });
     }
 
@@ -152,7 +155,10 @@ public class CommonPresenter extends BasePresenter {
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
                             SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                             editor.putString("token", pairResult.getData().getFirst()).apply();
-                            updateUserProfile(pairResult.getData().getSecond());
+                            User user = pairResult.getData().getSecond();
+                            user.setPassword(password);
+                            updateUserProfile(user);
+                            MainActivity.getInstance().initData();
                         }
                     });
     }
@@ -177,7 +183,9 @@ public class CommonPresenter extends BasePresenter {
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
                             SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                             editor.putString("token", pairResult.getData().getFirst()).apply();
-                            updateUserProfile(pairResult.getData().getSecond());
+                            User user = pairResult.getData().getSecond();
+                            user.setPassword(password);
+                            updateUserProfile(user);
                             Toast.makeText(fragment.getContext(), "登录成功，欢迎回来！", Toast.LENGTH_SHORT).show();
                             Objects.requireNonNull(fragment.getActivity()).finish();
                         }

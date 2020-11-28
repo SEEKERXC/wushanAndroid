@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.common.util.CollectionUtils;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -27,10 +29,11 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
-import cn.ninanina.wushanvideo.adapter.listener.PlaylistClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.ui.video.PlaylistActivity;
+import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class MeFragment extends Fragment {
@@ -60,8 +63,6 @@ public class MeFragment extends Fragment {
     LinearLayout menuSetting;
     @BindView(R.id.menu_info)
     LinearLayout menuInfo;
-
-    List<Playlist> playlists;
 
     @Nullable
     @Override
@@ -122,11 +123,20 @@ public class MeFragment extends Fragment {
                 DialogManager.getInstance().newCreatePlaylistDialog(getContext(), playlist).show();
             else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
         });
+        menuDownload.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), DownloadActivity.class);
+            startActivity(intent);
+        });
     }
 
     public void refresh() {
+        if (playlist == null) return;
         if (WushanApp.loggedIn()) {
-            VideoPresenter.getInstance().getPlaylistForMe(this);
+            if (CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
+                VideoPresenter.getInstance().loadPlaylists();
+            } else {
+                playlist.setAdapter(new PlaylistAdapter(DataHolder.getInstance().getPlaylists(), new ShowPlaylistClickListener(getContext())));
+            }
         } else {
             PlaylistAdapter adapter = (PlaylistAdapter) playlist.getAdapter();
             if (adapter != null) adapter.clear();
@@ -138,7 +148,4 @@ public class MeFragment extends Fragment {
         return playlist;
     }
 
-    public void setData(List<Playlist> playlists) {
-        this.playlists = playlists;
-    }
 }

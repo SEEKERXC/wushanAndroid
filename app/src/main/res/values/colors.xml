@@ -12,4 +12,6 @@
     <color name="tabColor">#8a8a8a</color>
     <color name="buttonColor">#EA5A5A</color>
     <color name="buttonClickColor">#F89898</color>
+    <color name="disabled">#cdcdcd</color>
+    <color name="nicknameColor">#F67593</color>
 </resources>

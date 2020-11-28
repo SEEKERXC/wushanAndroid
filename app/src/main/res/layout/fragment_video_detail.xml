@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <LinearLayout
@@ -23,6 +23,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:text="视频标题"
+                android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
@@ -31,6 +32,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:textColor="@color/tabColor"
                 android:text="播放数/其他信息"
                 android:textSize="13sp" />
 
@@ -52,27 +54,28 @@
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground">
 
-                    <ImageButton
+                    <ImageView
                         android:id="@+id/video_detail_collect_img"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
-                        android:src="@drawable/shoucang"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:src="@drawable/shoucang_enabled"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
                         android:id="@+id/video_detail_collect_num"
                         android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="4dp"
-                        android:gravity="center_vertical"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="250"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toEndOf="@id/video_detail_collect_img"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:textColor="@color/tabColor"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="@id/video_detail_collect_img"
+                        app:layout_constraintStart_toStartOf="@id/video_detail_collect_img"
+                        app:layout_constraintTop_toBottomOf="@id/video_detail_collect_img" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
@@ -85,27 +88,64 @@
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground">
 
-                    <ImageButton
+                    <ImageView
                         android:id="@+id/video_detail_download_img"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
-                        android:src="@drawable/download"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:src="@drawable/download_disabled"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
                         android:id="@+id/video_detail_download_num"
                         android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="4dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:gravity="center_vertical"
                         android:text="250"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toEndOf="@id/video_detail_download_img"
+                        android:textColor="@color/disabled"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="@id/video_detail_download_img"
+                        app:layout_constraintStart_toStartOf="@id/video_detail_download_img"
+                        app:layout_constraintTop_toBottomOf="@id/video_detail_download_img" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/video_detail_share_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/video_detail_share_img"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/share_enabled"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/video_detail_share_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:text="@string/share"
+                        android:textColor="@color/tabColor"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="@id/video_detail_share_img"
+                        app:layout_constraintStart_toStartOf="@id/video_detail_share_img"
+                        app:layout_constraintTop_toBottomOf="@id/video_detail_share_img" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -117,28 +157,30 @@
                     android:focusable="true"
                     android:foreground="?android:attr/selectableItemBackground">
 
-                    <ImageButton
+                    <ImageView
                         android:id="@+id/video_detail_dislike_img"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:layout_marginStart="8dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
-                        android:src="@drawable/dislike"
-                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:src="@drawable/dislike_enabled"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <TextView
                         android:id="@+id/video_detail_dislike_num"
                         android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="4dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:gravity="center_vertical"
                         android:text="250"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toEndOf="@id/video_detail_dislike_img"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:textColor="@color/tabColor"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="@id/video_detail_dislike_img"
+                        app:layout_constraintStart_toStartOf="@id/video_detail_dislike_img"
+                        app:layout_constraintTop_toBottomOf="@id/video_detail_dislike_img" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
 

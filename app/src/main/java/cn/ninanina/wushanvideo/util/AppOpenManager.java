@@ -23,8 +23,8 @@ import java.util.Date;
 
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
+import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 
-import static androidx.lifecycle.Lifecycle.Event.ON_RESUME;
 import static androidx.lifecycle.Lifecycle.Event.ON_START;
 
 /**
@@ -132,7 +132,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, L
     @OnLifecycleEvent(ON_START)
     public void onStart() {
         //show ad if available
-        showAdIfAvailable();
+        if (!currentActivity.getClass().equals(DownloadActivity.class))
+            showAdIfAvailable();
         //request for appKey
         CommonPresenter.getInstance().requestForProfile(wushanApp.getProfile());
 

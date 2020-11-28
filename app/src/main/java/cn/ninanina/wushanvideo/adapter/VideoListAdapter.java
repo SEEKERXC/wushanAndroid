@@ -72,9 +72,6 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 videoCardHolder.label1.setText("不限次");
                 videoCardHolder.label1.setVisibility(View.VISIBLE);
                 videoCardHolder.label1.setPadding(8, 0, 8, 0);
-                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) videoCardHolder.label3.getLayoutParams();
-                params.leftMargin = 4;
-                videoCardHolder.label3.setLayoutParams(params);
             }
             for (Tag tag : videoDetail.getTags()) {
                 if (!StringUtils.isEmpty(tag.getTagZh())) {
@@ -88,6 +85,9 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
             videoCardHolder.label3.setText(sTag);
+            if (videoCardHolder.label1.getVisibility() == View.VISIBLE) {
+                videoCardHolder.label3.setPadding(8, 0, 0, 0);
+            }
             videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
             videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }

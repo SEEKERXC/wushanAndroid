@@ -2,7 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp">
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/collect_cover"
@@ -32,4 +34,27 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/collect_cover"
         app:layout_constraintStart_toEndOf="@id/collect_cover" />
+
+    <ImageView
+        android:id="@+id/finish"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/finished"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/finish_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="3dp"
+        android:text="@string/collected"
+        android:textColor="@color/tabColor"
+        android:textSize="12sp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/finish"
+        app:layout_constraintEnd_toStartOf="@id/finish"
+        app:layout_constraintTop_toTopOf="@+id/finish" />
 </androidx.constraintlayout.widget.ConstraintLayout>

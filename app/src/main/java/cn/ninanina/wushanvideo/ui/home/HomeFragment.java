@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,7 @@ import java.util.TreeMap;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 
 public class HomeFragment extends Fragment {
     @BindView(R.id.home_tab)
@@ -35,6 +37,8 @@ public class HomeFragment extends Fragment {
     ViewPager2 viewPager2;
     @BindView(R.id.home_search_button)
     CardView searchButton;
+    @BindView(R.id.home_download)
+    ImageButton downloadButton;
 
     private List<Pair<String, String>> tabTitles = new ArrayList<Pair<String, String>>() {{
         add(Pair.of("hot", "热门"));
@@ -78,6 +82,10 @@ public class HomeFragment extends Fragment {
 
         searchButton.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), SearchActivity.class);
+            startActivity(intent);
+        });
+        downloadButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), DownloadActivity.class);
             startActivity(intent);
         });
     }

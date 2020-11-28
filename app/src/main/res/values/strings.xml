@@ -68,4 +68,12 @@
     <string name="new_dir">新建收藏夹</string>
     <string name="zhunquemingming">准确命名更容易被别人发现哦~</string>
     <string name="play_list">播单</string>
+    <string name="share">分享</string>
+    <string name="download_list">下载列表</string>
+    <string name="collected">已收藏</string>
+    <string name="comment_time">评论时间</string>
+    <string name="hot_comment">热门评论</string>
+    <string name="publish_comment">发条友善的评论</string>
+    <string name="publish">发表</string>
+    <string name="comment_empty">快发表视频的第一个评论吧~</string>
 </resources>

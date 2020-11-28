@@ -25,6 +25,7 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
+import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class ProfileActivity extends AppCompatActivity {
     @BindView(R.id.profile_username)
@@ -74,16 +75,9 @@ public class ProfileActivity extends AppCompatActivity {
         SharedPreferences profile = WushanApp.getProfile();
         usernameText.setText(profile.getString("username", ""));
         nicknameText.setText(profile.getString("nickname", ""));
-        Calendar registerC = Calendar.getInstance();
-        registerC.setTimeInMillis(profile.getLong("registerTime", 0));
-        String register = registerC.get(Calendar.YEAR) + "年" + (registerC.get(Calendar.MONTH) + 1) + "月" + registerC.get(Calendar.DAY_OF_MONTH) + "日 "
-                + registerC.get(Calendar.HOUR) + ":" + registerC.get(Calendar.MINUTE);
-        registerText.setText(register);
-        Calendar loginC = Calendar.getInstance();
-        loginC.setTimeInMillis(profile.getLong("lastLoginTime", 0));
-        String login = loginC.get(Calendar.YEAR) + "年" + (loginC.get(Calendar.MONTH) + 1) + "月" + loginC.get(Calendar.DAY_OF_MONTH) + "日 "
-                + loginC.get(Calendar.HOUR_OF_DAY) + ":" + loginC.get(Calendar.MINUTE);
-        loginText.setText(login);
+
+        registerText.setText(TimeUtil.getFullTime(profile.getLong("registerTime", 0)));
+        loginText.setText(TimeUtil.getFullTime(profile.getLong("lastLoginTime", 0)));
         String gender = profile.getString("gender", "");
         if (!StringUtils.isEmpty(gender)) {
             if (gender.equals("MALE")) gender = "男";

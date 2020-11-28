@@ -73,4 +73,7 @@ dependencies {
     implementation 'com.daimajia.androidanimations:library:2.4@aar'
     //对话框
     implementation 'com.flyco.dialog:FlycoDialog_Lib:1.3.2@aar'
+    //下载与上传
+    implementation 'com.arialyy.aria:core:3.8.5'
+    annotationProcessor 'com.arialyy.aria:compiler:3.8.5'
 }

@@ -25,6 +25,7 @@ import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.VideoOptionAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.CollectPlaylistClickListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.VideoOption;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
@@ -46,7 +47,6 @@ public class DialogManager {
         return instance;
     }
 
-    private MaterialDialog loginDialog;
     private AlertDialog newDirDialog;
 
     /**
@@ -56,13 +56,15 @@ public class DialogManager {
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_list, null, false);
         RecyclerView recyclerView = frameLayout.findViewById(R.id.playlists);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        if (!CollectionUtils.isEmpty(playlists))
-            recyclerView.setAdapter(new PlaylistAdapter(playlists, new CollectPlaylistClickListener(context, videoDetail)));
         AlertDialog collectDialog = new AlertDialog.Builder(context)
                 .setTitle("收藏视频")
                 .setIcon(R.drawable.directory)
                 .setView(frameLayout)
                 .create();
+        if (!CollectionUtils.isEmpty(playlists))
+            recyclerView.setAdapter(new PlaylistAdapter(playlists, videoDetail, new CollectPlaylistClickListener(context, videoDetail, collectDialog)));
+        else
+            Toast.makeText(context, "还没有收藏夹", Toast.LENGTH_SHORT).show();
         return collectDialog;
     }
 
@@ -71,18 +73,6 @@ public class DialogManager {
      */
     public AlertDialog newVideoOptionDialog(Context context, VideoDetail videoDetail) {
         AlertDialog videoOptionDialog;
-        if (loginDialog == null) {
-            loginDialog = new MaterialDialog(context).title("请先登录")
-                    .content("客官还没登录哦~ 登录后，我们会为您提供更好的服务")
-                    .btnNum(2)
-                    .btnText("先逛逛", "马上登录")
-                    .btnTextSize(12.0f, 15.0f)
-                    .btnTextColor(R.color.black, R.color.tabColor);
-            loginDialog.setOnBtnClickL(null, () -> {
-                Intent intent = new Intent(context, LoginActivity.class);
-                context.startActivity(intent);
-            });
-        }
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_list, null, false);
         videoOptionDialog = new AlertDialog.Builder(context)
                 .setView(frameLayout)
@@ -92,7 +82,7 @@ public class DialogManager {
         List<VideoOption> videoOptions = new ArrayList<VideoOption>() {{
             add(new VideoOption(R.drawable.video, "添加至稍后看"));
             add(new VideoOption(R.drawable.shoucang, "收藏"));
-            add(new VideoOption(R.drawable.xiazai_clicked, "下载"));
+            add(new VideoOption(R.drawable.download_1296db, "下载"));
             add(new VideoOption(R.drawable.dislike, "不喜欢"));
         }};
         List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
@@ -101,7 +91,7 @@ public class DialogManager {
                 videoOptionDialog.dismiss();
             });
             add(v -> {
-                VideoPresenter.getInstance().getPlaylistForDialog(context, videoDetail);
+                newCollectDialog(context, videoDetail, DataHolder.getInstance().getPlaylists()).show();
                 videoOptionDialog.dismiss();
             });
             add(v -> {
@@ -147,7 +137,17 @@ public class DialogManager {
         return newDirDialog;
     }
 
-    public MaterialDialog getLoginDialog() {
+    public MaterialDialog newLoginDialog(Context context) {
+        MaterialDialog loginDialog = new MaterialDialog(context).title("请先登录")
+                .content("客官还没登录哦~ 登录后，我们会为您提供更好的服务")
+                .btnNum(2)
+                .btnText("先逛逛", "马上登录")
+                .btnTextSize(12.0f, 15.0f)
+                .btnTextColor(R.color.black, R.color.tabColor);
+        loginDialog.setOnBtnClickL(null, () -> {
+            Intent intent = new Intent(context, LoginActivity.class);
+            context.startActivity(intent);
+        });
         return loginDialog;
     }
 

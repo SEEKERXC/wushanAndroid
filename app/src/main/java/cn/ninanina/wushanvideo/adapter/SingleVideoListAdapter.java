@@ -83,6 +83,9 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
             videoCardHolder.label2.setText(sTag);
+            if(videoCardHolder.label1.getVisibility()==View.VISIBLE){
+                videoCardHolder.label2.setPadding(4,0,0,0);
+            }
             videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
             videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }

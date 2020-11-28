@@ -13,6 +13,8 @@ import com.google.android.gms.ads.MobileAds;
 
 import org.apache.commons.lang3.StringUtils;
 
+import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.util.AppOpenManager;
 
 public class WushanApp extends Application {
@@ -31,7 +33,6 @@ public class WushanApp extends Application {
         });
         appOpenManager = new AppOpenManager(this);
         profile = getSharedPreferences("profile", MODE_PRIVATE);
-
     }
 
     @Override

@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,14 +20,22 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.listener.PlaylistClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
+import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 
 public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     List<Playlist> playlists;
+    private VideoDetail videoDetail;
 
     PlaylistClickListener listener;
 
     public PlaylistAdapter(List<Playlist> playlists, PlaylistClickListener listener) {
         this.playlists = playlists;
+        this.listener = listener;
+    }
+
+    public PlaylistAdapter(List<Playlist> playlists, VideoDetail videoDetail, PlaylistClickListener listener) {
+        this.playlists = playlists;
+        this.videoDetail = videoDetail;
         this.listener = listener;
     }
 
@@ -46,6 +55,10 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             playlistHolder.name.setText(playlist.getName());
             playlistHolder.info.setText(playlist.getCount() + "个视频 · " + (playlist.getIsPublic() ? "公开" : "私有"));
             playlistHolder.itemView.setOnClickListener(v -> listener.onPlaylistClicked(playlist));
+            if (videoDetail != null && playlist.getVideoDetails().contains(videoDetail)) {
+                playlistHolder.finish.setVisibility(View.VISIBLE);
+                playlistHolder.finishText.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -71,6 +84,10 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         TextView name;
         @BindView(R.id.collect_info)
         TextView info;
+        @BindView(R.id.finish)
+        ImageView finish;
+        @BindView(R.id.finish_text)
+        TextView finishText;
 
         public PlaylistHolder(@NonNull View itemView) {
             super(itemView);

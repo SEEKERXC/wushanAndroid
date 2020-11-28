@@ -28,6 +28,8 @@ public class SearchActivity extends AppCompatActivity {
     @BindView(R.id.search_result)
     RecyclerView recyclerView;
 
+    InputMethodManager imm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,9 +40,15 @@ public class SearchActivity extends AppCompatActivity {
         init();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+    }
+
     private void init() {
+        imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         cancel.setOnClickListener(v -> this.finish());
-        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         searchEdit.requestFocus();
         searchEdit.postDelayed(() -> imm.showSoftInput(searchEdit, 0), 50);
         searchEdit.setOnEditorActionListener((v, actionId, event) -> {
