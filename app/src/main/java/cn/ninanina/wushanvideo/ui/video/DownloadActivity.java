@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.widget.FrameLayout;
 
 import com.githang.statusbar.StatusBarCompat;
 
@@ -33,6 +34,8 @@ import cn.ninanina.wushanvideo.util.FileUtil;
 public class DownloadActivity extends AppCompatActivity {
     @BindView(R.id.download_list)
     RecyclerView list;
+    @BindView(R.id.back)
+    FrameLayout back;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,7 @@ public class DownloadActivity extends AppCompatActivity {
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
         list.setLayoutManager(new LinearLayoutManager(this));
         initVideoList();
+        initEvents();
     }
 
     private void initVideoList() {
@@ -65,5 +69,9 @@ public class DownloadActivity extends AppCompatActivity {
         list.setAdapter(new DownloadVideoListAdapter(new ArrayList<>(videoDetails),
                 new OfflineVideoClickListener(this),
                 new DefaultVideoOptionClickListener(this)));
+    }
+
+    private void initEvents() {
+        back.setOnClickListener(v -> DownloadActivity.this.finish());
     }
 }

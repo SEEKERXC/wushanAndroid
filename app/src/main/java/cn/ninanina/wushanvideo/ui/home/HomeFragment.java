@@ -28,7 +28,9 @@ import java.util.TreeMap;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class HomeFragment extends Fragment {
     @BindView(R.id.home_tab)
@@ -39,11 +41,13 @@ public class HomeFragment extends Fragment {
     CardView searchButton;
     @BindView(R.id.home_download)
     ImageButton downloadButton;
+    @BindView(R.id.home_history)
+    ImageButton historyButton;
 
     private List<Pair<String, String>> tabTitles = new ArrayList<Pair<String, String>>() {{
-        add(Pair.of("hot", "热门"));
-        add(Pair.of("rihan", "日韩"));
-        add(Pair.of("china", "国产"));
+        add(Pair.of("recommend", "推荐"));
+        add(Pair.of("hot", "精选"));
+        add(Pair.of("asian", "亚洲"));
         add(Pair.of("west", "欧美"));
         add(Pair.of("lesbian", "女同"));
     }};
@@ -86,6 +90,13 @@ public class HomeFragment extends Fragment {
         });
         downloadButton.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), DownloadActivity.class);
+            startActivity(intent);
+        });
+        historyButton.setOnClickListener(v -> {
+            if (!WushanApp.loggedIn()) {
+                DialogManager.getInstance().newLoginDialog(getContext()).show();
+            }
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
             startActivity(intent);
         });
     }

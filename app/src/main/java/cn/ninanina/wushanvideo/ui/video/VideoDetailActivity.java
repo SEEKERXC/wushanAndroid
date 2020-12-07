@@ -2,15 +2,16 @@ package cn.ninanina.wushanvideo.ui.video;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,13 +23,13 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.githang.statusbar.StatusBarCompat;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
-import com.shuyu.gsyvideoplayer.GSYVideoManager;
-import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
-import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
-import com.shuyu.gsyvideoplayer.utils.OrientationUtils;
-import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 
 public class VideoDetailActivity extends AppCompatActivity {
     @BindView(R.id.detail_player)
-    StandardGSYVideoPlayer detailPlayer;
+    StyledPlayerView detailPlayer;
     @BindView(R.id.detail_cover)
     SimpleDraweeView cover;
     @BindView(R.id.detail_tab)
@@ -56,20 +57,21 @@ public class VideoDetailActivity extends AppCompatActivity {
     @BindView(R.id.video_detail_parent)
     ConstraintLayout parent;
 
+    SimpleExoPlayer player;
+
     private List<Fragment> fragments = new ArrayList<>(2);
     private List<String> tabTitles = new ArrayList<String>() {{
         add("详情");
         add("评论");
     }};
 
-    OrientationUtils orientationUtils;
-    GSYVideoOptionBuilder gsyVideoOption;
-
     FragmentStateAdapter adapter;
 
     private VideoDetail video;
 
     private String src;
+
+    private int playerHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +81,7 @@ public class VideoDetailActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContentView(R.layout.activity_video_detail);
         ButterKnife.bind(this);
+        this.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), false);
 
         Intent intent = getIntent();
@@ -163,80 +166,61 @@ public class VideoDetailActivity extends AppCompatActivity {
     }
 
     private void initPlayer() {
-        detailPlayer.getTitleTextView().setVisibility(View.VISIBLE);
-        detailPlayer.getBackButton().setVisibility(View.GONE);
         shadow.setVisibility(View.VISIBLE);
-        loading.setText("视频地址解析中，请等待几秒...");
-        //外部辅助的旋转，帮助全屏
-        orientationUtils = new OrientationUtils(this, detailPlayer);
-        orientationUtils.setEnable(true);
+        loading.setText("视频地址解析中...");
+        cover.setAspectRatio(1.78f);
         cover.setImageURI(video.getCoverUrl());
-        gsyVideoOption = new GSYVideoOptionBuilder();
-        gsyVideoOption.setIsTouchWiget(true)
-                .setRotateViewAuto(true)
-                .setRotateWithSystem(true)
-                .setAutoFullWithSize(true)
-                .setShowFullAnimation(false)
-                .setCacheWithPlay(true)
-                .setVideoTitle(video.getTitle())
-                .setSeekRatio(2.5f)
-                .setVideoAllCallBack(new GSYSampleCallBack() {
-                    @Override
-                    public void onPrepared(String url, Object... objects) {
-                        super.onPrepared(url, objects);
-                    }
-
-                    @Override
-                    public void onQuitFullscreen(String url, Object... objects) {
-                        super.onQuitFullscreen(url, objects);
-                        if (orientationUtils != null) {
-                            orientationUtils.backToProtVideo();
-                        }
-                        ViewGroup.LayoutParams params = detailPlayer.getLayoutParams();
-                        params.height = ((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 240, getResources().getDisplayMetrics()));
-                        detailPlayer.setLayoutParams(params);
-                        viewPager2.setAdapter(adapter);
-                        new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
-                    }
-
-                    @Override
-                    public void onEnterFullscreen(String url, Object... objects) {
-                        super.onEnterFullscreen(url, objects);
-                        ViewGroup.LayoutParams params = detailPlayer.getLayoutParams();
-                        params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
-                        detailPlayer.setLayoutParams(params);
-                    }
-                });
-        detailPlayer.getFullscreenButton().setOnClickListener(v -> {
-            //直接横屏
-            orientationUtils.resolveByClick();
-
-            //第一个true是否需要隐藏actionbar，第二个true是否需要隐藏statusbar
-            detailPlayer.startWindowFullscreen(VideoDetailActivity.this, true, true);
-        });
-
+        player = new SimpleExoPlayer.Builder(this).build();
+        ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) cover.getLayoutParams();
+        ConstraintLayout.LayoutParams layoutParams1 = (ConstraintLayout.LayoutParams) detailPlayer.getLayoutParams();
+        layoutParams1.height = layoutParams.height;
+        playerHeight = layoutParams.height;
+        detailPlayer.setPlayer(player);
+        detailPlayer.setControllerShowTimeoutMs(1500);
+        detailPlayer.setShowNextButton(false);
+        detailPlayer.setShowFastForwardButton(false);
+        detailPlayer.setShowPreviousButton(false);
+        detailPlayer.setShowRewindButton(false);
         VideoPresenter.getInstance().getSrc(this, video.getId());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        detailPlayer.onVideoPause();
+        player.pause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        GSYVideoManager.releaseAllVideos();
-        if (orientationUtils != null)
-            orientationUtils.releaseListener();
-
+        player.release();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        detailPlayer.onVideoResume();
+        player.play();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams)
+                detailPlayer.getLayoutParams();
+        ConstraintLayout.LayoutParams params1 = (ConstraintLayout.LayoutParams) cover.getLayoutParams();
+        //检查屏幕的方向
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            params1.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params1.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            detailPlayer.performClick();
+        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params.height = playerHeight;
+            params1.width = ViewGroup.LayoutParams.MATCH_PARENT;
+            params1.height = playerHeight;
+        }
     }
 
     public void startPlaying(String src) {
@@ -244,9 +228,16 @@ public class VideoDetailActivity extends AppCompatActivity {
         parent.removeView(shadow);
         parent.removeView(cover);
         this.src = src;
+
         ((DetailFragment) fragments.get(0)).enableDownload();
-        gsyVideoOption.setUrl(src).build(detailPlayer);
-        detailPlayer.startPlayLogic();
+        // Build the media item.
+        MediaItem mediaItem = MediaItem.fromUri(src);
+        // Set the media item to be played.
+        player.setMediaItem(mediaItem);
+        // Prepare the player.
+        player.prepare();
+        // Start the playback.
+        player.play();
     }
 
     public String getSrc() {

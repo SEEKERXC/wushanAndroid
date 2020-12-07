@@ -53,8 +53,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:elevation="1dp"
                 app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
                 app:cardPreventCornerOverlap="false">
 
                 <LinearLayout
@@ -98,7 +99,7 @@
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_height="0.5dp"
                         android:background="@color/divider" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -156,8 +157,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:elevation="1dp"
                 app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
                 app:cardPreventCornerOverlap="false">
 
                 <LinearLayout
@@ -214,7 +216,7 @@
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_height="0.5dp"
                         android:background="@color/divider" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -266,7 +268,7 @@
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_height="0.5dp"
                         android:background="@color/divider" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -318,7 +320,7 @@
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_height="0.5dp"
                         android:background="@color/divider" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
@@ -380,8 +382,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:elevation="1dp"
                 app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
                 app:cardPreventCornerOverlap="false">
 
                 <LinearLayout
@@ -425,7 +428,7 @@
 
                     <View
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
+                        android:layout_height="0.5dp"
                         android:background="@color/divider" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout

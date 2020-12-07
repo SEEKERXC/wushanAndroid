@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -22,7 +24,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.arialyy.aria.core.Aria;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
-import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,8 +35,6 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
-import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
-import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
@@ -46,11 +45,23 @@ import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import me.gujun.android.taggroup.TagGroup;
 
+//todo:设计成单个recyclerview，通过两个适配器解决。
 public class DetailFragment extends Fragment {
+
+    @BindView(R.id.scroll)
+    NestedScrollView scrollView;
+    @BindView(R.id.content)
+    LinearLayout content;
     @BindView(R.id.video_detail_title)
     TextView titleTextView;
     @BindView(R.id.video_detail_info)
     TextView infoTextView;
+    @BindView(R.id.video_detail_like_button)
+    ConstraintLayout likeButton;
+    @BindView(R.id.video_detail_like_img)
+    ImageView likeImg;
+    @BindView(R.id.video_detail_like_num)
+    TextView likeNum;
     @BindView(R.id.video_detail_collect_button)
     ConstraintLayout collectButton;
     @BindView(R.id.video_detail_collect_img)
@@ -80,9 +91,10 @@ public class DetailFragment extends Fragment {
     private Long downloadTaskId;
     private boolean disliked;
 
-    YoYo.YoYoString downloadAnimation;
+    public final int page = 0;
+    public final int size = 30;
 
-    List<Object> dataList = new ArrayList<>();
+    YoYo.YoYoString downloadAnimation;
 
     public DetailFragment(VideoDetail videoDetail) {
         super();
@@ -123,12 +135,12 @@ public class DetailFragment extends Fragment {
             else strTags.add(tag.getTag());
         }
         videoTags.setTags(strTags);
-
-        relatedVideos.setLayoutManager(new LinearLayoutManager(getContext()));
-        if (CollectionUtils.isEmpty(dataList))
-            VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId());
-        else
-            relatedVideos.setAdapter(new SingleVideoListAdapter(dataList, new DefaultVideoClickListener(getContext()), new DefaultVideoOptionClickListener(getContext())));
+        LinearLayoutManager manager = new LinearLayoutManager(getContext());
+        manager.setSmoothScrollbarEnabled(true);
+        relatedVideos.setLayoutManager(manager);
+        relatedVideos.setNestedScrollingEnabled(false);
+        relatedVideos.setHasFixedSize(true);
+        VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId());
 
         DBHelper dbHelper = new DBHelper(MainActivity.getInstance());
         if (dbHelper.downloaded(videoDetail.getId())) downloaded = true;
@@ -225,6 +237,13 @@ public class DetailFragment extends Fragment {
         }
     };
 
+    View.OnClickListener likeListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+        }
+    };
+
     View.OnClickListener dislikeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -249,10 +268,6 @@ public class DetailFragment extends Fragment {
 
     public RecyclerView getRelatedRecyclerView() {
         return relatedVideos;
-    }
-
-    public List<Object> getDataList() {
-        return dataList;
     }
 
     public void enableDownload() {
@@ -283,4 +298,19 @@ public class DetailFragment extends Fragment {
         return downloadNum;
     }
 
+    public LinearLayout getContent() {
+        return content;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        MainActivity.getInstance().setDetailFragment(this);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        MainActivity.getInstance().setDetailFragment(this);
+    }
 }

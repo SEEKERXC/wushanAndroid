@@ -42,10 +42,14 @@ public class CommonPresenter extends BasePresenter {
         if (StringUtils.isEmpty(appKey)) {
             SharedPreferences.Editor editor = profile.edit();
             long currentMinute = System.currentTimeMillis() / 1000 / 60;
-            System.out.println(currentMinute);
             String secret = EncodeUtil.encodeSHA(currentMinute + "jdfohewk");
             getCommonService().genAppkey(secret)
                     .subscribeOn(Schedulers.io())
+                    .doOnError(throwable -> {
+                        Looper.prepare();
+                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                        Looper.loop();
+                    })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(stringResult -> {
                         editor.putString("appKey", stringResult.getData());
@@ -60,7 +64,11 @@ public class CommonPresenter extends BasePresenter {
         TextView usernameExists = fragment.getUsernameExists();
         getCommonService().userExists(appKey, username)
                 .subscribeOn(Schedulers.io())
-                .doOnError(throwable -> Toast.makeText(fragment.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(stringResult -> {
                     String msgCode = stringResult.getRspCode();

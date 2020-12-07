@@ -1,30 +1,23 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.lang.reflect.Field;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,10 +25,7 @@ import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.ui.MainActivity;
-import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
 import cn.ninanina.wushanvideo.util.DialogManager;
-import cn.ninanina.wushanvideo.util.LayoutUtil;
 
 public class CommentFragment extends Fragment {
 
@@ -58,7 +48,9 @@ public class CommentFragment extends Fragment {
 
     //当前加载的页数
     private int page = 0;
+    public final int size = 20;
 
+    //正在加载
     private boolean isLoading = false;
 
     //加载完成标识

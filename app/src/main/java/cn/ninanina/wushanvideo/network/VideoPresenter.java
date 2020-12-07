@@ -2,6 +2,10 @@ package cn.ninanina.wushanvideo.network;
 
 import android.content.Context;
 import android.os.Looper;
+import android.view.Gravity;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -17,22 +21,30 @@ import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.CommentAdapter;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
+import cn.ninanina.wushanvideo.adapter.TagAdapter;
+import cn.ninanina.wushanvideo.adapter.TagSuggestAdapter;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.ReplyCommentListener;
 import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
+import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
+import cn.ninanina.wushanvideo.ui.tag.TagFragment;
+import cn.ninanina.wushanvideo.ui.tag.TagVideoActivity;
 import cn.ninanina.wushanvideo.ui.video.CommentFragment;
 import cn.ninanina.wushanvideo.ui.video.DetailFragment;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.CommonUtils;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -54,7 +66,7 @@ public class VideoPresenter extends BasePresenter {
         RecyclerView recyclerView = fragment.getRecyclerView();
         SwipeRefreshLayout swipeRefreshLayout = fragment.getSwipeRefreshLayout();
         String type = fragment.getType();
-        getVideoService().getRecommend(getAppKey(), type, 10, getToken())
+        getVideoService().getRecommend(getAppKey(), type, fragment.size, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
@@ -95,7 +107,7 @@ public class VideoPresenter extends BasePresenter {
     public void getRelatedVideos(DetailFragment fragment, long videoId) {
         String appKey = WushanApp.getAppKey();
         RecyclerView recyclerView = fragment.getRelatedRecyclerView();
-        getVideoService().getRelatedVideos(appKey, videoId, 0, 10)
+        getVideoService().getRelatedVideos(appKey, videoId, fragment.page * fragment.size, fragment.size)
                 .subscribeOn(Schedulers.io())
                 .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
@@ -105,10 +117,20 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
+                    LinearLayout content = fragment.getContent();
+                    if (content.getChildCount() > 0 && content.getChildAt(content.getChildCount() - 1) instanceof TextView) {
+                        content.removeViewAt(content.getChildCount() - 1);
+                    }
+                    TextView textView = new TextView(fragment.getContext());
+                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    layoutParams.setMargins(25, 20, 10, 20);
+                    textView.setLayoutParams(layoutParams);
+                    textView.setGravity(Gravity.CENTER_HORIZONTAL);
+                    content.addView(textView);
                     List<VideoDetail> videoDetails = listResult.getData();
-                    fragment.getDataList().addAll(videoDetails);
-                    recyclerView.setAdapter(new SingleVideoListAdapter(fragment.getDataList(),
+                    recyclerView.setAdapter(new SingleVideoListAdapter(new ArrayList<>(videoDetails),
                             new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getContext())));
+                    textView.setText("~ 我是有底线的 ~");
                 });
     }
 
@@ -133,7 +155,7 @@ public class VideoPresenter extends BasePresenter {
     public void getSrc(VideoDetailActivity videoDetailActivity, long id) {
         getVideoService().getVideoDetail(WushanApp.getAppKey(), id, getToken())
                 .subscribeOn(Schedulers.io())
-                .timeout(20, TimeUnit.SECONDS)
+                .timeout(15, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
                     Toast.makeText(videoDetailActivity, "网络开小差了~", Toast.LENGTH_SHORT).show();
@@ -142,7 +164,7 @@ public class VideoPresenter extends BasePresenter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(videoDetailResult -> {
                     VideoDetail detail = videoDetailResult.getData();
-                    if (VideoListAdapter.isSrcValid(detail.getSrc()))
+                    if (CommonUtils.isSrcValid(detail.getSrc()))
                         videoDetailActivity.startPlaying(detail.getSrc());
                     else
                         Toast.makeText(videoDetailActivity, "视频已经被原作者删除了，抱歉！", Toast.LENGTH_SHORT).show();
@@ -246,15 +268,13 @@ public class VideoPresenter extends BasePresenter {
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(listResult -> {
-                        playlist.setVideoDetails(listResult.getData());
-                    });
+                    .subscribe(listResult -> playlist.setVideoDetails(listResult.getData()));
         }
     }
 
     public void loadComments(CommentFragment commentFragment) {
         commentFragment.setLoading(true);
-        getVideoService().getComments(getAppKey(), getToken(), commentFragment.getVideoDetail().getId(), commentFragment.getPage(), 20, commentFragment.getSort().getCode())
+        getVideoService().getComments(getAppKey(), getToken(), commentFragment.getVideoDetail().getId(), commentFragment.getPage(), commentFragment.size, commentFragment.getSort().getCode())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
@@ -336,6 +356,95 @@ public class VideoPresenter extends BasePresenter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     adapter.update(result.getData(), position);
+                });
+    }
+
+    public void getTags(TagFragment tagFragment) {
+        tagFragment.setLoading(true);
+        char c = tagFragment.getC();
+        getVideoService().getTags(getAppKey(), c, tagFragment.getPage(), tagFragment.size)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(tagFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    tagFragment.setLoading(false);
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (CollectionUtils.isEmpty(result.getData())) {
+                        tagFragment.setLoadingFinished(true);
+                        Toast.makeText(tagFragment.getContext(), "没有更多啦", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    TagAdapter tagAdapter = (TagAdapter) tagFragment.getContent().getAdapter();
+                    assert tagAdapter != null;
+                    tagAdapter.insert(result.getData());
+                    tagFragment.setLoading(false);
+                });
+    }
+
+    public void getTagSuggest(TagFragment tagFragment, String word) {
+        getVideoService().suggestTags(getAppKey(), word)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(tagFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    tagFragment.getSuggest().setAdapter(new TagSuggestAdapter(result.getData(),
+                            new TagClickListener(tagFragment.getContext()), tagFragment.getSuggest()));
+                });
+    }
+
+    public void getVideosForTag(TagVideoActivity activity) {
+        activity.setLoading(true);
+        Tag tag = activity.getTag();
+        TagVideoActivity.Sort sort = activity.getSort();
+        getVideoService().getTagVideos(getAppKey(), tag.getId(), activity.getPage() * activity.size, activity.size, sort.getCode())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(activity, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    activity.setLoading(false);
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    List<Object> dataList = new ArrayList<>(result.getData());
+                    if (dataList.size() <= 0) {
+                        activity.setLoadingFinished(true);
+                        Toast.makeText(activity, "没有更多啦", Toast.LENGTH_SHORT).show();
+                    }
+                    VideoListAdapter adapter = (VideoListAdapter) activity.getContent().getAdapter();
+                    if (adapter == null) {
+                        activity.getContent().setAdapter(new VideoListAdapter(dataList, new DefaultVideoClickListener(activity), new DefaultVideoOptionClickListener(activity)));
+                    } else {
+                        adapter.append(dataList);
+                    }
+                    activity.setLoading(false);
+                });
+    }
+
+    public void getHistoryVideos(HistoryActivity activity) {
+        activity.loading = true;
+        getVideoService().getHistory(getAppKey(), getToken(), activity.page * activity.size, activity.size, null)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(activity, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    activity.loading = false;
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getData().size() < activity.size) {
+                        activity.loadingFinished = true;
+                    }
+                    activity.showData(result.getData());
+                    activity.loading = false;
                 });
     }
 

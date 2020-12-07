@@ -8,8 +8,9 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(of = "id")
 public class Tag implements Serializable {
-    private Integer id;
+    private Long id;
     private String tag;
     private String tagZh;
     private Integer videoCount;
+    private String cover;
 }

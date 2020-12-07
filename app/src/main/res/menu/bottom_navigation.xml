@@ -13,9 +13,9 @@
         android:title="@string/navigation_tag"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/navigation_community"
-        android:icon="@drawable/shequ"
-        android:title="@string/navigation_community"
+        android:id="@+id/navigation_instant"
+        android:icon="@drawable/instant"
+        android:title="@string/navigation_instant"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/navigation_me"

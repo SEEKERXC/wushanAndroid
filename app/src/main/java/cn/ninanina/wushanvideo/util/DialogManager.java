@@ -1,10 +1,13 @@
 package cn.ninanina.wushanvideo.util;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
@@ -16,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.flyco.dialog.widget.MaterialDialog;
 import com.google.android.gms.common.util.CollectionUtils;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialStyledDatePickerDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +51,6 @@ public class DialogManager {
     public static DialogManager getInstance() {
         return instance;
     }
-
-    private AlertDialog newDirDialog;
 
     /**
      * 收藏列表对话框，点击项目收藏视频
@@ -82,7 +85,7 @@ public class DialogManager {
         List<VideoOption> videoOptions = new ArrayList<VideoOption>() {{
             add(new VideoOption(R.drawable.video, "添加至稍后看"));
             add(new VideoOption(R.drawable.shoucang, "收藏"));
-            add(new VideoOption(R.drawable.download_1296db, "下载"));
+            add(new VideoOption(R.drawable.download, "下载"));
             add(new VideoOption(R.drawable.dislike, "不喜欢"));
         }};
         List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
@@ -111,20 +114,26 @@ public class DialogManager {
      * 创建收藏夹对话框
      */
     public AlertDialog newCreatePlaylistDialog(Context context, RecyclerView list) {
-        newDirDialog = new AlertDialog.Builder(context)
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_new_collect, null, false);
+        EditText editText = frameLayout.findViewById(R.id.collect_name);
+        AlertDialog newDirDialog = new AlertDialog.Builder(context)
                 .setTitle("新建收藏夹")
                 .setIcon(R.drawable.new_directory)
-                .setView(R.layout.dialog_new_collect)
+                .setView(frameLayout)
                 .setPositiveButton("完成", (dialog, which) -> {
-                    EditText editText = newDirDialog.findViewById(R.id.collect_name);
                     assert editText != null;
                     String name = editText.getText().toString();
                     if (name.length() <= 0) return;
                     VideoPresenter.getInstance().createPlaylist(context, list, name);
                 })
+                .setOnDismissListener(dialog -> {
+                    InputMethodManager im = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (im != null) {
+                        im.toggleSoftInput(InputMethodManager.HIDE_NOT_ALWAYS, 0);
+                    }
+                })
                 .create();
         newDirDialog.setOnShowListener(dialog -> {
-            EditText editText = newDirDialog.findViewById(R.id.collect_name);
             if (editText != null) {
                 editText.requestFocus();
                 editText.postDelayed(() -> {
@@ -150,5 +159,4 @@ public class DialogManager {
         });
         return loginDialog;
     }
-
 }

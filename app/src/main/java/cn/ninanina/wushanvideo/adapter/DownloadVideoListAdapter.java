@@ -59,7 +59,7 @@ public class DownloadVideoListAdapter extends RecyclerView.Adapter<RecyclerView.
             videoCardHolder.videoDuration.setText(duration);
         }
         videoCardHolder.updateTime.setText(TimeUtil.getFullTime(videoDetail.getUpdateTime()));
-        videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked(dataList.get(holder.getLayoutPosition())));
+        videoCardHolder.itemView.setOnClickListener(v -> listener.onVideoClicked(dataList.get(holder.getLayoutPosition())));
         videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked(dataList.get(holder.getLayoutPosition())));
     }
 
@@ -79,8 +79,6 @@ public class DownloadVideoListAdapter extends RecyclerView.Adapter<RecyclerView.
         TextView videoDuration;
         @BindView(R.id.video_action)
         ImageButton videoMore;
-        @BindView(R.id.video_card)
-        CardView videoCard;
 
         private VideoCardHolder(View itemView) {
             super(itemView);

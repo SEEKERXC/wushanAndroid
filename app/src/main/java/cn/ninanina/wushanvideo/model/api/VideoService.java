@@ -1,14 +1,16 @@
 package cn.ninanina.wushanvideo.model.api;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
 import cn.ninanina.wushanvideo.model.bean.Result;
+import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
+import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
+import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -30,10 +32,6 @@ public interface VideoService {
     Observable<Result<VideoDetail>> getVideoDetail(@Query("appKey") String appKey,
                                                    @Query("id") long id,
                                                    @Query("token") String token);
-
-    @GET("video/detail/withoutSrc")
-    Observable<Result<VideoDetail>> getVideoDetailWithoutSrc(@Query("appKey") String appKey,
-                                                             @Query("id") long id);
 
     //获取相关视频
     @GET("video/related")
@@ -139,4 +137,44 @@ public interface VideoService {
                                                  @Query("query") String query,
                                                  @Query("offset") Integer offset,
                                                  @Query("limit") Integer limit);
+
+    //获取标签
+    @GET("video/tags")
+    Observable<Result<List<Tag>>> getTags(@Query("appKey") String appKey,
+                                          @Query("c") Character c,
+                                          @Query("page") Integer page,
+                                          @Query("size") Integer size);
+
+    //标签搜索建议
+    @GET("video/tag/suggest")
+    Observable<Result<List<Tag>>> suggestTags(@Query("appKey") String appKey,
+                                              @Query("query") String query);
+
+    //搜索标签
+    @GET("video/tag/search")
+    Observable<Result<List<Tag>>> searchTags(@Query("appKey") String appKey,
+                                             @Query("query") String query,
+                                             @Query("offset") Integer offset,
+                                             @Query("limit") Integer limit);
+
+    //获取标签视频
+    @GET("video/tag/videos")
+    Observable<Result<List<VideoDetail>>> getTagVideos(@Query("appKey") String appKey,
+                                                       @Query("tagId") Long tagId,
+                                                       @Query("offset") Integer offset,
+                                                       @Query("limit") Integer limit,
+                                                       @Query("sort") String sort);
+
+    //获取历史记录以及对应视频
+    @GET("video/viewed")
+    Observable<Result<List<Pair<VideoUserViewed, VideoDetail>>>> getHistory(@Query("appKey") String appKey,
+                                                                            @Query("token") String token,
+                                                                            @Query("offset") Integer offset,
+                                                                            @Query("limit") Integer limit,
+                                                                            @Query("startOfDay") Long startOfDay);
+
+    //获取所有历史记录，不包含视频信息
+    @GET("video/viewed/all")
+    Observable<Result<List<VideoUserViewed>>> getAllHistory(@Query("appKey") String appKey,
+                                                            @Query("token") String token);
 }

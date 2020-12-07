@@ -4,7 +4,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -68,11 +67,6 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String duration = videoDetail.getDuration().replace(" ", "\0").replace("min", "分钟").replace("h", "小时").replace("sec", "秒");
             videoCardHolder.videoDuration.setText(duration);
             StringBuilder strTag = new StringBuilder();
-            if (isSrcValid(videoDetail.getSrc())) {
-                videoCardHolder.label1.setText("不限次");
-                videoCardHolder.label1.setVisibility(View.VISIBLE);
-                videoCardHolder.label1.setPadding(8, 0, 8, 0);
-            }
             for (Tag tag : videoDetail.getTags()) {
                 if (!StringUtils.isEmpty(tag.getTagZh())) {
                     strTag.append(tag.getTagZh()).append("·");
@@ -84,10 +78,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 strTag.append(videoDetail.getTags().get(0).getTag());
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
-            videoCardHolder.label3.setText(sTag);
-            if (videoCardHolder.label1.getVisibility() == View.VISIBLE) {
-                videoCardHolder.label3.setPadding(8, 0, 0, 0);
-            }
+            videoCardHolder.label.setText(sTag);
             videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
             videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }
@@ -114,10 +105,8 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         TextView videoDuration;
         @BindView(R.id.tag_group)
         ConstraintLayout tagGroup;
-        @BindView(R.id.video_label1)
-        TextView label1;
-        @BindView(R.id.video_label3)
-        TextView label3;
+        @BindView(R.id.video_label)
+        TextView label;
         @BindView(R.id.video_more)
         ImageButton videoMore;
         @BindView(R.id.video_card)
@@ -141,10 +130,5 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         notifyItemRangeInserted(0, newData.size());
     }
 
-    public static boolean isSrcValid(String src) {
-        if (StringUtils.isEmpty(src)) return false;
-        long currentSeconds = System.currentTimeMillis() / 1000;
-        long urlSeconds = Long.parseLong(src.substring(src.indexOf("?e=") + 3, src.indexOf("&h="))) - 1800;
-        return currentSeconds < urlSeconds;
-    }
+
 }

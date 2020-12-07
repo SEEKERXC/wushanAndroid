@@ -7,7 +7,6 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
@@ -66,11 +65,6 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             String duration = videoDetail.getDuration().replace(" ", "\0").replace("min", "分钟").replace("h", "小时").replace("sec", "秒");
             videoCardHolder.videoDuration.setText(duration);
             StringBuilder strTag = new StringBuilder();
-            if (VideoListAdapter.isSrcValid(videoDetail.getSrc())) {
-                videoCardHolder.label1.setText("不限次");
-                videoCardHolder.label1.setVisibility(View.VISIBLE);
-                videoCardHolder.label1.setPadding(8, 0, 8, 0);
-            }
             for (Tag tag : videoDetail.getTags()) {
                 if (!StringUtils.isEmpty(tag.getTagZh())) {
                     strTag.append(tag.getTagZh()).append("·");
@@ -82,11 +76,8 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 strTag.append(videoDetail.getTags().get(0).getTag());
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
-            videoCardHolder.label2.setText(sTag);
-            if(videoCardHolder.label1.getVisibility()==View.VISIBLE){
-                videoCardHolder.label2.setPadding(4,0,0,0);
-            }
-            videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.label.setText(sTag);
+            videoCardHolder.itemView.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
             videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
         }
     }
@@ -101,6 +92,16 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         return position;
     }
 
+    public void insert(List<Object> newData) {
+        int index = dataList.size();
+        dataList.addAll(newData);
+        notifyItemRangeInserted(index, newData.size());
+    }
+
+    public void insert(VideoDetail videoDetail) {
+        dataList.add(videoDetail);
+        notifyItemInserted(dataList.size() - 1);
+    }
 
     public static final class VideoCardHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.video_cover)
@@ -111,14 +112,10 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         TextView videoViews;
         @BindView(R.id.video_duration)
         TextView videoDuration;
-        @BindView(R.id.video_label1)
-        TextView label1;
-        @BindView(R.id.video_label2)
-        TextView label2;
+        @BindView(R.id.video_label)
+        TextView label;
         @BindView(R.id.video_action)
         ImageButton videoMore;
-        @BindView(R.id.video_card)
-        CardView videoCard;
 
         private VideoCardHolder(View itemView) {
             super(itemView);

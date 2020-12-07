@@ -20,7 +20,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.ui.community.CommunityFragment;
+import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
 import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private Fragment[] fragments;
     private HomeFragment homeFragment;
     private TagFragment tagFragment;
-    private CommunityFragment communityFragment;
+    private InstantFragment instantFragment;
     private MeFragment meFragment;
 
     @BindView(R.id.bottom_navigation)
@@ -59,9 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private void initFragments() {
         homeFragment = new HomeFragment();
         tagFragment = new TagFragment();
-        communityFragment = new CommunityFragment();
+        instantFragment = new InstantFragment();
         meFragment = new MeFragment();
-        fragments = new Fragment[]{homeFragment, tagFragment, communityFragment, meFragment};
+        fragments = new Fragment[]{homeFragment, tagFragment, instantFragment, meFragment};
 
         getSupportFragmentManager()
                 .beginTransaction()
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_tag:
                         switchFragment(1);
                         break;
-                    case R.id.navigation_community:
+                    case R.id.navigation_instant:
                         switchFragment(2);
                         break;
                     case R.id.navigation_me:

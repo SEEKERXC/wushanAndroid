@@ -12,10 +12,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
+        <com.google.android.exoplayer2.ui.StyledPlayerView
             android:id="@+id/detail_player"
             android:layout_width="match_parent"
-            android:layout_height="230dp"
+            android:layout_height="wrap_content"
+            android:background="@android:color/black"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.facebook.drawee.view.SimpleDraweeView

@@ -2,6 +2,7 @@ package cn.ninanina.wushanvideo.model;
 
 import java.util.List;
 
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import lombok.Data;
@@ -34,6 +35,7 @@ public class DataHolder {
      * 查看是否有歌单包含video
      */
     public boolean collectedVideo(long videoId) {
+        if (!WushanApp.loggedIn()) return false;
         for (Playlist playlist : playlists) {
             for (VideoDetail videoDetail : playlist.getVideoDetails()) {
                 if (videoDetail.getId().equals(videoId)) return true;

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scroll"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="@android:color/transparent"
     android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
 
         <LinearLayout
@@ -32,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="播放数/其他信息"
                 android:textColor="@color/tabColor"
                 android:textSize="13sp" />
@@ -41,9 +43,80 @@
                 android:id="@+id/video_detail_buttons"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="15dp"
-                android:layout_marginBottom="15dp"
-                android:orientation="horizontal">
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/video_detail_like_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/video_detail_like_img"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/like_enabled"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/video_detail_like_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:text="@string/like"
+                        android:textColor="@color/tabColor"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="@id/video_detail_like_img"
+                        app:layout_constraintStart_toStartOf="@id/video_detail_like_img"
+                        app:layout_constraintTop_toBottomOf="@id/video_detail_like_img" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/video_detail_dislike_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?android:attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/video_detail_dislike_img"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@android:color/transparent"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/dislike_enabled"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/video_detail_dislike_num"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center_vertical"
+                        android:text="@string/dislike"
+                        android:textColor="@color/tabColor"
+                        android:textSize="13sp"
+                        app:layout_constraintEnd_toEndOf="@id/video_detail_dislike_img"
+                        app:layout_constraintStart_toStartOf="@id/video_detail_dislike_img"
+                        app:layout_constraintTop_toBottomOf="@id/video_detail_dislike_img" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/video_detail_collect_button"
@@ -57,8 +130,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_collect_img"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="23dp"
+                        android:layout_height="23dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/shoucang_enabled"
@@ -70,8 +143,8 @@
                         android:id="@+id/video_detail_collect_num"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="250"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/collect"
                         android:textColor="@color/tabColor"
                         android:textSize="13sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_collect_img"
@@ -91,8 +164,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_download_img"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="23dp"
+                        android:layout_height="23dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/download_disabled"
@@ -104,9 +177,9 @@
                         android:id="@+id/video_detail_download_num"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="6dp"
                         android:gravity="center_vertical"
-                        android:text="250"
+                        android:text="@string/download"
                         android:textColor="@color/disabled"
                         android:textSize="13sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_download_img"
@@ -125,9 +198,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_share_img"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="8dp"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/share_enabled"
@@ -149,50 +221,21 @@
                         app:layout_constraintTop_toBottomOf="@id/video_detail_share_img" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/video_detail_dislike_button"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground">
-
-                    <ImageView
-                        android:id="@+id/video_detail_dislike_img"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@android:color/transparent"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/dislike_enabled"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/video_detail_dislike_num"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:gravity="center_vertical"
-                        android:text="250"
-                        android:textColor="@color/tabColor"
-                        android:textSize="13sp"
-                        app:layout_constraintEnd_toEndOf="@id/video_detail_dislike_img"
-                        app:layout_constraintStart_toStartOf="@id/video_detail_dislike_img"
-                        app:layout_constraintTop_toBottomOf="@id/video_detail_dislike_img" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider" />
 
             <me.gujun.android.taggroup.TagGroup
                 android:id="@+id/video_detail_tags"
                 style="@style/TagGroup"
-                android:layout_marginStart="8dp"
-                android:layout_marginBottom="6dp"
+                android:layout_margin="8dp"
+                app:atg_backgroundColor="@color/tagColor"
                 app:atg_borderColor="@android:color/white"
                 app:atg_textColor="@color/exo_black_opacity_30"
-                app:atg_textSize="14sp"
+                app:atg_textSize="13sp"
                 app:atg_verticalSpacing="6dp" />
 
         </LinearLayout>
@@ -201,7 +244,8 @@
             android:id="@+id/detail_related_videos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp" />
+            android:background="@android:color/white"
+            android:paddingTop="8dp" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

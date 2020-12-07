@@ -50,6 +50,7 @@
                     android:hint="@string/search"
                     android:imeOptions="actionSearch"
                     android:inputType="text"
+                    android:maxLength="15"
                     android:maxLines="1"
                     android:textSize="14sp" />
             </androidx.cardview.widget.CardView>
@@ -73,6 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
+            android:background="@drawable/bottom_border"
             android:orientation="horizontal">
 
             <androidx.constraintlayout.widget.ConstraintLayout

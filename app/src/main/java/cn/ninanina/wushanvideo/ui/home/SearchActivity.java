@@ -40,15 +40,12 @@ public class SearchActivity extends AppCompatActivity {
         init();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-    }
-
     private void init() {
         imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-        cancel.setOnClickListener(v -> this.finish());
+        cancel.setOnClickListener(v -> {
+            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+            this.finish();
+        });
         searchEdit.requestFocus();
         searchEdit.postDelayed(() -> imm.showSoftInput(searchEdit, 0), 50);
         searchEdit.setOnEditorActionListener((v, actionId, event) -> {

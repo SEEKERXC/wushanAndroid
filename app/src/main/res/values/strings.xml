@@ -2,14 +2,14 @@
     <string name="app_name">巫山小视频</string>
     <string name="navigation_home">主页</string>
     <string name="navigation_tag">标签</string>
-    <string name="navigation_community">社区</string>
+    <string name="navigation_instant">大家在看</string>
     <string name="navigation_me">我的</string>
     <string name="welcome">欢迎来到巫山小视频 ~ 请注册或者登录</string>
     <string name="button_login_register">注册/登录</string>
-    <string name="lishi">历史</string>
+    <string name="lishi">历史记录</string>
     <string name="richeng">日程</string>
-    <string name="xiazai">下载</string>
-    <string name="shoucang">收藏</string>
+    <string name="xiazai">下载管理</string>
+    <string name="shoucang">我的收藏</string>
     <string name="shezhi">设置</string>
     <string name="guanyu">关于我们</string>
     <string name="zhanghao">请输入账号</string>
@@ -59,10 +59,9 @@
     <string name="straight">直</string>
     <string name="click_to_show">（点击查看）</string>
     <string name="cancel">取消</string>
-    <string name="search">搜索</string>
+    <string name="search">搜索121万+视频</string>
     <string name="search_rank">默认排序</string>
     <string name="search_all_duration">全部时长</string>
-    <string name="today_left">今日剩余观看次数</string>
     <string name="click_to_show_left">查看如何增加次数</string>
     <string name="collect_video">收藏视频</string>
     <string name="new_dir">新建收藏夹</string>
@@ -76,4 +75,14 @@
     <string name="publish_comment">发条友善的评论</string>
     <string name="publish">发表</string>
     <string name="comment_empty">快发表视频的第一个评论吧~</string>
+    <string name="chinese">中文</string>
+    <string name="english">英文</string>
+    <string name="search_tag">搜索感兴趣的标签</string>
+    <string name="dislike">不喜欢</string>
+    <string name="history_list">历史记录</string>
+    <string name="edit">编辑</string>
+    <string name="like">喜欢</string>
+    <string name="watch_later">稍后观看</string>
+    <string name="collect">收藏</string>
+    <string name="download">下载</string>
 </resources>

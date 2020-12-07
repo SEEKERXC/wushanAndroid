@@ -14,6 +14,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.interfaces.DraweeController;
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.request.ImageRequest;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
@@ -32,6 +37,7 @@ public class VideoListFragment extends Fragment {
     private String type;
 
     private boolean isLoading = false;
+    public final int size = 10;
 
     @Nullable
     @Override
@@ -56,13 +62,14 @@ public class VideoListFragment extends Fragment {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 //列表中LastVisibleItem为倒数第二行时，加载更多
-                if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !isLoading) {
+                if (manager.findLastCompletelyVisibleItemPosition() + 1 >= manager.getItemCount() && !isLoading) {
                     VideoPresenter.getInstance().getRecommendVideoList(VideoListFragment.this, VideoPresenter.RecyclerViewOp.APPEND);
                 }
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
 
+        //TODO:加载完视频列表并显示完后，加载相关视频。
         VideoPresenter.getInstance().getRecommendVideoList(this, VideoPresenter.RecyclerViewOp.INIT);
     }
 
@@ -76,15 +83,6 @@ public class VideoListFragment extends Fragment {
 
     public String getType() {
         return type;
-    }
-
-    //视频列表类型
-    private enum Type {
-        RECOMMEND, //首页精选
-        ASIAN, //首页亚洲
-        WEST,//首页欧美
-        LESBIAN,//首页女同
-        NO_AD,//首页免广告
     }
 
     public void setLoading(boolean loading) {

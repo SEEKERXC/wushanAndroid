@@ -2,15 +2,15 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:background="@android:color/transparent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/home_appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@id/home_viewpager"
         android:background="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/home_viewpager"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
@@ -46,7 +46,7 @@
 
                     <TextView
                         android:id="@+id/home_search_hint"
-                        android:layout_width="170dp"
+                        android:layout_width="150dp"
                         android:layout_height="match_parent"
                         android:layout_marginStart="5dp"
                         android:layout_marginEnd="10dp"
@@ -73,7 +73,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="12dp"
+                android:layout_marginEnd="15dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="下载按钮"
                 android:scaleType="centerInside"
@@ -84,7 +84,7 @@
                 android:layout_width="25dp"
                 android:layout_height="25dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="12dp"
+                android:layout_marginEnd="15dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="历史按钮"
                 android:scaleType="centerInside"
@@ -96,9 +96,9 @@
             android:id="@+id/home_tab"
             android:layout_width="match_parent"
             android:layout_height="32dp"
+            android:background="@android:color/white"
             app:tabIndicatorHeight="2dp"
             app:tabSelectedTextColor="@color/colorPrimary"
-            android:background="@android:color/white"
             app:tabTextColor="@color/tabColor" />
 
     </com.google.android.material.appbar.AppBarLayout>
