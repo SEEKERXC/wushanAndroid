@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -19,5 +20,5 @@ public class Playlist implements Serializable {
     private Boolean isPublic;
     private User user;
 
-    private List<VideoDetail> videoDetails;
+    private List<VideoDetail> videoDetails = new ArrayList<>();
 }

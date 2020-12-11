@@ -16,9 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.util.AppOpenManager;
+import cn.ninanina.wushanvideo.util.DBHelper;
 
 public class WushanApp extends Application {
     private static WushanApp application;
+    private DBHelper dbHelper;
 
     private AppOpenManager appOpenManager;
 
@@ -33,11 +35,18 @@ public class WushanApp extends Application {
         });
         appOpenManager = new AppOpenManager(this);
         profile = getSharedPreferences("profile", MODE_PRIVATE);
+        dbHelper = new DBHelper(this);
     }
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        dbHelper.close();
     }
 
     public static WushanApp getInstance() {
@@ -54,5 +63,9 @@ public class WushanApp extends Application {
 
     public static boolean loggedIn() {
         return !StringUtils.isEmpty(getProfile().getString("username", ""));
+    }
+
+    public DBHelper getDbHelper() {
+        return dbHelper;
     }
 }

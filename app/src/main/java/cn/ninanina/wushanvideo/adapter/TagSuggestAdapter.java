@@ -49,7 +49,7 @@ public class TagSuggestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return suggest.size();
     }
 
-    static class SuggestHolder extends RecyclerView.ViewHolder {
+    static final class SuggestHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tag)
         TextView tag;
         @BindView(R.id.count)

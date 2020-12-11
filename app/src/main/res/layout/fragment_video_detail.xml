@@ -23,17 +23,18 @@
                 android:id="@+id/video_detail_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="8dp"
                 android:text="视频标题"
                 android:textColor="@color/black"
+                android:textIsSelectable="true"
                 android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/video_detail_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="15dp"
                 android:layout_marginTop="10dp"
                 android:text="播放数/其他信息"
                 android:textColor="@color/tabColor"
@@ -231,12 +232,16 @@
             <me.gujun.android.taggroup.TagGroup
                 android:id="@+id/video_detail_tags"
                 style="@style/TagGroup"
-                android:layout_margin="8dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginBottom="12dp"
                 app:atg_backgroundColor="@color/tagColor"
                 app:atg_borderColor="@android:color/white"
+                app:atg_horizontalSpacing="20dp"
                 app:atg_textColor="@color/exo_black_opacity_30"
                 app:atg_textSize="13sp"
-                app:atg_verticalSpacing="6dp" />
+                app:atg_verticalSpacing="8dp" />
 
         </LinearLayout>
 
@@ -244,8 +249,7 @@
             android:id="@+id/detail_related_videos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
-            android:paddingTop="8dp" />
+            android:background="@android:color/white" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

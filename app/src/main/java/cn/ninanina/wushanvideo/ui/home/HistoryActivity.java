@@ -9,10 +9,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.githang.statusbar.StatusBarCompat;
 
@@ -22,6 +24,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.adapter.HistoryAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
@@ -33,10 +36,10 @@ import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class HistoryActivity extends AppCompatActivity {
 
-    @BindView(R.id.scroll)
-    NestedScrollView scrollView;
+    @BindView(R.id.swipe)
+    SwipeRefreshLayout swipe;
     @BindView(R.id.content)
-    LinearLayout content;
+    RecyclerView content;
     @BindView(R.id.back)
     FrameLayout back;
     @BindView(R.id.calendar)
@@ -60,6 +63,8 @@ public class HistoryActivity extends AppCompatActivity {
         setContentView(R.layout.activity_history);
         ButterKnife.bind(this);
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
+        swipe.setColorSchemeResources(R.color.tabColor);
+        swipe.setRefreshing(true);
         initEvents();
     }
 
@@ -69,57 +74,45 @@ public class HistoryActivity extends AppCompatActivity {
             datePickerDialog.show();
         });
         back.setOnClickListener(v -> HistoryActivity.this.finish());
-        VideoPresenter.getInstance().getHistoryVideos(this);
-        scrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {   //scrollY是滑动的距离
-            if (scrollY == (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight())) {
-                //滑动到底部
-                if (!loading && !loadingFinished) {
+        content.setLayoutManager(new LinearLayoutManager(this));
+        content.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                //列表中LastVisibleItem为倒数第二行时，加载更多
+                if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !loading && !loadingFinished) {
                     page++;
-                    VideoPresenter.getInstance().getHistoryVideos(this);
+                    VideoPresenter.getInstance().getHistoryVideos(HistoryActivity.this);
                 }
+                super.onScrolled(recyclerView, dx, dy);
             }
         });
+        VideoPresenter.getInstance().getHistoryVideos(this);
     }
 
     public void showData(List<Pair<VideoUserViewed, VideoDetail>> data) {
-        if (content.getChildCount() > 0) content.removeViewAt(content.getChildCount() - 1); //移除加载标语
+        List<Object> dataList = new ArrayList<>();
         for (Pair<VideoUserViewed, VideoDetail> pair : data) {
             String day = TimeUtil.getDate(pair.getFirst().getTime());
-
-            if (day.equals(lastDay)) {
-                RecyclerView recyclerView = (RecyclerView) content.getChildAt(content.getChildCount() - 1);
-                SingleVideoListAdapter adapter = (SingleVideoListAdapter) recyclerView.getAdapter();
-                adapter.insert(pair.getSecond());
-            } else {
-                TextView textView = new TextView(this);
-                LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                layoutParams.setMargins(25, 20, 10, 20);
-                textView.setLayoutParams(layoutParams);
-                textView.setText(day);
-
-                RecyclerView recyclerView = new RecyclerView(this);
-                LinearLayout.LayoutParams layoutParams1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                recyclerView.setLayoutParams(layoutParams1);
-                recyclerView.setNestedScrollingEnabled(false);
-                recyclerView.setAdapter(new SingleVideoListAdapter(new ArrayList<Object>() {{
-                    add(pair.getSecond());
-                }}, new DefaultVideoClickListener(this), new DefaultVideoOptionClickListener(this)));
-                content.addView(textView);
-                content.addView(recyclerView);
+            String today = TimeUtil.getDate(System.currentTimeMillis());
+            String yesterday = TimeUtil.getDate(System.currentTimeMillis() - 1000 * 3600 * 24);
+            if (day.equals(today)) day = "今天";
+            if (day.equals(yesterday)) day = "昨天";
+            if (!day.equals(lastDay)) {
+                dataList.add(day);
             }
+            dataList.add(pair);
             lastDay = day;
         }
-        TextView textView = new TextView(this);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(25, 20, 10, 20);
-        textView.setLayoutParams(layoutParams);
-        textView.setGravity(Gravity.CENTER_HORIZONTAL);
-        if (loadingFinished) {
-            textView.setText("~ 我是有底线的 ~");
+        if (loadingFinished) dataList.add(Boolean.TRUE);
+        else dataList.add(Boolean.FALSE);
+        HistoryAdapter adapter = (HistoryAdapter) content.getAdapter();
+        if (adapter == null) {
+            content.setAdapter(new HistoryAdapter(dataList));
         } else {
-            textView.setText("加载中...");
+            adapter.insert(dataList);
         }
-        content.addView(textView);
+        this.swipe.setRefreshing(false);
     }
+
 }

@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,6 +24,7 @@ import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.VideoOptionClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.util.CommonUtils;
 
 public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Object> dataList;
@@ -51,19 +53,8 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             if (StringUtils.isEmpty(videoDetail.getTitleZh()))
                 videoCardHolder.videoTitle.setText(videoDetail.getTitle());
             else videoCardHolder.videoTitle.setText(videoDetail.getTitleZh());
-            int viewed = videoDetail.getViewed();
-            viewed = viewed / 100;
-            StringBuilder strViewed = new StringBuilder();
-            if (viewed >= 10000) {
-                int wan = viewed / 10000;
-                int qian = viewed % 10000 / 1000;
-                strViewed.append(wan);
-                if (qian != 0) strViewed.append('.').append(qian);
-                strViewed.append("万");
-            } else strViewed.append(viewed);
-            videoCardHolder.videoViews.setText(strViewed.toString());
-            String duration = videoDetail.getDuration().replace(" ", "\0").replace("min", "分钟").replace("h", "小时").replace("sec", "秒");
-            videoCardHolder.videoDuration.setText(duration);
+            videoCardHolder.videoViews.setText(CommonUtils.getViewsString(videoDetail.getViewed() / 100));
+            videoCardHolder.videoDuration.setText(CommonUtils.getDurationString(videoDetail.getDuration()));
             StringBuilder strTag = new StringBuilder();
             for (Tag tag : videoDetail.getTags()) {
                 if (!StringUtils.isEmpty(tag.getTagZh())) {
@@ -103,7 +94,7 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         notifyItemInserted(dataList.size() - 1);
     }
 
-    public static final class VideoCardHolder extends RecyclerView.ViewHolder {
+    static final class VideoCardHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.video_cover)
         SimpleDraweeView cover;
         @BindView(R.id.video_title)

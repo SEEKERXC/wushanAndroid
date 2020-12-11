@@ -67,7 +67,7 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return showChinese;
     }
 
-    static class TagHolder extends RecyclerView.ViewHolder {
+    static final class TagHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tag_cover)
         SimpleDraweeView cover;
         @BindView(R.id.name)

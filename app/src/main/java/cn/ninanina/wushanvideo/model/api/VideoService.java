@@ -27,6 +27,12 @@ public interface VideoService {
                                                        @Query("limit") int limit,
                                                        @Query("token") String token);
 
+    //获取可立即播放视频
+    @GET("video/instant")
+    Observable<Result<List<VideoDetail>>> getInstantVideos(@Query("appKey") String appKey,
+                                                           @Query("limit") int limit,
+                                                           @Query("token") String token);
+
     //获取视频链接
     @GET("video/detail")
     Observable<Result<VideoDetail>> getVideoDetail(@Query("appKey") String appKey,
@@ -131,12 +137,41 @@ public interface VideoService {
                                                        @Query("dirId") Long dirId,
                                                        @Query("token") String token);
 
+    //下载视频
+    @POST("video/download")
+    Observable<Result<ObjectUtils.Null>> downloadVideo(@Query("appKey") String appKey,
+                                                       @Query("id") Long id,
+                                                       @Query("token") String token);
+
+    //喜欢/取消喜欢视频
+    @POST("video/like")
+    Observable<Result<Boolean>> likeVideo(@Query("appKey") String appKey,
+                                          @Query("token") String token,
+                                          @Query("videoId") Long videoId);
+
+    //所有喜欢的视频id
+    @GET("video/liked")
+    Observable<Result<List<Long>>> likedVideo(@Query("appKey") String appKey,
+                                              @Query("token") String token);
+
+    //不喜欢/取消不喜欢视频
+    @POST("video/dislike")
+    Observable<Result<Boolean>> dislikeVideo(@Query("appKey") String appKey,
+                                             @Query("token") String token,
+                                             @Query("videoId") Long videoId);
+
+    //所有不喜欢的视频id
+    @GET("video/disliked")
+    Observable<Result<List<Long>>> dislikedVideo(@Query("appKey") String appKey,
+                                                 @Query("token") String token);
+
     //搜索视频
     @GET("video/search")
     Observable<Result<List<VideoDetail>>> search(@Query("appKey") String appKey,
                                                  @Query("query") String query,
                                                  @Query("offset") Integer offset,
-                                                 @Query("limit") Integer limit);
+                                                 @Query("limit") Integer limit,
+                                                 @Query("sort") String sort);
 
     //获取标签
     @GET("video/tags")

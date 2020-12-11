@@ -7,6 +7,9 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
+
+import cn.ninanina.wushanvideo.ui.MainActivity;
 
 public class LayoutUtil {
 
@@ -58,5 +61,11 @@ public class LayoutUtil {
     public static int px2dip(Context context, float pxValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (pxValue / scale + 0.5f);
+    }
+
+    public static int getScreenWidth() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        Objects.requireNonNull(MainActivity.getInstance().getDisplay()).getRealMetrics(metrics);
+        return metrics.widthPixels;
     }
 }

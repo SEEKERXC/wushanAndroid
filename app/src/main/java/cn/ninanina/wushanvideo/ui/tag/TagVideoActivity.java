@@ -16,6 +16,7 @@ import com.githang.statusbar.StatusBarCompat;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.model.bean.common.VideoSortBy;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.home.SearchActivity;
@@ -37,7 +38,7 @@ public class TagVideoActivity extends AppCompatActivity {
 
     private int page = 0;
     public final int size = 10;
-    private Sort sort = Sort.RANDOM;
+    private VideoSortBy sort = VideoSortBy.DEFAULT;
 
     private boolean isLoading = false;
     private boolean loadingFinished = false;
@@ -74,7 +75,7 @@ public class TagVideoActivity extends AppCompatActivity {
         return tag;
     }
 
-    public Sort getSort() {
+    public VideoSortBy getSort() {
         return sort;
     }
 
@@ -94,25 +95,4 @@ public class TagVideoActivity extends AppCompatActivity {
         this.loadingFinished = loadingFinished;
     }
 
-    public enum Sort {
-        HOT("viewed", "按播放数"),
-        RANDOM("random", "默认排序"),
-        COMMENT("commentNum", "按评论数");
-
-        private final String code;
-        private final String msg;
-
-        Sort(String code, String msg) {
-            this.code = code;
-            this.msg = msg;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public String getMsg() {
-            return msg;
-        }
-    }
 }

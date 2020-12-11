@@ -37,6 +37,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.adapter.listener.PlayerTouchListener;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
@@ -69,8 +70,6 @@ public class VideoDetailActivity extends AppCompatActivity {
 
     private VideoDetail video;
 
-    private String src;
-
     private int playerHeight;
 
     @Override
@@ -94,7 +93,6 @@ public class VideoDetailActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        MainActivity.getInstance().setDetailFragment(null);
     }
 
     @Override
@@ -224,12 +222,13 @@ public class VideoDetailActivity extends AppCompatActivity {
     }
 
     public void startPlaying(String src) {
-        parent.removeView(loading);
-        parent.removeView(shadow);
-        parent.removeView(cover);
-        this.src = src;
+        loading.setVisibility(View.GONE);
+        shadow.setVisibility(View.GONE);
+        cover.setVisibility(View.GONE);
+        video.setSrc(src);
 
         ((DetailFragment) fragments.get(0)).enableDownload();
+        ((DetailFragment) fragments.get(0)).videoDetail.setSrc(src);
         // Build the media item.
         MediaItem mediaItem = MediaItem.fromUri(src);
         // Set the media item to be played.
@@ -238,9 +237,6 @@ public class VideoDetailActivity extends AppCompatActivity {
         player.prepare();
         // Start the playback.
         player.play();
-    }
-
-    public String getSrc() {
-        return src;
+        detailPlayer.setOnTouchListener(new PlayerTouchListener(parent, detailPlayer, video));
     }
 }

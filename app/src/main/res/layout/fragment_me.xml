@@ -1,448 +1,357 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:orientation="vertical"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp">
+        android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/fragment_me_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/welcome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="4dp"
-                android:text="@string/welcome"
-                android:textColor="@color/tabColor"
-                android:textSize="14sp" />
-
-            <Button
-                android:id="@+id/login_register_button"
-                android:layout_width="150dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/button_shape"
-                android:text="@string/button_login_register"
-                android:textColor="@android:color/white" />
-
-            <ImageView
-                android:id="@+id/me_touxiang"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:src="@drawable/touxiang"
-                android:visibility="invisible" />
-
-        </LinearLayout>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:cardCornerRadius="5dp"
-            app:cardElevation="0dp"
-            app:cardMaxElevation="0dp"
-            app:cardPreventCornerOverlap="false">
-
-
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:cardCornerRadius="5dp"
-            app:cardElevation="0dp"
-            app:cardMaxElevation="0dp"
-            app:cardPreventCornerOverlap="false">
+            android:background="@android:color/transparent"
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <LinearLayout
-                android:id="@+id/me_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/menu_download"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="13dp">
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/download_1296db" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_gravity="center_vertical"
-                        android:layout_weight="8"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="0dp"
-                        android:text="@string/xiazai"
-                        android:textSize="15sp" />
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/forward" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="2"
-                        android:background="@android:color/white" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="0.5dp"
-                        android:layout_weight="13"
-                        android:background="@color/divider" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/menu_history"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="13dp">
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/history_1afa29" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="8"
-                        android:gravity="center_vertical"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="0dp"
-                        android:text="@string/lishi"
-                        android:textSize="15sp" />
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/forward" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="2"
-                        android:background="@android:color/white" />
-
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="0.5dp"
-                        android:layout_weight="13"
-                        android:background="@color/divider" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/menu_later"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="13dp">
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/shaohouguankan" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="8"
-                        android:gravity="center_vertical"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="0dp"
-                        android:text="@string/watch_later"
-                        android:textSize="15sp" />
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/forward" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:cardCornerRadius="5dp"
-            app:cardElevation="0dp"
-            app:cardMaxElevation="0dp"
-            app:cardPreventCornerOverlap="false">
-
-            <LinearLayout
+                android:id="@+id/fragment_me_top"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:orientation="vertical">
-
-                <LinearLayout
-                    android:id="@+id/menu_collect"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="13dp">
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/shoucang_folder" />
-
-                    <TextView
-                        android:id="@+id/collect_title_num"
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="6"
-                        android:gravity="center_vertical"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="0dp"
-                        android:text="@string/shoucang"
-                        android:textSize="15sp" />
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/collect_new_dir"
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="3"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
-
-                        <ImageView
-                            android:layout_width="25dp"
-                            android:layout_height="25dp"
-                            android:layout_marginEnd="3dp"
-                            android:src="@drawable/new_directory"
-                            app:layout_constraintEnd_toStartOf="@id/new_dir_text"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TextView
-                            android:id="@+id/new_dir_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="25dp"
-                            android:layout_marginEnd="8dp"
-                            android:gravity="center_vertical"
-                            android:text="@string/new_dir"
-                            android:textColor="@color/tabColor"
-                            android:textSize="13sp"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@color/divider" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/collect_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp" />
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:cardCornerRadius="5dp"
-            app:cardElevation="0dp"
-            app:cardMaxElevation="0dp"
-            app:cardPreventCornerOverlap="false">
-
-            <LinearLayout
-                android:id="@+id/menu_calendar"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:orientation="horizontal"
-                android:paddingStart="4dp"
-                android:paddingTop="15dp"
-                android:paddingEnd="4dp"
-                android:paddingBottom="13dp">
-
-                <ImageView
-                    android:layout_width="0dp"
-                    android:layout_height="25dp"
-                    android:layout_weight="1"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/calendar_26bdbb" />
 
                 <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="25dp"
-                    android:layout_weight="8"
-                    android:gravity="center_vertical"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="0dp"
-                    android:text="@string/richeng"
-                    android:textSize="15sp" />
+                    android:id="@+id/welcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/welcome"
+                    android:textColor="@color/tabColor"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/login_register_button"
+                    android:layout_width="150dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/button_shape"
+                    android:text="@string/button_login_register"
+                    android:textColor="@android:color/white" />
 
                 <ImageView
-                    android:layout_width="0dp"
-                    android:layout_height="25dp"
-                    android:layout_weight="1"
-                    android:src="@drawable/forward" />
+                    android:id="@+id/me_touxiang"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:src="@drawable/touxiang"
+                    android:visibility="invisible" />
+
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
 
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:cardCornerRadius="5dp"
-            app:cardElevation="0dp"
-            app:cardMaxElevation="0dp"
-            app:cardPreventCornerOverlap="false">
-
-
-            <LinearLayout
-                android:id="@+id/fragment_me_bottom"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_marginTop="20dp"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
+                app:cardPreventCornerOverlap="false">
+
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
+                app:cardPreventCornerOverlap="false">
 
                 <LinearLayout
-                    android:id="@+id/menu_profile"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:id="@+id/me_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:background="@android:color/white"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="13dp">
+                    android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/wode_9faff6" />
+                    <LinearLayout
+                        android:id="@+id/menu_download"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="8"
-                        android:gravity="center_vertical"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="0dp"
-                        android:text="@string/profile"
-                        android:textSize="15sp" />
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/download_1296db" />
 
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/forward" />
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_weight="8"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            android:text="@string/xiazai"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:src="@drawable/forward" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/white" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_weight="13"
+                            android:background="@color/divider" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/menu_history"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/history_1afa29" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="8"
+                            android:gravity="center_vertical"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            android:text="@string/lishi"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:src="@drawable/forward" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/white" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_weight="13"
+                            android:background="@color/divider" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/menu_later"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/shaohouguankan" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="8"
+                            android:gravity="center_vertical"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            android:text="@string/watch_later"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:src="@drawable/forward" />
+
+                    </LinearLayout>
+
                 </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
+                app:cardPreventCornerOverlap="false">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/menu_collect"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/shoucang_folder" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="6">
+
+                            <TextView
+                                android:id="@+id/collect_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="25dp"
+                                android:gravity="center_vertical"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="0dp"
+                                android:text="@string/shoucang"
+                                android:textSize="15sp" />
+
+                            <ImageView
+                                android:id="@+id/collect_icon"
+                                android:layout_width="20dp"
+                                android:layout_height="25dp"
+                                android:layout_gravity="center"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/down" />
+                        </LinearLayout>
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/collect_new_dir"
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="3"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?android:attr/selectableItemBackground">
+
+                            <ImageView
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:layout_marginEnd="3dp"
+                                android:src="@drawable/new_directory"
+                                app:layout_constraintEnd_toStartOf="@id/new_dir_text"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:id="@+id/new_dir_text"
+                                android:layout_width="wrap_content"
+                                android:layout_height="25dp"
+                                android:layout_marginEnd="8dp"
+                                android:gravity="center_vertical"
+                                android:text="@string/new_dir"
+                                android:textColor="@color/tabColor"
+                                android:textSize="13sp"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </LinearLayout>
 
                     <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="2"
-                        android:background="@android:color/white" />
-
-                    <View
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="0.5dp"
-                        android:layout_weight="13"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
                         android:background="@color/divider" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/collect_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp" />
                 </LinearLayout>
 
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
+                app:cardPreventCornerOverlap="false">
+
                 <LinearLayout
-                    android:id="@+id/menu_setting"
+                    android:id="@+id/menu_calendar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clickable="true"
@@ -459,7 +368,7 @@
                         android:layout_height="25dp"
                         android:layout_weight="1"
                         android:scaleType="centerInside"
-                        android:src="@drawable/setting_382927" />
+                        android:src="@drawable/calendar_26bdbb" />
 
                     <TextView
                         android:layout_width="0dp"
@@ -468,7 +377,7 @@
                         android:gravity="center_vertical"
                         android:paddingStart="8dp"
                         android:paddingEnd="0dp"
-                        android:text="@string/shezhi"
+                        android:text="@string/richeng"
                         android:textSize="15sp" />
 
                     <ImageView
@@ -477,63 +386,175 @@
                         android:layout_weight="1"
                         android:src="@drawable/forward" />
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="5dp"
+                app:cardElevation="0dp"
+                app:cardMaxElevation="0dp"
+                app:cardPreventCornerOverlap="false">
+
 
                 <LinearLayout
+                    android:id="@+id/fragment_me_bottom"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="1dp"
-                        android:layout_weight="2"
-                        android:background="@android:color/white" />
+                    <LinearLayout
+                        android:id="@+id/menu_profile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
 
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="0.5dp"
-                        android:layout_weight="13"
-                        android:background="@color/divider" />
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/wode_9faff6" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="8"
+                            android:gravity="center_vertical"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            android:text="@string/profile"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:src="@drawable/forward" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/white" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_weight="13"
+                            android:background="@color/divider" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/menu_setting"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/setting_382927" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="8"
+                            android:gravity="center_vertical"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            android:text="@string/shezhi"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:src="@drawable/forward" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="2"
+                            android:background="@android:color/white" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="0.5dp"
+                            android:layout_weight="13"
+                            android:background="@color/divider" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/menu_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingTop="15dp"
+                        android:paddingEnd="4dp"
+                        android:paddingBottom="13dp">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/info_1afa29" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="8"
+                            android:gravity="center_vertical"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="0dp"
+                            android:text="@string/guanyu"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="25dp"
+                            android:layout_weight="1"
+                            android:src="@drawable/forward" />
+                    </LinearLayout>
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-                <LinearLayout
-                    android:id="@+id/menu_info"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?android:attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingTop="15dp"
-                    android:paddingEnd="4dp"
-                    android:paddingBottom="13dp">
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/info_1afa29" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="8"
-                        android:gravity="center_vertical"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="0dp"
-                        android:text="@string/guanyu"
-                        android:textSize="15sp" />
-
-                    <ImageView
-                        android:layout_width="0dp"
-                        android:layout_height="25dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/forward" />
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

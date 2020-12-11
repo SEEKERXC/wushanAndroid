@@ -8,12 +8,13 @@
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="15dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1">
+        android:layout_weight="4">
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/video_cover"
@@ -47,7 +48,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="5">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,6 +73,7 @@
                 android:id="@+id/video_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
                 android:layout_marginTop="6dp"
                 android:ellipsize="end"
                 android:singleLine="true"
@@ -83,14 +85,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="6dp"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/play_8a8a8a" />
 
@@ -108,9 +110,8 @@
 
         <ImageButton
             android:id="@+id/video_action"
-            android:layout_width="30dp"
+            android:layout_width="20dp"
             android:layout_height="20dp"
-            android:layout_marginBottom="3dp"
             android:background="@android:color/transparent"
             android:foreground="?android:attr/selectableItemBackground"
             android:scaleType="centerInside"

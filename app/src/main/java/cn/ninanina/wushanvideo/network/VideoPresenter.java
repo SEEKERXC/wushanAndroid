@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Looper;
 import android.view.Gravity;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -11,6 +12,9 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -20,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.CommentAdapter;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
+import cn.ninanina.wushanvideo.adapter.SearchResultAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.TagAdapter;
 import cn.ninanina.wushanvideo.adapter.TagSuggestAdapter;
@@ -31,6 +36,7 @@ import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
+import cn.ninanina.wushanvideo.model.bean.common.VideoSortBy;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
@@ -39,6 +45,8 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
+import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
+import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagVideoActivity;
 import cn.ninanina.wushanvideo.ui.video.CommentFragment;
@@ -64,7 +72,6 @@ public class VideoPresenter extends BasePresenter {
     public void getRecommendVideoList(VideoListFragment fragment, RecyclerViewOp recyclerViewOp) {
         fragment.setLoading(true);
         RecyclerView recyclerView = fragment.getRecyclerView();
-        SwipeRefreshLayout swipeRefreshLayout = fragment.getSwipeRefreshLayout();
         String type = fragment.getType();
         getVideoService().getRecommend(getAppKey(), type, fragment.size, getToken())
                 .subscribeOn(Schedulers.io())
@@ -99,7 +106,7 @@ public class VideoPresenter extends BasePresenter {
                             break;
                         default:
                     }
-                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+                    fragment.setRefreshing(false);
                     fragment.setLoading(false);
                 });
     }
@@ -134,70 +141,96 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void searchForVideo(SearchActivity searchActivity, String query, int offset, int limit) {
+    public void searchForVideo(SearchActivity searchActivity, boolean reset) {
+        searchActivity.loading = true;
+        searchActivity.swipe.setRefreshing(true);
         RecyclerView recyclerView = searchActivity.getRecyclerView();
         String appKey = WushanApp.getAppKey();
-        getVideoService().search(appKey, query, offset, limit)
+        int offset = searchActivity.page * searchActivity.size;
+        int limit = searchActivity.size;
+        String query = searchActivity.query;
+
+        //todo:在未加密的情况下，搜索“色情”会导致程序端口被屏蔽，需要做一个过滤，待使用HTTPS后就可以取消
+        if (query.equals("色情")) return;
+        getVideoService().search(appKey, query, offset, limit, searchActivity.sortBy.getCode())
                 .subscribeOn(Schedulers.io())
                 .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
                     Toast.makeText(searchActivity, "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    searchActivity.loading = false;
+                    searchActivity.swipe.setRefreshing(false);
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
-                    List<Object> dataList = new ArrayList<>(listResult.getData());
-                    recyclerView.setAdapter(new VideoListAdapter(dataList, new DefaultVideoClickListener(searchActivity), new DefaultVideoOptionClickListener(searchActivity)));
+                    if (listResult.getData().size() <= 0) {
+                        searchActivity.loadingFinished = true;
+                        searchActivity.swipe.setRefreshing(false);
+                        return;
+                    }
+                    SearchResultAdapter adapter = (SearchResultAdapter) recyclerView.getAdapter();
+                    assert adapter != null;
+                    if (!reset)
+                        adapter.append(listResult.getData());
+                    else adapter.reset(listResult.getData());
+                    searchActivity.loading = false;
+                    searchActivity.swipe.setRefreshing(false);
                 });
     }
 
     public void getSrc(VideoDetailActivity videoDetailActivity, long id) {
         getVideoService().getVideoDetail(WushanApp.getAppKey(), id, getToken())
                 .subscribeOn(Schedulers.io())
-                .timeout(15, TimeUnit.SECONDS)
+                .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(videoDetailActivity, "网络开小差了~", Toast.LENGTH_SHORT).show();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(videoDetailResult -> {
                     VideoDetail detail = videoDetailResult.getData();
-                    if (CommonUtils.isSrcValid(detail.getSrc()))
+                    if (CommonUtils.isSrcValid(detail.getSrc())) {
                         videoDetailActivity.startPlaying(detail.getSrc());
-                    else
+                    } else
                         Toast.makeText(videoDetailActivity, "视频已经被原作者删除了，抱歉！", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    public void getSrc(SimpleExoPlayer player, VideoDetail videoDetail) {
+        getVideoService().getVideoDetail(WushanApp.getAppKey(), videoDetail.getId(), getToken())
+                .subscribeOn(Schedulers.io())
+                .timeout(5, TimeUnit.SECONDS)
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(videoDetailResult -> {
+                    if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc())) return;
+                    MediaItem mediaItem = MediaItem.fromUri(videoDetailResult.getData().getSrc());
+                    videoDetail.setSrc(videoDetailResult.getData().getSrc());
+                    player.setMediaItem(mediaItem);
+                    player.prepare();
                 });
     }
 
     /**
      * 新建收藏夹，创建完成后加入给定的recyclerView中
      */
-    public void createPlaylist(Context context, RecyclerView recyclerView, String name) {
+    public void createPlaylist(MeFragment fragment, String name) {
         getVideoService().createPlaylist(getAppKey(), name, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(fragment.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(playlistResult -> {
-                    PlaylistAdapter adapter = (PlaylistAdapter) recyclerView.getAdapter();
-                    if (adapter == null) {
-                        List<Playlist> list = new ArrayList<>();
-                        list.add(playlistResult.getData());
-                        recyclerView.setAdapter(new PlaylistAdapter(list, new ShowPlaylistClickListener(context)));
-                    } else {
-                        adapter.insert(playlistResult.getData());
-                        adapter.notifyDataSetChanged();
-                    }
-                    if (CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
-                        DataHolder.getInstance().setPlaylists(new ArrayList<>());
-                    }
                     DataHolder.getInstance().getPlaylists().add(playlistResult.getData());
-                    Toast.makeText(context, "创建成功", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(fragment.getContext(), "创建成功", Toast.LENGTH_SHORT).show();
+                    fragment.refresh();
                 });
     }
 
@@ -227,9 +260,6 @@ public class VideoPresenter extends BasePresenter {
                         playlist.setUpdateTime(System.currentTimeMillis());
                         playlist.setCover(videoDetail.getCoverUrl());
                         playlist.setCount(playlist.getCount() + 1);
-                        if (MainActivity.getInstance().getDetailFragment() != null) {
-                            MainActivity.getInstance().getDetailFragment().refreshCollect();
-                        }
                     }
                 });
     }
@@ -247,10 +277,10 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
-                    DataHolder.getInstance().setPlaylists(listResult.getData());
-                    loadPlaylistVideos();
-                    if (MainActivity.getInstance().getMeFragment() != null)
-                        MainActivity.getInstance().getMeFragment().refresh();
+                    if (listResult.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
+                        DataHolder.getInstance().setPlaylists(listResult.getData());
+                        loadPlaylistVideos();
+                    }
                 });
     }
 
@@ -402,8 +432,8 @@ public class VideoPresenter extends BasePresenter {
     public void getVideosForTag(TagVideoActivity activity) {
         activity.setLoading(true);
         Tag tag = activity.getTag();
-        TagVideoActivity.Sort sort = activity.getSort();
-        getVideoService().getTagVideos(getAppKey(), tag.getId(), activity.getPage() * activity.size, activity.size, sort.getCode())
+        VideoSortBy sortBy = activity.getSort();
+        getVideoService().getTagVideos(getAppKey(), tag.getId(), activity.getPage() * activity.size, activity.size, sortBy.getCode())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
@@ -447,6 +477,85 @@ public class VideoPresenter extends BasePresenter {
                     activity.loading = false;
                 });
     }
+
+    public void getInstantVideos(InstantFragment instantFragment) {
+        getVideoService().getInstantVideos(getAppKey(), instantFragment.limit, getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(instantFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    instantFragment.loading = false;
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> instantFragment.showData(result.getData()));
+    }
+
+    public void downloadVideo(Context context, long videoId) {
+        getVideoService().downloadVideo(getAppKey(), videoId, getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                });
+    }
+
+    public void likeVideo(Context context, long videoId) {
+        getVideoService().likeVideo(getAppKey(), getToken(), videoId)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getData()) DataHolder.getInstance().getLikedVideos().add(videoId);
+                    else DataHolder.getInstance().getLikedVideos().remove(videoId);
+                });
+    }
+
+    public void dislikeVideo(Context context, long videoId) {
+        getVideoService().dislikeVideo(getAppKey(), getToken(), videoId)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getData()) DataHolder.getInstance().getDislikedVideos().add(videoId);
+                    else DataHolder.getInstance().getDislikedVideos().remove(videoId);
+                });
+    }
+
+    //加载用户喜欢和不喜欢的所有videoId，需要在登录之后调用
+    public void loadLikedAndDisliked(Context context) {
+        getVideoService().likedVideo(getAppKey(), getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> DataHolder.getInstance().setLikedVideos(result.getData()));
+        getVideoService().dislikedVideo(getAppKey(), getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> DataHolder.getInstance().setDislikedVideos(result.getData()));
+    }
+
 
     public enum RecyclerViewOp {
         INIT, //第一次填充

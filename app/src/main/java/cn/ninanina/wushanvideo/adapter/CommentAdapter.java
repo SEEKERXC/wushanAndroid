@@ -85,7 +85,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return commentList;
     }
 
-    static class CommentHolder extends RecyclerView.ViewHolder {
+    static final class CommentHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.photo)
         SimpleDraweeView cover;
         @BindView(R.id.holder)

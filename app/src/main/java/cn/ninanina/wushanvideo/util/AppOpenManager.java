@@ -137,7 +137,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, L
         //request for appKey
         CommonPresenter.getInstance().requestForProfile(wushanApp.getProfile());
 
-        if (currentActivity != null && !StringUtils.isEmpty(WushanApp.getProfile().getString("username", ""))) {
+        if (WushanApp.loggedIn()) {
             CommonPresenter.getInstance().checkForLogin(currentActivity);
         }
     }

@@ -1,5 +1,7 @@
 package cn.ninanina.wushanvideo.model.bean.video;
 
+import android.content.Intent;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -18,7 +20,11 @@ public class VideoDetail implements Serializable {
     private String duration;
     private Long updateTime;
     private Integer viewed;
+    private Integer audience;
     private Integer collected;
+    private Integer downloaded;
+    private Integer liked;
     private Integer disliked;
+    private Long size;
     private List<Tag> tags;
 }

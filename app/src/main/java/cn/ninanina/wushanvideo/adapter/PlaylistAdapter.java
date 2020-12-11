@@ -77,7 +77,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    static class PlaylistHolder extends RecyclerView.ViewHolder {
+    static final class PlaylistHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.collect_cover)
         SimpleDraweeView cover;
         @BindView(R.id.collect_title)

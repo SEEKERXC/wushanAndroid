@@ -36,6 +36,7 @@ import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.me.LoginActivity;
+import cn.ninanina.wushanvideo.ui.me.MeFragment;
 
 /**
  * 管理对话框。
@@ -55,7 +56,7 @@ public class DialogManager {
     /**
      * 收藏列表对话框，点击项目收藏视频
      */
-    public AlertDialog newCollectDialog(Context context, VideoDetail videoDetail, List<Playlist> playlists) {
+    public AlertDialog newCollectDialog(Context context, VideoDetail videoDetail) {
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_list, null, false);
         RecyclerView recyclerView = frameLayout.findViewById(R.id.playlists);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
@@ -64,6 +65,7 @@ public class DialogManager {
                 .setIcon(R.drawable.directory)
                 .setView(frameLayout)
                 .create();
+        List<Playlist> playlists = DataHolder.getInstance().getPlaylists();
         if (!CollectionUtils.isEmpty(playlists))
             recyclerView.setAdapter(new PlaylistAdapter(playlists, videoDetail, new CollectPlaylistClickListener(context, videoDetail, collectDialog)));
         else
@@ -94,7 +96,7 @@ public class DialogManager {
                 videoOptionDialog.dismiss();
             });
             add(v -> {
-                newCollectDialog(context, videoDetail, DataHolder.getInstance().getPlaylists()).show();
+                newCollectDialog(context, videoDetail).show();
                 videoOptionDialog.dismiss();
             });
             add(v -> {
@@ -113,10 +115,10 @@ public class DialogManager {
     /**
      * 创建收藏夹对话框
      */
-    public AlertDialog newCreatePlaylistDialog(Context context, RecyclerView list) {
-        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_new_collect, null, false);
+    public AlertDialog newCreatePlaylistDialog(MeFragment fragment) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(fragment.getContext()).inflate(R.layout.dialog_new_collect, null, false);
         EditText editText = frameLayout.findViewById(R.id.collect_name);
-        AlertDialog newDirDialog = new AlertDialog.Builder(context)
+        AlertDialog newDirDialog = new AlertDialog.Builder(fragment.getContext())
                 .setTitle("新建收藏夹")
                 .setIcon(R.drawable.new_directory)
                 .setView(frameLayout)
@@ -124,10 +126,10 @@ public class DialogManager {
                     assert editText != null;
                     String name = editText.getText().toString();
                     if (name.length() <= 0) return;
-                    VideoPresenter.getInstance().createPlaylist(context, list, name);
+                    VideoPresenter.getInstance().createPlaylist(fragment, name);
                 })
                 .setOnDismissListener(dialog -> {
-                    InputMethodManager im = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager im = (InputMethodManager) fragment.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (im != null) {
                         im.toggleSoftInput(InputMethodManager.HIDE_NOT_ALWAYS, 0);
                     }

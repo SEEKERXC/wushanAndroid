@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -29,8 +30,8 @@ import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 
 public class PlaylistActivity extends AppCompatActivity {
-    @BindView(R.id.playlist_back)
-    ImageView back;
+    @BindView(R.id.back)
+    FrameLayout back;
     @BindView(R.id.playlist_cover)
     SimpleDraweeView cover;
     @BindView(R.id.playlist_name)

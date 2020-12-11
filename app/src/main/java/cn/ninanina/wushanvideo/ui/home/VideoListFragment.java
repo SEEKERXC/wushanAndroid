@@ -14,20 +14,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.facebook.drawee.backends.pipeline.Fresco;
-import com.facebook.drawee.interfaces.DraweeController;
-import com.facebook.drawee.view.SimpleDraweeView;
-import com.facebook.imagepipeline.request.ImageRequest;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 
 public class VideoListFragment extends Fragment {
-    @BindView(R.id.video_list)
+    @BindView(R.id.list)
     RecyclerView recyclerView;
-    @BindView(R.id.swipe_video_list)
+    @BindView(R.id.swipe)
     SwipeRefreshLayout swipeRefreshLayout;
 
     public VideoListFragment(String type) {
@@ -61,13 +56,14 @@ public class VideoListFragment extends Fragment {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                //列表中LastVisibleItem为倒数第二行时，加载更多
-                if (manager.findLastCompletelyVisibleItemPosition() + 1 >= manager.getItemCount() && !isLoading) {
+                //列表中LastVisibleItem为倒数第2行时，加载更多
+                if (manager.findLastVisibleItemPosition() + 2 >= manager.getItemCount() && !isLoading) {
                     VideoPresenter.getInstance().getRecommendVideoList(VideoListFragment.this, VideoPresenter.RecyclerViewOp.APPEND);
                 }
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
+        swipeRefreshLayout.setRefreshing(true);
 
         //TODO:加载完视频列表并显示完后，加载相关视频。
         VideoPresenter.getInstance().getRecommendVideoList(this, VideoPresenter.RecyclerViewOp.INIT);
@@ -77,8 +73,8 @@ public class VideoListFragment extends Fragment {
         return recyclerView;
     }
 
-    public SwipeRefreshLayout getSwipeRefreshLayout() {
-        return swipeRefreshLayout;
+    public void setRefreshing(boolean refreshing) {
+        this.swipeRefreshLayout.setRefreshing(refreshing);
     }
 
     public String getType() {

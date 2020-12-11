@@ -2,11 +2,13 @@ package cn.ninanina.wushanvideo.ui.me;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,15 +16,17 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,12 +35,14 @@ import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
-import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class MeFragment extends Fragment {
+    @BindView(R.id.swipe)
+    SwipeRefreshLayout swipe;
     @BindView(R.id.fragment_me_top)
     LinearLayout top;
     @BindView(R.id.welcome)
@@ -49,6 +55,10 @@ public class MeFragment extends Fragment {
     LinearLayout menuProfile;
     @BindView(R.id.menu_collect)
     LinearLayout menuCollect;
+    @BindView(R.id.collect_text)
+    TextView collectText;
+    @BindView(R.id.collect_icon)
+    ImageView collectIcon;
     @BindView(R.id.collect_new_dir)
     ConstraintLayout newCollectDir;
     @BindView(R.id.collect_list)
@@ -63,6 +73,8 @@ public class MeFragment extends Fragment {
     LinearLayout menuSetting;
     @BindView(R.id.menu_info)
     LinearLayout menuInfo;
+
+    private boolean showPlaylists = true;
 
     @Nullable
     @Override
@@ -104,6 +116,10 @@ public class MeFragment extends Fragment {
     }
 
     private void initMenu() {
+        swipe.setOnRefreshListener(() -> {
+            refresh();
+            swipe.setRefreshing(false);
+        });
         menuProfile.setOnClickListener(v -> {
             if (WushanApp.loggedIn()) {
                 Intent intent = new Intent(getContext(), ProfileActivity.class);
@@ -118,13 +134,23 @@ public class MeFragment extends Fragment {
             Intent intent = new Intent(getContext(), SettingsActivity.class);
             startActivity(intent);
         });
+        menuCollect.setOnClickListener(v -> {
+            showPlaylists = !showPlaylists;
+            refresh();
+        });
         newCollectDir.setOnClickListener(v -> {
             if (WushanApp.loggedIn())
-                DialogManager.getInstance().newCreatePlaylistDialog(getContext(), playlist).show();
+                DialogManager.getInstance().newCreatePlaylistDialog(MeFragment.this).show();
             else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
         });
         menuDownload.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), DownloadActivity.class);
+            if (WushanApp.loggedIn()) {
+                Intent intent = new Intent(getContext(), DownloadActivity.class);
+                startActivity(intent);
+            } else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
+        });
+        menuHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), HistoryActivity.class);
             startActivity(intent);
         });
     }
@@ -135,13 +161,18 @@ public class MeFragment extends Fragment {
             if (CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
                 VideoPresenter.getInstance().loadPlaylists();
             } else {
-                playlist.setAdapter(new PlaylistAdapter(DataHolder.getInstance().getPlaylists(), new ShowPlaylistClickListener(getContext())));
+                if (showPlaylists) {
+                    playlist.setAdapter(new PlaylistAdapter(DataHolder.getInstance().getPlaylists(), new ShowPlaylistClickListener(getContext())));
+                    collectIcon.setImageResource(R.drawable.down);
+                } else {
+                    playlist.setAdapter(new PlaylistAdapter(new ArrayList<>(), new ShowPlaylistClickListener(getContext())));
+                    collectIcon.setImageResource(R.drawable.up);
+                }
             }
         } else {
             PlaylistAdapter adapter = (PlaylistAdapter) playlist.getAdapter();
             if (adapter != null) adapter.clear();
         }
-
     }
 
     public RecyclerView getPlaylist() {

@@ -26,7 +26,6 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS video(_id INTEGER PRIMARY KEY, " +
                 "title VARCHAR(255), " +
                 "titleZh VARCHAR(255), " +
-                "name VARCHAR(255), " +
                 "url VARCHAR(255), " +
                 "coverUrl VARCHAR(255), " +
                 "duration VARCHAR(255))");
@@ -44,7 +43,11 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("title", videoDetail.getTitle());
         if (!StringUtils.isEmpty(videoDetail.getTitleZh()))
             values.put("titleZh", videoDetail.getTitleZh());
-        values.put("name", videoDetail.getTitle().trim() + ".mp4");
+        String fileName;
+        if (StringUtils.isEmpty(videoDetail.getTitleZh())) fileName = videoDetail.getTitle();
+        else fileName = videoDetail.getTitleZh();
+        fileName = fileName.replaceAll("/", "").trim() + ".mp4";
+        values.put("name", fileName);
         values.put("coverUrl", videoDetail.getCoverUrl());
         values.put("duration", videoDetail.getDuration());
         db.insert(DATABASE_NAME, null, values);
@@ -65,6 +68,23 @@ public class DBHelper extends SQLiteOpenHelper {
         return videoDetail;
     }
 
+    public int getCount() {
+        int count = 0;
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("select count(1) from video", null);
+        while (cursor.moveToNext()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+
+    /**
+     * 判断video是否已下载
+     *
+     * @param id videoId
+     * @return 已下载true，未下载false
+     */
     public boolean downloaded(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query("video", new String[]{"*"}, "_id = ?", new String[]{String.valueOf(id)}, null, null, null);

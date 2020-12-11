@@ -14,7 +14,10 @@ import com.arialyy.annotations.Download;
 import com.arialyy.aria.core.Aria;
 import com.arialyy.aria.core.task.DownloadTask;
 import com.githang.statusbar.StatusBarCompat;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,6 +29,7 @@ import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.video.DetailFragment;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.DBHelper;
 
 public class MainActivity extends AppCompatActivity {
     private static MainActivity mainActivity;
@@ -35,11 +39,10 @@ public class MainActivity extends AppCompatActivity {
     private TagFragment tagFragment;
     private InstantFragment instantFragment;
     private MeFragment meFragment;
+    public int lastIndex = 0;
 
     @BindView(R.id.bottom_navigation)
     public BottomNavigationView bottomNavigationView;
-    //传递下载数据
-    private DetailFragment detailFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
-        Aria.download(this).register(); //初始化下载，所有下载相关都注册到这个activity
+
 
         //初始化fragments
         initFragments();
@@ -74,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initBottomNavigation() {
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            int lastIndex = 0;
 
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -106,13 +108,20 @@ public class MainActivity extends AppCompatActivity {
                     transaction.add(R.id.main_container, fragments[index]);
                 }
                 transaction.show(fragments[index]).commitAllowingStateLoss();
+                StyledPlayerView playerView = ((InstantFragment) fragments[2]).getPlayerView();
+                if (index != 2 && playerView != null) {
+                    Objects.requireNonNull(playerView.getPlayer()).pause();
+                } else if (index == 2 && playerView != null) {
+                    Objects.requireNonNull(playerView.getPlayer()).play();
+                }
             }
         });
     }
 
-    //初始化数据
+    //在登录之后初始化数据
     public void initData() {
         VideoPresenter.getInstance().loadPlaylists();
+        VideoPresenter.getInstance().loadLikedAndDisliked(this);
     }
 
     @Override
@@ -123,39 +132,5 @@ public class MainActivity extends AppCompatActivity {
     public static MainActivity getInstance() {
         return mainActivity;
     }
-
-    public MeFragment getMeFragment() {
-        return meFragment;
-    }
-
-    public void setDetailFragment(DetailFragment detailFragment) {
-        this.detailFragment = detailFragment;
-    }
-
-    public DetailFragment getDetailFragment() {
-        return detailFragment;
-    }
-
-    @Download.onTaskComplete
-    void taskComplete(DownloadTask task) {
-        if (detailFragment == null) return;
-        //在这里处理任务完成的状态
-        if (task.getKey().equals(((VideoDetailActivity) detailFragment.getActivity()).getSrc())) {
-            Toast.makeText(this, "下载完成", Toast.LENGTH_SHORT).show();
-            detailFragment.finishDownload();
-        }
-    }
-
-    @Download.onTaskRunning
-    void running(DownloadTask task) {
-        if (detailFragment != null
-                && detailFragment.getActivity() != null
-                && task.getKey().equals(((VideoDetailActivity) detailFragment.getActivity()).getSrc())) {
-            int p = task.getPercent();  //任务进度百分比
-            String speed = task.getConvertSpeed();  //转换单位后的下载速度，单位转换需要在配置文件中打开
-            detailFragment.getDownloadNum().setText(p + "%");
-        }
-    }
-
 
 }

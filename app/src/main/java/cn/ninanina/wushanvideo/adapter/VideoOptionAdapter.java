@@ -45,7 +45,7 @@ public class VideoOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return videoOptions.size();
     }
 
-    static class VideoOptionHolder extends RecyclerView.ViewHolder {
+    static final class VideoOptionHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.video_option_icon)
         ImageView icon;
         @BindView(R.id.video_option_text)

@@ -1,8 +1,12 @@
 package cn.ninanina.wushanvideo.ui.video;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,15 +17,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.arialyy.aria.core.Aria;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 
@@ -29,20 +32,19 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
-import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.ui.MainActivity;
-import cn.ninanina.wushanvideo.util.DBHelper;
+import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.util.DialogManager;
-import cn.ninanina.wushanvideo.util.FileUtil;
 import me.gujun.android.taggroup.TagGroup;
 
 //todo:设计成单个recyclerview，通过两个适配器解决。
@@ -85,16 +87,27 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.detail_related_videos)
     RecyclerView relatedVideos;
 
-    private VideoDetail videoDetail;
+    VideoDetail videoDetail;
     private boolean downloadEnabled = false;
     private boolean downloaded;
-    private Long downloadTaskId;
     private boolean disliked;
+    private boolean liked;
 
     public final int page = 0;
     public final int size = 30;
 
-    YoYo.YoYoString downloadAnimation;
+    private DownloadService downloadService;
+    private ServiceConnection downloadServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            DownloadService.DownloadBinder downloadBinder = (DownloadService.DownloadBinder) binder;
+            downloadService = downloadBinder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
 
     public DetailFragment(VideoDetail videoDetail) {
         super();
@@ -112,8 +125,6 @@ public class DetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
-        MainActivity.getInstance().setDetailFragment(DetailFragment.this);
-
         StringBuilder strViewed = new StringBuilder();
         int viewed = videoDetail.getViewed();
         if (viewed >= 10000) {
@@ -142,19 +153,13 @@ public class DetailFragment extends Fragment {
         relatedVideos.setHasFixedSize(true);
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId());
 
-        DBHelper dbHelper = new DBHelper(MainActivity.getInstance());
-        if (dbHelper.downloaded(videoDetail.getId())) downloaded = true;
-        if (DataHolder.getInstance().collectedVideo(videoDetail.getId()))
-            collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_clicked));
-        if (downloadEnabled) enableDownload();
-        if (downloaded) {
-            downloadImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.download_clicked));
-            downloadNum.setText("已下载");
-            downloadNum.setTextColor(getContext().getColor(R.color.tabColor));
-        }
+        refreshCollect();
+        refreshDownload();
+        refreshLikeAndDislike();
 
-        if (disliked)
-            downloadImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike_clicked));
+        final Intent intent = new Intent(getContext(), DownloadService.class);
+        Objects.requireNonNull(getContext()).bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
+
         bindEvents();
     }
 
@@ -162,6 +167,7 @@ public class DetailFragment extends Fragment {
         collectButton.setOnClickListener(collectListener);
         downloadButton.setOnClickListener(downloadListener);
         dislikeButton.setOnClickListener(dislikeListener);
+        likeButton.setOnClickListener(likeListener);
     }
 
     View.OnClickListener collectListener = new View.OnClickListener() {
@@ -171,10 +177,13 @@ public class DetailFragment extends Fragment {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
                 return;
             }
-            YoYo.with(Techniques.RubberBand)
-                    .duration(500)
-                    .playOn(collectImg);
-            DialogManager.getInstance().newCollectDialog(getContext(), videoDetail, DataHolder.getInstance().getPlaylists()).show();
+            AlertDialog dialog = DialogManager.getInstance().newCollectDialog(getContext(), videoDetail);
+            dialog.setOnDismissListener(dialog1 -> {
+                for (int i = 1; i <= 30; i++) {
+                    collectImg.postDelayed(() -> refreshCollect(), i * 100);
+                }
+            });
+            dialog.show();
         }
     };
 
@@ -187,52 +196,11 @@ public class DetailFragment extends Fragment {
                 return;
             }
             if (downloaded) {
-                if (downloadTaskId != null) {
-                    Toast.makeText(getContext(), "暂停下载，点击继续", Toast.LENGTH_SHORT).show();
-                    Aria.download(this)
-                            .load(downloadTaskId)
-                            .stop();
-                    downloadAnimation.stop();
-                    downloaded = false;
-                } else {
-                    Toast.makeText(getContext(), "已经下载过了", Toast.LENGTH_SHORT).show();
-                }
+                Toast.makeText(getContext(), "已经下载了", Toast.LENGTH_SHORT).show();
             } else {
                 downloaded = true;
-                if (downloadTaskId == null) {
-                    int perm = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    if (perm == PackageManager.PERMISSION_DENIED)
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        }, 0);
-                    perm = ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE);
-                    if (perm == PackageManager.PERMISSION_DENIED)
-                        ActivityCompat.requestPermissions(getActivity(), new String[]{
-                                Manifest.permission.READ_EXTERNAL_STORAGE,
-                        }, 0);
-                    Toast.makeText(getContext(), "开始下载视频", Toast.LENGTH_SHORT).show();
-                    downloadNum.setText("0%");
-                    downloadAnimation = YoYo.with(Techniques.FadeInDown)
-                            .duration(1000)
-                            .repeat(9999)
-                            .playOn(downloadImg);
-                    String src = ((VideoDetailActivity) getActivity()).getSrc();
-                    String fileName = videoDetail.getTitle().trim() + ".mp4";
-                    fileName = fileName.replaceAll("/", "\0");
-                    downloadTaskId = Aria.download(MainActivity.getInstance()) //todo: 将正在下载和下载完成的区分开
-                            .load(src)     //读取下载地址
-                            .setFilePath(FileUtil.getVideoDir().getAbsolutePath() + "/" + fileName) //设置文件保存的完整路径
-                            .create();   //启动下载
-                    DBHelper dbHelper = new DBHelper(MainActivity.getInstance());
-                    dbHelper.saveVideo(videoDetail);
-                } else {
-                    Toast.makeText(getContext(), "继续下载", Toast.LENGTH_SHORT).show();
-                    downloadAnimation.stop(true);
-                    Aria.download(this)
-                            .load(downloadTaskId)
-                            .resume();
-                }
-
+                new DefaultDownloadClickListener(downloadService).onClick(videoDetail);
+                downloadNum.postDelayed(() -> refreshDownload(), 200);
             }
         }
     };
@@ -240,7 +208,23 @@ public class DetailFragment extends Fragment {
     View.OnClickListener likeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
+            if (!WushanApp.loggedIn()) {
+                DialogManager.getInstance().newLoginDialog(getContext()).show();
+                return;
+            }
+            VideoPresenter.getInstance().likeVideo(getContext(), videoDetail.getId());
+            YoYo.with(Techniques.Bounce)
+                    .duration(500)
+                    .playOn(likeImg);
+            if (liked) {
+                likeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.like_enabled));
+                likeNum.setTextColor(getResources().getColor(R.color.tabColor, getContext().getTheme()));
+                liked = false;
+            } else {
+                likeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.like_clicked));
+                likeNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
+                liked = true;
+            }
         }
     };
 
@@ -251,6 +235,7 @@ public class DetailFragment extends Fragment {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
                 return;
             }
+            VideoPresenter.getInstance().dislikeVideo(getContext(), videoDetail.getId());
             YoYo.with(Techniques.Tada)
                     .duration(500)
                     .playOn(dislikeImg);
@@ -277,14 +262,6 @@ public class DetailFragment extends Fragment {
         downloadNum.setTextColor(getContext().getColor(R.color.tabColor));
     }
 
-    public void finishDownload() {
-        downloaded = true;
-        downloadTaskId = null;
-        downloadAnimation.stop();
-        downloadImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.download_clicked));
-        downloadNum.setText("已下载");
-    }
-
     //刷新收藏状态
     public void refreshCollect() {
         if (!DataHolder.getInstance().collectedVideo(videoDetail.getId())) {
@@ -294,8 +271,27 @@ public class DetailFragment extends Fragment {
         }
     }
 
-    public TextView getDownloadNum() {
-        return downloadNum;
+    //刷新下载状态
+    public void refreshDownload() {
+        downloaded = WushanApp.getInstance().getDbHelper().downloaded(videoDetail.getId());
+        if (downloaded) {
+            downloadImg.setImageResource(R.drawable.download_clicked);
+            downloadNum.setText("已下载");
+            downloadNum.setTextColor(getContext().getColor(R.color.tabColor));
+        } else {
+            downloadImg.setImageResource(R.drawable.download_enabled);
+            downloadNum.setText("下载");
+        }
+    }
+
+    //刷新喜好状态
+    public void refreshLikeAndDislike() {
+        disliked = DataHolder.getInstance().dislikedVideo(videoDetail.getId());
+        liked = DataHolder.getInstance().likedVideo(videoDetail.getId());
+        if (disliked)
+            dislikeImg.setImageResource(R.drawable.dislike_clicked);
+        if (liked)
+            likeImg.setImageResource(R.drawable.like_clicked);
     }
 
     public LinearLayout getContent() {
@@ -305,12 +301,10 @@ public class DetailFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        MainActivity.getInstance().setDetailFragment(this);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        MainActivity.getInstance().setDetailFragment(this);
     }
 }

@@ -2,7 +2,7 @@
     <string name="app_name">巫山小视频</string>
     <string name="navigation_home">主页</string>
     <string name="navigation_tag">标签</string>
-    <string name="navigation_instant">大家在看</string>
+    <string name="navigation_instant">发现好片</string>
     <string name="navigation_me">我的</string>
     <string name="welcome">欢迎来到巫山小视频 ~ 请注册或者登录</string>
     <string name="button_login_register">注册/登录</string>
@@ -66,9 +66,8 @@
     <string name="collect_video">收藏视频</string>
     <string name="new_dir">新建收藏夹</string>
     <string name="zhunquemingming">准确命名更容易被别人发现哦~</string>
-    <string name="play_list">播单</string>
+    <string name="play_list">视频收藏夹</string>
     <string name="share">分享</string>
-    <string name="download_list">下载列表</string>
     <string name="collected">已收藏</string>
     <string name="comment_time">评论时间</string>
     <string name="hot_comment">热门评论</string>
@@ -78,11 +77,25 @@
     <string name="chinese">中文</string>
     <string name="english">英文</string>
     <string name="search_tag">搜索感兴趣的标签</string>
-    <string name="dislike">不喜欢</string>
     <string name="history_list">历史记录</string>
     <string name="edit">编辑</string>
     <string name="like">喜欢</string>
     <string name="watch_later">稍后观看</string>
     <string name="collect">收藏</string>
     <string name="download">下载</string>
+    <string name="downloading">正在下载</string>
+    <string name="downloaded">已下载</string>
+    <string name="detail">详情页</string>
+    <string name="dislike">不喜欢</string>
+    <string name="jianshaotuijian">不感兴趣，将减少类似视频推荐</string>
+    <string name="undo">撤销</string>
+    <string name="default_rank">默认排序</string>
+    <string name="rank_play">播放多</string>
+    <string name="rank_comment">评论多</string>
+    <string name="rank_time">时间长</string>
+    <string name="rank_degree">评分高</string>
+    <string name="rank_collect">收藏多</string>
+    <string name="rank_download">下载多</string>
+    <string name="duration_all">所有时长</string>
+    <string name="tag_filter">标签筛选</string>
 </resources>
