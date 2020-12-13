@@ -6,6 +6,9 @@
     android:layout_height="wrap_content"
     android:background="@drawable/comment_style"
     android:baselineAligned="false"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
     android:orientation="horizontal"
     android:paddingStart="11dp"
     android:paddingTop="15dp"
@@ -15,7 +18,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="4">
+        android:layout_weight="2">
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/cover"
@@ -31,7 +34,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="5">
+        android:layout_weight="3">
 
         <TextView
             android:id="@+id/title"

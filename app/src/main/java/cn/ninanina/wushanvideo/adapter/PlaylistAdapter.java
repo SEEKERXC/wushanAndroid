@@ -18,15 +18,21 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.listener.PlaylistClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.util.DBHelper;
 
 public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     List<Playlist> playlists;
     private VideoDetail videoDetail;
 
     PlaylistClickListener listener;
+
+    PlaylistClickListener longClickListener;
+
+    public boolean showDownloadNum = true;
 
     public PlaylistAdapter(List<Playlist> playlists, PlaylistClickListener listener) {
         this.playlists = playlists;
@@ -53,8 +59,29 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if (!StringUtils.isEmpty(playlist.getCover()))
                 playlistHolder.cover.setImageURI(playlist.getCover());
             playlistHolder.name.setText(playlist.getName());
-            playlistHolder.info.setText(playlist.getCount() + "个视频 · " + (playlist.getIsPublic() ? "公开" : "私有"));
+            StringBuilder infoBuilder = new StringBuilder("");
+            infoBuilder.append(playlist.getCount()).append("个视频");
+            if (showDownloadNum) {
+                int downloadCount = 0;
+                DBHelper dbHelper = WushanApp.getInstance().getDbHelper();
+                for (VideoDetail videoDetail : playlist.getVideoDetails()) {
+                    if (dbHelper.downloaded(videoDetail.getId())) downloadCount++;
+                }
+                if (downloadCount == 0) infoBuilder.append(" · 未下载");
+                else if (downloadCount < playlist.getVideoDetails().size())
+                    infoBuilder.append(" · ").append(downloadCount).append("个已下载");
+                else infoBuilder.append(" · ").append("全部已下载");
+            }
+            playlistHolder.info.setText(infoBuilder.toString());
             playlistHolder.itemView.setOnClickListener(v -> listener.onPlaylistClicked(playlist));
+            if (longClickListener != null) {
+                playlistHolder.action.setVisibility(View.VISIBLE);
+                playlistHolder.action.setOnClickListener(v -> longClickListener.onPlaylistClicked(playlist));
+                playlistHolder.itemView.setOnLongClickListener(v -> {
+                    longClickListener.onPlaylistClicked(playlist);
+                    return true;
+                });
+            }
             if (videoDetail != null && playlist.getVideoDetails().contains(videoDetail)) {
                 playlistHolder.finish.setVisibility(View.VISIBLE);
                 playlistHolder.finishText.setVisibility(View.VISIBLE);
@@ -77,6 +104,10 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
+    public void setLongClickListener(PlaylistClickListener longClickListener) {
+        this.longClickListener = longClickListener;
+    }
+
     static final class PlaylistHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.collect_cover)
         SimpleDraweeView cover;
@@ -88,6 +119,8 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ImageView finish;
         @BindView(R.id.finish_text)
         TextView finishText;
+        @BindView(R.id.action)
+        ImageView action;
 
         public PlaylistHolder(@NonNull View itemView) {
             super(itemView);

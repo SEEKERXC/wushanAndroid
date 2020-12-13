@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.adapter.listener;
 
+import android.app.Dialog;
 import android.content.Context;
 
 import androidx.appcompat.app.AlertDialog;
@@ -13,19 +14,17 @@ import cn.ninanina.wushanvideo.network.VideoPresenter;
  * 点击播单收藏视频
  */
 public class CollectPlaylistClickListener implements PlaylistClickListener {
-    private Context context;
     private VideoDetail videoDetail;
-    private AlertDialog dialog;
+    private Dialog dialog;
 
-    public CollectPlaylistClickListener(Context context, VideoDetail videoDetail, AlertDialog dialog) {
-        this.context = context;
+    public CollectPlaylistClickListener(VideoDetail videoDetail, Dialog dialog) {
         this.videoDetail = videoDetail;
         this.dialog = dialog;
     }
 
     @Override
     public void onPlaylistClicked(Playlist playlist) {
-        VideoPresenter.getInstance().collectVideo(context, videoDetail, playlist);
+        VideoPresenter.getInstance().collectVideo(videoDetail, playlist);
         dialog.dismiss();
     }
 }

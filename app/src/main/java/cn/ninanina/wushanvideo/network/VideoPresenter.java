@@ -1,20 +1,19 @@
 package cn.ninanina.wushanvideo.network;
 
 import android.content.Context;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -23,36 +22,41 @@ import java.util.concurrent.TimeUnit;
 
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.CommentAdapter;
-import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.SearchResultAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.TagAdapter;
 import cn.ninanina.wushanvideo.adapter.TagSuggestAdapter;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.ReplyCommentListener;
-import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
 import cn.ninanina.wushanvideo.model.bean.common.VideoSortBy;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
+import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagVideoActivity;
 import cn.ninanina.wushanvideo.ui.video.CommentFragment;
 import cn.ninanina.wushanvideo.ui.video.DetailFragment;
+import cn.ninanina.wushanvideo.ui.video.PlaylistActivity;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 import cn.ninanina.wushanvideo.util.CommonUtils;
+import cn.ninanina.wushanvideo.util.MessageUtils;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -75,6 +79,7 @@ public class VideoPresenter extends BasePresenter {
         String type = fragment.getType();
         getVideoService().getRecommend(getAppKey(), type, fragment.size, getToken())
                 .subscribeOn(Schedulers.io())
+                .timeout(6, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
                     Toast.makeText(recyclerView.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
@@ -112,14 +117,14 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void getRelatedVideos(DetailFragment fragment, long videoId) {
-        String appKey = WushanApp.getAppKey();
+        String appKey = getAppKey();
         RecyclerView recyclerView = fragment.getRelatedRecyclerView();
         getVideoService().getRelatedVideos(appKey, videoId, fragment.page * fragment.size, fragment.size)
                 .subscribeOn(Schedulers.io())
                 .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(fragment.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -145,7 +150,7 @@ public class VideoPresenter extends BasePresenter {
         searchActivity.loading = true;
         searchActivity.swipe.setRefreshing(true);
         RecyclerView recyclerView = searchActivity.getRecyclerView();
-        String appKey = WushanApp.getAppKey();
+        String appKey = getAppKey();
         int offset = searchActivity.page * searchActivity.size;
         int limit = searchActivity.size;
         String query = searchActivity.query;
@@ -157,7 +162,7 @@ public class VideoPresenter extends BasePresenter {
                 .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(searchActivity, "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     searchActivity.loading = false;
                     searchActivity.swipe.setRefreshing(false);
                     Looper.loop();
@@ -179,8 +184,11 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void getSrc(VideoDetailActivity videoDetailActivity, long id) {
-        getVideoService().getVideoDetail(WushanApp.getAppKey(), id, getToken())
+    /**
+     * 视频详情页面初始化
+     */
+    public void getSrcForDetail(VideoDetailActivity videoDetailActivity, long id) {
+        getVideoService().getVideoDetail(getAppKey(), id, getToken(), false, true)
                 .subscribeOn(Schedulers.io())
                 .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
@@ -197,8 +205,11 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void getSrc(SimpleExoPlayer player, VideoDetail videoDetail) {
-        getVideoService().getVideoDetail(WushanApp.getAppKey(), videoDetail.getId(), getToken())
+    /**
+     * 发现视频页面实时获取链接
+     */
+    public void getSrcForInstant(SimpleExoPlayer player, VideoDetail videoDetail) {
+        getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), false, false)
                 .subscribeOn(Schedulers.io())
                 .timeout(5, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
@@ -216,50 +227,164 @@ public class VideoPresenter extends BasePresenter {
     }
 
     /**
+     * 在未观看的情况下点击下载按钮，并且下载视频
+     */
+    public void getSrcForDownload(VideoDetail videoDetail) {
+        getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), false, false)
+                .subscribeOn(Schedulers.io())
+                .timeout(5, TimeUnit.SECONDS)
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(videoDetailResult -> {
+                    if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc())) return;
+                    videoDetail.setSrc(videoDetailResult.getData().getSrc());
+                    DefaultDownloadClickListener listener = new DefaultDownloadClickListener(MainActivity.getInstance().downloadService);
+                    listener.showMessage = false;
+                    listener.onClick(videoDetail);
+                });
+    }
+
+    /**
+     * 点击离线视频进入详情页需要调用此方法,src指定本地视频文件路径
+     */
+    public void getSrcOfOffline(Context context, VideoDetail videoDetail, String src) {
+        getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), true, true)
+                .subscribeOn(Schedulers.io())
+                .timeout(5, TimeUnit.SECONDS)
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(videoDetailResult -> {
+                    VideoDetail video = videoDetailResult.getData();
+                    video.setSrc(src);
+                    DataHolder.getInstance().recordViewed(video.getId());
+                    new DefaultVideoClickListener(context).onClick(video);
+                });
+    }
+
+    /**
+     * 记录观看
+     */
+    public void recordViewed(VideoDetail videoDetail) {
+        if (!WushanApp.loggedIn()) return;
+        getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), true, true)
+                .subscribeOn(Schedulers.io())
+                .timeout(5, TimeUnit.SECONDS)
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(videoDetailResult -> DataHolder.getInstance().recordViewed(videoDetail.getId()));
+    }
+
+    /**
      * 新建收藏夹，创建完成后加入给定的recyclerView中
      */
-    public void createPlaylist(MeFragment fragment, String name) {
+    public void createPlaylist(String name) {
         getVideoService().createPlaylist(getAppKey(), name, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(fragment.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(playlistResult -> {
                     DataHolder.getInstance().getPlaylists().add(playlistResult.getData());
-                    Toast.makeText(fragment.getContext(), "创建成功", Toast.LENGTH_SHORT).show();
-                    fragment.refresh();
+                    ToastUtil.show("创建成功");
+                    MessageUtils.updatePlaylist();
+                });
+    }
+
+    public void deletePlaylist(Playlist playlist) {
+        getVideoService().deletePlaylist(getAppKey(), playlist.getId(), getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(playlistResult -> {
+                    if (playlistResult.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
+                        ToastUtil.show("删除成功");
+                        DataHolder.getInstance().getPlaylists().remove(playlist);
+                        MessageUtils.updatePlaylist();
+                    }
                 });
     }
 
     /**
      * 收藏视频
      */
-    public void collectVideo(Context context, VideoDetail videoDetail, Playlist playlist) {
+    public void collectVideo(VideoDetail videoDetail, Playlist playlist) {
         getVideoService().collectVideo(getAppKey(), videoDetail.getId(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     String code = result.getRspCode();
                     if (code.equals(ResultMsg.NOT_LOGIN.getCode())) {
-                        Toast.makeText(context, "会话已过期，请刷新一下", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("会话已过期，请刷新一下");
                     } else if (code.equals(ResultMsg.INVALID_VIDEO_ID.getCode()) || code.equals(ResultMsg.COLLECT_WRONG_DIR.getCode())) {
-                        Toast.makeText(context, "出了点问题...", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("出了点问题...");
                     } else if (code.equals(ResultMsg.COLLECT_ALREADY.getCode())) {
-                        Toast.makeText(context, "已经收藏过了", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("已经收藏过了");
                     } else if (code.equals(ResultMsg.SUCCESS.getCode())) {
-                        Toast.makeText(context, "收藏成功！", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("收藏成功！");
+                        videoDetail.setCollected(videoDetail.getCollected() + 1);
                         playlist.getVideoDetails().add(videoDetail);
                         playlist.setUpdateTime(System.currentTimeMillis());
                         playlist.setCover(videoDetail.getCoverUrl());
                         playlist.setCount(playlist.getCount() + 1);
+                    }
+                });
+    }
+
+    /**
+     * 取消收藏
+     */
+    public void cancelCollect(VideoDetail videoDetail, Playlist playlist) {
+        getVideoService().cancelCollect(getAppKey(), videoDetail.getId(), playlist.getId(), getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
+                        ToastUtil.show("成功");
+                        videoDetail.setCollected(videoDetail.getCollected() - 1);
+                        playlist.getVideoDetails().remove(videoDetail);
+                        playlist.setCount(playlist.getCount() - 1);
+                        playlist.setUpdateTime(System.currentTimeMillis());
+                        DataHolder.getInstance().updatePlaylist(playlist);
+                        Handler handler = PlaylistActivity.handler;
+                        if (handler != null) {
+                            Message message = new Message();
+                            message.what = PlaylistActivity.deleteOne;
+                            message.arg1 = Math.toIntExact(videoDetail.getId());
+                            handler.sendMessage(message);
+                        }
+                        Handler handler1 = MeFragment.handler;
+                        if (handler1 != null) {
+                            Message message = new Message();
+                            message.what = MeFragment.updatePlaylist;
+                            handler1.sendMessage(message);
+                        }
                     }
                 });
     }
@@ -272,7 +397,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(WushanApp.getInstance(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -294,7 +419,7 @@ public class VideoPresenter extends BasePresenter {
                     .subscribeOn(Schedulers.io())
                     .doOnError(throwable -> {
                         Looper.prepare();
-                        Toast.makeText(WushanApp.getInstance(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("网络开小差了~");
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
@@ -308,7 +433,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(commentFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     commentFragment.setLoading(false);
                     throwable.printStackTrace();
                     Looper.loop();
@@ -341,7 +466,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(commentFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -366,7 +491,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(WushanApp.getInstance(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -380,7 +505,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(WushanApp.getInstance(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -396,7 +521,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(tagFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     tagFragment.setLoading(false);
                     Looper.loop();
                 })
@@ -419,7 +544,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(tagFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -437,7 +562,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(activity, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     activity.setLoading(false);
                     Looper.loop();
                 })
@@ -448,11 +573,11 @@ public class VideoPresenter extends BasePresenter {
                         activity.setLoadingFinished(true);
                         Toast.makeText(activity, "没有更多啦", Toast.LENGTH_SHORT).show();
                     }
-                    VideoListAdapter adapter = (VideoListAdapter) activity.getContent().getAdapter();
+                    SingleVideoListAdapter adapter = (SingleVideoListAdapter) activity.getContent().getAdapter();
                     if (adapter == null) {
-                        activity.getContent().setAdapter(new VideoListAdapter(dataList, new DefaultVideoClickListener(activity), new DefaultVideoOptionClickListener(activity)));
+                        activity.getContent().setAdapter(new SingleVideoListAdapter(dataList, new DefaultVideoClickListener(activity), new DefaultVideoOptionClickListener(activity)));
                     } else {
-                        adapter.append(dataList);
+                        adapter.insert(dataList);
                     }
                     activity.setLoading(false);
                 });
@@ -464,7 +589,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(activity, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     activity.loading = false;
                     Looper.loop();
                 })
@@ -478,12 +603,30 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
+    public void deleteHistory(List<Pair<VideoUserViewed, VideoDetail>> histories, HistoryActivity activity) {
+        List<Long> historyIds = new ArrayList<>();
+        for (Pair<VideoUserViewed, VideoDetail> history : histories)
+            historyIds.add(history.getFirst().getId());
+        getVideoService().deleteHistory(getAppKey(), getToken(), historyIds)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    ToastUtil.show("成功");
+                    activity.delete(histories);
+                });
+    }
+
     public void getInstantVideos(InstantFragment instantFragment) {
         getVideoService().getInstantVideos(getAppKey(), instantFragment.limit, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(instantFragment.getContext(), "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     instantFragment.loading = false;
                     Looper.loop();
                 })
@@ -496,7 +639,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -509,28 +652,39 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    if (result.getData()) DataHolder.getInstance().getLikedVideos().add(videoId);
-                    else DataHolder.getInstance().getLikedVideos().remove(videoId);
+                    if (result.getData()) {
+                        DataHolder.getInstance().getLikedVideos().add(videoId);
+                        ToastUtil.show("感谢推荐，好运连连！");
+                    } else {
+                        DataHolder.getInstance().getLikedVideos().remove(videoId);
+                        ToastUtil.show("取消喜欢");
+                    }
                 });
     }
 
-    public void dislikeVideo(Context context, long videoId) {
+    public void dislikeVideo(long videoId) {
         getVideoService().dislikeVideo(getAppKey(), getToken(), videoId)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    if (result.getData()) DataHolder.getInstance().getDislikedVideos().add(videoId);
-                    else DataHolder.getInstance().getDislikedVideos().remove(videoId);
+                    if (result.getData()) {
+                        DataHolder.getInstance().getDislikedVideos().add(videoId);
+                        ToastUtil.show("感谢反馈！");
+                        //todo:给视频列表发送消息
+                    } else {
+                        DataHolder.getInstance().getDislikedVideos().remove(videoId);
+                        ToastUtil.show("取消不喜欢");
+                    }
                 });
     }
 
@@ -540,7 +694,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -549,13 +703,61 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(context, "网络出了点问题...", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> DataHolder.getInstance().setDislikedVideos(result.getData()));
     }
 
+    //加载所有历史记录
+    public void loadAllHistory() {
+        getVideoService().getAllHistory(getAppKey(), getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> DataHolder.getInstance().setAllViewed(result.getData()));
+    }
+
+    //增加稍后观看
+    public void addToWatch(long videoId) {
+        getVideoService().newToWatch(getAppKey(), getToken(), videoId)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
+                        ToastUtil.show("成功");
+                });
+    }
+
+    //todo:删除稍后观看
+
+    //获取稍后观看
+    public void getWatchLater(WatchLaterActivity watchLaterActivity) {
+        watchLaterActivity.loading = true;
+        getVideoService().getToWatches(getAppKey(), getToken(), watchLaterActivity.page * watchLaterActivity.size, watchLaterActivity.size)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    watchLaterActivity.loading = false;
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getData().size() < watchLaterActivity.size)
+                        watchLaterActivity.loadingFinished = true;
+                    watchLaterActivity.showData(result.getData());
+                    watchLaterActivity.loading = false;
+                });
+    }
 
     public enum RecyclerViewOp {
         INIT, //第一次填充

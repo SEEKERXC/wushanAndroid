@@ -43,7 +43,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
     <androidx.cardview.widget.CardView
         android:id="@+id/detail_tab_card"
         android:layout_width="match_parent"
@@ -51,11 +50,10 @@
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/detail_tab"
-            android:layout_width="120dp"
+            android:layout_width="160dp"
             android:layout_height="30dp"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="6dp" />
-
     </androidx.cardview.widget.CardView>
 
     <androidx.viewpager2.widget.ViewPager2

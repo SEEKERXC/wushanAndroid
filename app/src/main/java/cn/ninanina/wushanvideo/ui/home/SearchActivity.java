@@ -113,10 +113,10 @@ public class SearchActivity extends AppCompatActivity {
                 if (loading || loadingFinished) return true;
                 //关闭软键盘
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                if (!StringUtils.isEmpty(query) && query.equals(searchEdit.getText().toString().trim()))
+                if (!StringUtils.isEmpty(query))
                     return true;
                 query = searchEdit.getText().toString().trim();
-                if (query.length() <= 0) return false; //editText规定了字数最大长度为15
+                if (query.length() <= 0) return true; //editText规定了字数最大长度为15
                 page = 0;
                 VideoPresenter.getInstance().searchForVideo(this, true);
                 return true;

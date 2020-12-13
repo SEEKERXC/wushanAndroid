@@ -1,8 +1,12 @@
 package cn.ninanina.wushanvideo.ui;
 
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,9 +14,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.arialyy.annotations.Download;
-import com.arialyy.aria.core.Aria;
-import com.arialyy.aria.core.task.DownloadTask;
 import com.githang.statusbar.StatusBarCompat;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -23,13 +24,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
 import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
-import cn.ninanina.wushanvideo.ui.video.DetailFragment;
-import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
-import cn.ninanina.wushanvideo.util.DBHelper;
 
 public class MainActivity extends AppCompatActivity {
     private static MainActivity mainActivity;
@@ -44,6 +43,19 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.bottom_navigation)
     public BottomNavigationView bottomNavigationView;
 
+    public DownloadService downloadService;
+    private ServiceConnection downloadServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            DownloadService.DownloadBinder downloadBinder = (DownloadService.DownloadBinder) binder;
+            downloadService = downloadBinder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,11 +64,14 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
 
-
         //初始化fragments
         initFragments();
         //初始化底部导航栏
         initBottomNavigation();
+
+        //初始化下载服务
+        final Intent intent = new Intent(this, DownloadService.class);
+        bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
     }
 
     private void initFragments() {
@@ -94,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.navigation_me:
                         switchFragment(3);
                         StatusBarCompat.setStatusBarColor(MainActivity.this, getResources().getColor(android.R.color.transparent, null), true);
-                        meFragment.refresh();
+                        meFragment.refreshPlaylist();
                         break;
                 }
                 return true;
@@ -122,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
     public void initData() {
         VideoPresenter.getInstance().loadPlaylists();
         VideoPresenter.getInstance().loadLikedAndDisliked(this);
+        VideoPresenter.getInstance().loadAllHistory();
     }
 
     @Override

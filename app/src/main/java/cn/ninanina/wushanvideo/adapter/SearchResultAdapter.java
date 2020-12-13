@@ -21,13 +21,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
-import cn.ninanina.wushanvideo.adapter.listener.VideoOptionClickListener;
 import cn.ninanina.wushanvideo.model.bean.common.VideoDuration;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.util.CommonUtils;
 
 public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    public SearchResultAdapter(List<VideoDetail> allData, VideoClickListener listener, VideoOptionClickListener optionsClickListener) {
+    public SearchResultAdapter(List<VideoDetail> allData, VideoClickListener listener, VideoClickListener optionsClickListener) {
         this.allData = allData;
         this.showData = new ArrayList<>();
         this.listener = listener;
@@ -37,7 +36,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     List<VideoDetail> showData; //根据duration过滤出来的数据
     List<VideoDetail> allData; //所有数据
     private VideoClickListener listener;
-    private VideoOptionClickListener optionsClickListener;
+    private VideoClickListener optionsClickListener;
     public VideoDuration duration = VideoDuration.ALL;
 
     @NonNull
@@ -59,8 +58,8 @@ public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         videoHolder.videoDuration.setText(CommonUtils.getDurationString(videoDetail.getDuration()));
         videoHolder.collect.setText(String.valueOf(videoDetail.getCollected()));
         videoHolder.download.setText(String.valueOf(videoDetail.getDownloaded()));
-        videoHolder.itemView.setOnClickListener(v -> listener.onVideoClicked(videoDetail));
-        videoHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked(videoDetail));
+        videoHolder.itemView.setOnClickListener(v -> listener.onClick(videoDetail));
+        videoHolder.videoMore.setOnClickListener(v -> optionsClickListener.onClick(videoDetail));
     }
 
     @Override
@@ -78,7 +77,9 @@ public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     public void reset(List<VideoDetail> data) {
         allData.clear();
+        int size = showData.size();
         showData.clear();
+        notifyItemRangeRemoved(0, size);
         allData.addAll(data);
         for (VideoDetail videoDetail : allData) {
             if (matchDuration(videoDetail)) showData.add(videoDetail);
@@ -106,10 +107,10 @@ public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             case ALL:
                 break;
             case SHORT:
-                max = 30 * 60;
+                max = 20 * 60;
                 break;
             case MIDDLE:
-                min = 30 * 60;
+                min = 20 * 60;
                 max = 60 * 60;
                 break;
             case LONG:

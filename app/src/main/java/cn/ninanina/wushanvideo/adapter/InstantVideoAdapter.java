@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -34,6 +33,7 @@ import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.DialogManager;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -76,7 +76,7 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     player.setMediaItem(mediaItem);
                     player.prepare();
                 } else {
-                    VideoPresenter.getInstance().getSrc(player, videoDetail);
+                    VideoPresenter.getInstance().getSrcForInstant(player, videoDetail);
                 }
                 videoHolder.player.setPlayer(player);
                 videoHolder.player.setShowPreviousButton(false);
@@ -86,7 +86,7 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 videoHolder.player.setShowNextButton(false);
                 videoHolder.player.setControllerShowTimeoutMs(1000);
                 videoHolder.player.setResizeMode(AspectRatioFrameLayout.RESIZE_MODE_FIT);
-                videoHolder.middle.setOnClickListener(v -> videoClickListener.onVideoClicked(videoDetail));
+                videoHolder.middle.setOnClickListener(v -> videoClickListener.onClick(videoDetail));
                 videoHolder.collectButton.setOnClickListener(v -> {
                     if (!WushanApp.loggedIn()) {
                         DialogManager.getInstance().newLoginDialog(context).show();
@@ -101,9 +101,9 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     }
                     downloadListener.onClick(videoDetail);
                 });
-                boolean liked = DataHolder.getInstance().likedVideo(videoDetail.getId());
+                final boolean[] liked = {DataHolder.getInstance().likedVideo(videoDetail.getId())};
                 boolean disliked = DataHolder.getInstance().dislikedVideo(videoDetail.getId());
-                if (liked)
+                if (liked[0])
                     videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like_clicked));
                 if (disliked)
                     videoHolder.dislikeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.dislike_clicked));
@@ -112,19 +112,20 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         DialogManager.getInstance().newLoginDialog(context).show();
                         return;
                     }
+                    liked[0] = !liked[0];
                     VideoPresenter.getInstance().likeVideo(context, videoDetail.getId());
-                    if (liked)
-                        videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like));
-                    else
+                    if (liked[0])
                         videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like_clicked));
+                    else
+                        videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like));
                 });
                 videoHolder.dislikeButton.setOnClickListener(v -> {
                     player.release();
                     int index = dataList.indexOf(videoDetail);
                     dataList.remove(videoDetail);
                     notifyItemRemoved(index);
-                    Toast.makeText(context, "将减少类似推荐", Toast.LENGTH_SHORT).show();
-                    VideoPresenter.getInstance().dislikeVideo(context, videoDetail.getId());
+                    ToastUtil.show("将减少类似推荐");
+                    VideoPresenter.getInstance().dislikeVideo(videoDetail.getId());
                 });
         }
     }

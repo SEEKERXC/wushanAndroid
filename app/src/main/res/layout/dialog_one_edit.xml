@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="250dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <EditText
-        android:id="@+id/collect_name"
+        android:id="@+id/edit"
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:layout_gravity="center_vertical"
@@ -12,6 +12,7 @@
         android:layout_marginTop="14dp"
         android:autofillHints="no"
         android:background="@android:color/transparent"
+        android:ellipsize="end"
         android:focusable="true"
         android:hint="@string/zhunquemingming"
         android:inputType="text"

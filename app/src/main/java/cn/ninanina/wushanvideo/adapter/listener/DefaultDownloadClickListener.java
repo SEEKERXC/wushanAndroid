@@ -1,19 +1,19 @@
 package cn.ninanina.wushanvideo.adapter.listener;
 
-import android.widget.Toast;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.File;
 
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.model.bean.common.DownloadInfo;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
+import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.FileUtil;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class DefaultDownloadClickListener implements DownloadClickListener {
     DownloadService downloadService;
+    public boolean showMessage = true;
 
     public DefaultDownloadClickListener(DownloadService downloadService) {
         this.downloadService = downloadService;
@@ -21,17 +21,21 @@ public class DefaultDownloadClickListener implements DownloadClickListener {
 
     @Override
     public void onClick(VideoDetail videoDetail) {
-        String fileName;
-        if (StringUtils.isEmpty(videoDetail.getTitleZh())) fileName = videoDetail.getTitle();
-        else fileName = videoDetail.getTitleZh();
-        fileName = fileName.replaceAll("/", "").trim() + ".mp4";
-        String path = FileUtil.getVideoDir().getAbsolutePath() + "/" + fileName;
+        String path = FileUtil.getVideoDir().getAbsolutePath() + "/" + FileUtil.getVideoFileName(videoDetail);
         File file = new File(path);
-        if (file.exists() || downloadService.getTasks().containsKey(videoDetail.getSrc())) {
-            Toast.makeText(WushanApp.getInstance().getApplicationContext(), "视频已下载", Toast.LENGTH_SHORT).show();
+        if (file.exists()) {
+            if (showMessage) ToastUtil.show("视频已下载");
             return;
         }
-        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "开始下载", Toast.LENGTH_SHORT).show();
+        DownloadService downloadService = MainActivity.getInstance().downloadService;
+        DownloadInfo downloadInfo = downloadService.getTasks().get(videoDetail.getSrc());
+        if (downloadInfo != null) {
+            int status = downloadInfo.getStatus();
+            if (status != DownloadInfo.running)
+                MainActivity.getInstance().downloadService.resumeTask(downloadInfo);
+            return;
+        }
+        if (showMessage) ToastUtil.show("开始下载");
         VideoPresenter.getInstance().downloadVideo(WushanApp.getInstance().getApplicationContext(), videoDetail.getId());
         downloadService.newTask(videoDetail, path);
     }

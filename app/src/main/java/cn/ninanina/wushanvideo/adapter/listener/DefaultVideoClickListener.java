@@ -24,7 +24,7 @@ public class DefaultVideoClickListener implements VideoClickListener {
     private Context context;
 
     @Override
-    public void onVideoClicked(VideoDetail videoDetail) {
+    public void onClick(VideoDetail videoDetail) {
         Intent intent = new Intent(context, VideoDetailActivity.class);
         intent.putExtra("video", videoDetail);
         context.startActivity(intent);

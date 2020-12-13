@@ -4,10 +4,13 @@ import android.os.Environment;
 
 import androidx.core.content.ContextCompat;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.util.Locale;
 
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 
 public class FileUtil {
     public static File getVideoDir() {
@@ -16,6 +19,14 @@ public class FileUtil {
 
     public static File getCoverDir() {
         return ContextCompat.getExternalFilesDirs(WushanApp.getInstance(), Environment.DIRECTORY_PICTURES)[0];
+    }
+
+    public static String getVideoFileName(VideoDetail videoDetail) {
+        String fileName;
+        if (StringUtils.isEmpty(videoDetail.getTitleZh())) fileName = videoDetail.getTitle();
+        else fileName = videoDetail.getTitleZh();
+        fileName = fileName.replaceAll("/", "").trim() + ".mp4";
+        return fileName;
     }
 
     public static String getSize(long byteLength) {

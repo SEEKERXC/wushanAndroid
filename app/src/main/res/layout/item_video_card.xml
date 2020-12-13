@@ -13,6 +13,7 @@
     app:cardCornerRadius="5dp"
     app:cardMaxElevation="0dp"
     app:cardPreventCornerOverlap="false"
+    app:cardUseCompatPadding="false"
     app:elevation="0dp">
 
     <LinearLayout
@@ -35,7 +36,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="32dp"
+                android:layout_height="25dp"
                 android:background="@drawable/shadow"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />

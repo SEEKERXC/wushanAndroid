@@ -2,8 +2,8 @@ package cn.ninanina.wushanvideo.model.bean.common;
 
 public enum VideoDuration {
     ALL("all", "所有时长"),
-    SHORT("short", "0-30分钟"),
-    MIDDLE("middle", "30-60分钟"),
+    SHORT("short", "0-20分钟"),
+    MIDDLE("middle", "20-60分钟"),
     LONG("long", "> 60分钟");
 
     VideoDuration(String code, String msg) {

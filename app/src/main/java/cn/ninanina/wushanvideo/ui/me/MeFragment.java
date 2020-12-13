@@ -2,8 +2,10 @@ package cn.ninanina.wushanvideo.ui.me;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +18,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,10 +34,12 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
+import cn.ninanina.wushanvideo.adapter.listener.PlaylistLongClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
+import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 
@@ -67,6 +70,8 @@ public class MeFragment extends Fragment {
     LinearLayout menuDownload;
     @BindView(R.id.menu_history)
     LinearLayout menuHistory;
+    @BindView(R.id.menu_later)
+    LinearLayout watchLater;
     @BindView(R.id.menu_calendar)
     LinearLayout menuCalendar;
     @BindView(R.id.menu_setting)
@@ -75,6 +80,11 @@ public class MeFragment extends Fragment {
     LinearLayout menuInfo;
 
     private boolean showPlaylists = true;
+
+    public static Handler handler;
+    public static final int updatePlaylist = 0;
+    public static final int login = 1;
+    public static final int logout = 2;
 
     @Nullable
     @Override
@@ -92,13 +102,27 @@ public class MeFragment extends Fragment {
             Intent intent = new Intent(getContext(), LoginActivity.class);
             startActivity(intent);
         });
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                switch (msg.what) {
+                    case updatePlaylist:
+                        refreshPlaylist();
+                        break;
+                    case login:
+                        break;
+                    case logout:
+                }
+                super.handleMessage(msg);
+            }
+        };
     }
 
     @Override
     public void onStart() {
         super.onStart();
         checkForUser();
-        refresh();
+        refreshPlaylist();
     }
 
     private void checkForUser() {
@@ -117,7 +141,7 @@ public class MeFragment extends Fragment {
 
     private void initMenu() {
         swipe.setOnRefreshListener(() -> {
-            refresh();
+            refreshPlaylist();
             swipe.setRefreshing(false);
         });
         menuProfile.setOnClickListener(v -> {
@@ -136,7 +160,7 @@ public class MeFragment extends Fragment {
         });
         menuCollect.setOnClickListener(v -> {
             showPlaylists = !showPlaylists;
-            refresh();
+            refreshPlaylist();
         });
         newCollectDir.setOnClickListener(v -> {
             if (WushanApp.loggedIn())
@@ -153,16 +177,20 @@ public class MeFragment extends Fragment {
             Intent intent = new Intent(getContext(), HistoryActivity.class);
             startActivity(intent);
         });
+        watchLater.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), WatchLaterActivity.class);
+            startActivity(intent);
+        });
     }
 
-    public void refresh() {
+    public void refreshPlaylist() {
         if (playlist == null) return;
         if (WushanApp.loggedIn()) {
-            if (CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
-                VideoPresenter.getInstance().loadPlaylists();
-            } else {
+            if (!CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
                 if (showPlaylists) {
-                    playlist.setAdapter(new PlaylistAdapter(DataHolder.getInstance().getPlaylists(), new ShowPlaylistClickListener(getContext())));
+                    PlaylistAdapter adapter = new PlaylistAdapter(DataHolder.getInstance().getPlaylists(), new ShowPlaylistClickListener(getContext()));
+                    adapter.setLongClickListener(new PlaylistLongClickListener(getContext()));
+                    playlist.setAdapter(adapter);
                     collectIcon.setImageResource(R.drawable.down);
                 } else {
                     playlist.setAdapter(new PlaylistAdapter(new ArrayList<>(), new ShowPlaylistClickListener(getContext())));
@@ -178,5 +206,4 @@ public class MeFragment extends Fragment {
     public RecyclerView getPlaylist() {
         return playlist;
     }
-
 }

@@ -8,6 +8,7 @@ import cn.ninanina.wushanvideo.model.bean.Result;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
+import cn.ninanina.wushanvideo.model.bean.video.ToWatch;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
@@ -37,7 +38,9 @@ public interface VideoService {
     @GET("video/detail")
     Observable<Result<VideoDetail>> getVideoDetail(@Query("appKey") String appKey,
                                                    @Query("id") long id,
-                                                   @Query("token") String token);
+                                                   @Query("token") String token,
+                                                   @Query("withoutSrc") Boolean withoutSrc,
+                                                   @Query("record") Boolean record);
 
     //获取相关视频
     @GET("video/related")
@@ -212,4 +215,30 @@ public interface VideoService {
     @GET("video/viewed/all")
     Observable<Result<List<VideoUserViewed>>> getAllHistory(@Query("appKey") String appKey,
                                                             @Query("token") String token);
+
+    //删除历史记录
+    @POST("video/viewed/delete")
+    Observable<Result<ObjectUtils.Null>> deleteHistory(@Query("appKey") String appKey,
+                                                       @Query("token") String token,
+                                                       @Query("ids") List<Long> ids);
+
+    //新增稍后观看
+    @POST("video/toWatch")
+    Observable<Result<ToWatch>> newToWatch(@Query("appKey") String appKey,
+                                           @Query("token") String token,
+                                           @Query("videoId") Long videoId);
+
+    //删除稍后观看
+    @POST("video/toWatch/delete")
+    Observable<Result<ObjectUtils.Null>> deleteToWatch(@Query("appKey") String appKey,
+                                                       @Query("token") String token,
+                                                       @Query("ids") List<Long> ids);
+
+    //获取稍后观看
+    @GET("video/toWatch")
+    Observable<Result<List<Pair<ToWatch, VideoDetail>>>> getToWatches(@Query("appKey") String appKey,
+                                                                      @Query("token") String token,
+                                                                      @Query("offset") Integer offset,
+                                                                      @Query("limit") Integer limit);
+
 }

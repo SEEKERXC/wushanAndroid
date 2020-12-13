@@ -1,30 +1,29 @@
 package cn.ninanina.wushanvideo.ui.me;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.githang.statusbar.StatusBarCompat;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Objects;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -56,10 +55,13 @@ public class ProfileActivity extends AppCompatActivity {
     ConstraintLayout orientationLayout;
     @BindView(R.id.profile_swipe)
     SwipeRefreshLayout swipeRefreshLayout;
-    @BindView(R.id.profile_back)
-    ImageView back;
+    @BindView(R.id.back)
+    FrameLayout back;
     @BindView(R.id.profile_logout)
     Button logout;
+
+    public static Handler handler;
+    public static final int update = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,15 +69,23 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
         ButterKnife.bind(this);
-        initData();
         bindEvents();
+        refresh();
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (msg.what == update) {
+                    refresh();
+                }
+                super.handleMessage(msg);
+            }
+        };
     }
 
-    private void initData() {
+    private void refresh() {
         SharedPreferences profile = WushanApp.getProfile();
         usernameText.setText(profile.getString("username", ""));
         nicknameText.setText(profile.getString("nickname", ""));
-
         registerText.setText(TimeUtil.getFullTime(profile.getLong("registerTime", 0)));
         loginText.setText(TimeUtil.getFullTime(profile.getLong("lastLoginTime", 0)));
         String gender = profile.getString("gender", "");
@@ -84,6 +94,7 @@ public class ProfileActivity extends AppCompatActivity {
             else gender = "女";
         }
         genderText.setText(gender);
+        orientationText.setText(profile.getBoolean("straight", true) ? "直" : "弯");
     }
 
     private void bindEvents() {
@@ -91,5 +102,11 @@ public class ProfileActivity extends AppCompatActivity {
         logout.setOnClickListener(v -> {
             CommonPresenter.getInstance().logout(this);
         });
+        swipeRefreshLayout.setOnRefreshListener(() -> swipeRefreshLayout.setRefreshing(false));
+        passwordLayout.setOnClickListener(v -> DialogManager.getInstance().newEditPasswordDialog(ProfileActivity.this).show());
+        nicknameLayout.setOnClickListener(v -> DialogManager.getInstance().newEditNicknameDialog(ProfileActivity.this).show());
+        genderLayout.setOnClickListener(v -> DialogManager.getInstance().newGenderCheckDialog(ProfileActivity.this).show());
+        ageLayout.setOnClickListener(v -> DialogManager.getInstance().newEditAgeDialog(ProfileActivity.this).show());
+        orientationLayout.setOnClickListener(v -> DialogManager.getInstance().newEditOrientationDialog(ProfileActivity.this).show());
     }
 }

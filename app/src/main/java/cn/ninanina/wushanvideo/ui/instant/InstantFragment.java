@@ -1,6 +1,5 @@
 package cn.ninanina.wushanvideo.ui.instant;
 
-import android.app.DownloadManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -8,21 +7,16 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.facebook.drawee.view.SimpleDraweeView;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 
@@ -36,15 +30,12 @@ import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.InstantVideoAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
-import cn.ninanina.wushanvideo.adapter.listener.PlayerTouchListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.MainActivity;
-import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
 import cn.ninanina.wushanvideo.util.CommonUtils;
-import cn.ninanina.wushanvideo.util.DialogManager;
-import cn.ninanina.wushanvideo.util.PermissionUtils;
 
 /**
  * 这一页展示当下所有有现成链接的视频，以列表的形式呈现出来，模仿西瓜视频首页的形式，用户滑动即可立即播放
@@ -81,7 +72,7 @@ public class InstantFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_instant, container, false);
     }
 
-    @Override //TODO:只播放完全显示的，上面和下面较远的全部释放
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
@@ -109,6 +100,7 @@ public class InstantFragment extends Fragment {
                 //暂停播放之前的视频
                 if (playerView != null) {
                     Objects.requireNonNull(playerView.getPlayer()).pause();
+                    playerView.performClick();
                 }
                 View firstView = manager.findViewByPosition(firstCompletePosition);
                 playerView = firstView.findViewById(R.id.player);
@@ -123,6 +115,8 @@ public class InstantFragment extends Fragment {
                         player.prepare();
                         player.play();
                         if (!players.contains(player)) players.add(player);
+                        if (DataHolder.getInstance().recordViewed(videoDetail.getId()))
+                            VideoPresenter.getInstance().recordViewed(videoDetail);
                     } else {
                         // TODO: 2020/12/8 0008 获取视频链接并播放
                     }

@@ -23,6 +23,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLength="16"
         android:textColor="@color/black"
         android:textSize="15sp"
         app:layout_constraintStart_toEndOf="@id/collect_cover"
@@ -33,6 +36,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginBottom="6dp"
+        android:maxLines="1"
         android:textColor="@color/tabColor"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/collect_cover"
@@ -47,6 +52,17 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/action"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="6dp"
+        android:src="@drawable/more"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/finish_text"

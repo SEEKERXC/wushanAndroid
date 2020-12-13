@@ -15,8 +15,8 @@
     <string name="zhanghao">请输入账号</string>
     <string name="mima">请输入密码</string>
     <string name="confirm">请确认密码</string>
-    <string name="username_hint">账号（5–16个字符，不建议使用手机号）</string>
-    <string name="password_hint">密码（5–16个字符）</string>
+    <string name="username_hint">账号（6–16个字符，不建议使用手机号）</string>
+    <string name="password_hint">密码（6–16个字符）</string>
     <string name="nickname_hint">昵称（可选，小于16字符）</string>
     <string name="gender">性别</string>
     <string name="register">注册</string>
@@ -65,7 +65,7 @@
     <string name="click_to_show_left">查看如何增加次数</string>
     <string name="collect_video">收藏视频</string>
     <string name="new_dir">新建收藏夹</string>
-    <string name="zhunquemingming">准确命名更容易被别人发现哦~</string>
+    <string name="zhunquemingming">输入收藏夹名称</string>
     <string name="play_list">视频收藏夹</string>
     <string name="share">分享</string>
     <string name="collected">已收藏</string>

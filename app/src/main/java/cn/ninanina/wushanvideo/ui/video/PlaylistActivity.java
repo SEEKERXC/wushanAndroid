@@ -1,11 +1,15 @@
 package cn.ninanina.wushanvideo.ui.video;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,14 +24,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
+import cn.ninanina.wushanvideo.adapter.PlaylistVideoAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.PlaylistVideoOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class PlaylistActivity extends AppCompatActivity {
     @BindView(R.id.back)
@@ -38,19 +46,16 @@ public class PlaylistActivity extends AppCompatActivity {
     TextView nameText;
     @BindView(R.id.playlist_info)
     TextView infoText;
+    @BindView(R.id.more_info)
+    TextView moreInfo;
     @BindView(R.id.playlist_content)
     RecyclerView content;
 
-    long id;
-    String name;
-    String coverUrl;
-    int count;
-    boolean isPublic;
-    long updateTime;
-    long createTime;
-    long userId;
-    String userPhoto;
-    String username;
+    private Playlist playlist;
+
+    public static Handler handler;
+    public static final int updateOne = 0;
+    public static final int deleteOne = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,23 +75,33 @@ public class PlaylistActivity extends AppCompatActivity {
 
     private void initData() {
         Intent intent = getIntent();
-        id = intent.getLongExtra("id", 0);
-        name = intent.getStringExtra("name");
-        coverUrl = intent.getStringExtra("cover");
-        count = intent.getIntExtra("count", 0);
-        isPublic = intent.getBooleanExtra("public", true);
-        updateTime = intent.getLongExtra("update", 0);
-        createTime = intent.getLongExtra("create", 0);
-        userId = intent.getLongExtra("userId", 0);
-        userPhoto = intent.getStringExtra("userPhoto");
-        username = intent.getStringExtra("username");
+        playlist = (Playlist) intent.getSerializableExtra("playlist");
 
-        cover.setImageURI(coverUrl);
-        nameText.setText(name);
-        infoText.setText(count + "个视频 · " + (isPublic ? "公开" : "私有"));
+        refreshData();
+        PlaylistVideoAdapter adapter = new PlaylistVideoAdapter(DataHolder.getInstance().getPlaylistVideos(playlist.getId()).getVideoDetails(),
+                new DefaultVideoClickListener(this), new PlaylistVideoOptionClickListener(this, playlist));
+        content.setAdapter(adapter);
 
-        List<Object> dataList = new ArrayList<>(DataHolder.getInstance().getPlaylistVideos(id).getVideoDetails());
-        content.setAdapter(new SingleVideoListAdapter(dataList, new DefaultVideoClickListener(this), new DefaultVideoOptionClickListener(this)));
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (msg.what == updateOne) {
+                    adapter.updateOne(msg.arg1);
+                    refreshData();
+                } else if (msg.what == deleteOne) {
+                    adapter.deleteOne(msg.arg1);
+                    refreshData();
+                }
+                super.handleMessage(msg);
+            }
+        };
+    }
+
+    private void refreshData() {
+        cover.setImageURI(playlist.getCover());
+        nameText.setText(playlist.getName());
+        infoText.setText(playlist.getCount() + "个视频 · " + (playlist.getIsPublic() ? "公开" : "私有"));
+        moreInfo.setText(TimeUtil.getDate(playlist.getUpdateTime()) + "更新");
     }
 
     public RecyclerView getContent() {

@@ -15,7 +15,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="4">
+        android:layout_weight="2">
 
         <com.facebook.drawee.view.SimpleDraweeView
             android:id="@+id/video_cover"
@@ -26,18 +26,37 @@
             app:placeholderImage="@drawable/tv"
             fresco:viewAspectRatio="1.78" />
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="25dp"
+            android:background="@drawable/shadow"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/video_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:layout_marginBottom="4dp"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="5">
+        android:layout_weight="3">
 
         <TextView
             android:id="@+id/video_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/black"
@@ -50,32 +69,42 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_marginTop="12dp"
+            android:layout_marginEnd="6dp"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/tabColor"
             android:textSize="12sp"
             app:layout_constraintTop_toBottomOf="@id/video_title" />
 
-
         <TextView
-            android:id="@+id/video_duration"
+            android:id="@+id/watch_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
             android:textColor="@color/tabColor"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/video_title" />
+            app:layout_constraintStart_toStartOf="parent" />
 
-        <ImageButton
+
+        <FrameLayout
             android:id="@+id/video_action"
-            android:layout_width="30dp"
-            android:layout_height="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:foreground="?android:attr/selectableItemBackground"
-            android:scaleType="centerInside"
-            android:src="@drawable/more"
+            android:paddingStart="10dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/more" />
+        </FrameLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

@@ -72,7 +72,7 @@ public class RegisterFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length() >= 5 && s.toString().length() <= 16) {
+                if (s.toString().length() >= 6 && s.toString().length() <= 16) {
                     CommonPresenter.getInstance().checkUsernameExists(s.toString(), RegisterFragment.this);
                 } else {
                     usernameOK = false;
@@ -93,7 +93,7 @@ public class RegisterFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().length() >= 5 && s.toString().length() <= 16) {
+                if (s.toString().length() >= 6 && s.toString().length() <= 16) {
                     passwordOK = true;
                     passwordOKIcon.setVisibility(View.VISIBLE);
                 } else {

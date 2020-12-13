@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -21,19 +20,26 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.adapter.listener.HistoryClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
+import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    int typeTime = 0;
-    int typeVideo = 1;
-    int typeLoading = 2;
+    private static final int typeTime = 0;
+    private static final int typeVideo = 1;
+    private static final int typeLoading = 2;
     List<Object> dataList;
+    private VideoClickListener videoClickListener;
+    private HistoryClickListener optionClickListener;
 
-    public HistoryAdapter(List<Object> dataList) {
+    public HistoryAdapter(List<Object> dataList, VideoClickListener videoClickListener, HistoryClickListener optionClickListener) {
         this.dataList = dataList;
+        this.videoClickListener = videoClickListener;
+        this.optionClickListener = optionClickListener;
     }
 
     @NonNull
@@ -51,7 +57,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         } else if (viewType == typeLoading) {
             TextView textView = new TextView(parent.getContext());
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            layoutParams.setMargins(0, 20, 0, 20);
+            layoutParams.setMargins(0, 30, 0, 30);
             textView.setLayoutParams(layoutParams);
             textView.setGravity(Gravity.CENTER_HORIZONTAL);
             return new OtherHolder(textView);
@@ -75,8 +81,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 videoHolder.videoTitle.setText(videoDetail.getTitle());
             else videoHolder.videoTitle.setText(videoDetail.getTitleZh());
             videoHolder.viewCount.setText("观看次数：" + viewed.getViewCount());
-            videoHolder.videoDuration.setText(videoDetail.getDuration());
+            videoHolder.videoDuration.setText(CommonUtils.getDurationString(videoDetail.getDuration()));
             videoHolder.lastTime.setText("上次观看时间：" + TimeUtil.getTime(viewed.getTime()));
+            videoHolder.itemView.setOnClickListener(v -> videoClickListener.onClick(videoDetail));
+            videoHolder.itemView.setOnLongClickListener(v -> {
+                optionClickListener.onClicked(pair);
+                return true;
+            });
+            videoHolder.videoMore.setOnClickListener(v -> optionClickListener.onClicked(pair));
         } else if (getItemViewType(position) == typeLoading) {
             Boolean loadingFinished = (Boolean) dataList.get(position);
             OtherHolder loadingHolder = (OtherHolder) holder;
@@ -106,6 +118,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         int count = dataList.size();
         dataList.addAll(data);
         notifyItemRangeInserted(count, data.size());
+    }
+
+    public void delete(List<Pair<VideoUserViewed, VideoDetail>> pairs) {
+        for (Pair<VideoUserViewed, VideoDetail> pair : pairs) {
+            dataList.remove(pair);
+        }
+        notifyDataSetChanged();
     }
 
     static final class VideoHolder extends RecyclerView.ViewHolder {

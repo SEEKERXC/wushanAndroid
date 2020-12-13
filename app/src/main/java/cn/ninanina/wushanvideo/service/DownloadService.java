@@ -3,7 +3,9 @@ package cn.ninanina.wushanvideo.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -20,8 +22,10 @@ import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.common.DownloadInfo;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.ui.video.DownloadedFragment;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import cn.ninanina.wushanvideo.util.PermissionUtils;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class DownloadService extends Service {
     private DownloadBinder binder = new DownloadBinder();
@@ -40,7 +44,7 @@ public class DownloadService extends Service {
                 .setFilePath(path)
                 .create();
         if (taskId == -1) {
-            Toast.makeText(getApplicationContext(), "创建下载失败，请稍后重试", Toast.LENGTH_SHORT).show();
+            ToastUtil.show("创建下载失败，请稍后重试");
         } else {
             DownloadInfo downloadInfo = new DownloadInfo();
             downloadInfo.setVideo(videoDetail);
@@ -51,9 +55,18 @@ public class DownloadService extends Service {
             downloadInfo.setFileName(file.getName().substring(0, file.getName().length() - 4));
             downloadInfo.setProgress("等待中");
             downloadInfo.setPercentage(0);
-            downloadInfo.setSpeed("等待中");
+            downloadInfo.setSpeed("");
             downloadInfo.setStatus(DownloadInfo.waiting);
             tasks.put(videoDetail.getSrc(), downloadInfo);
+        }
+    }
+
+    public void resumeTask(DownloadInfo downloadInfo) {
+        if (tasks.containsValue(downloadInfo)) {
+            Aria.download(this)
+                    .load(downloadInfo.getTaskId())
+                    .resume(true);
+            ToastUtil.show("开始下载");
         }
     }
 
@@ -76,7 +89,7 @@ public class DownloadService extends Service {
     public void onCreate() {
         super.onCreate();
         Aria.download(this).register();
-        Aria.get(this).getDownloadConfig().setConvertSpeed(false);
+        Aria.get(this).getDownloadConfig().setConvertSpeed(false).setReTryInterval(3000).setReTryNum(20);
         PermissionUtils.requestReadWritePermissions(MainActivity.getInstance());
     }
 
@@ -97,7 +110,7 @@ public class DownloadService extends Service {
     public void onWait(DownloadTask task) {
         DownloadInfo downloadInfo = tasks.get(task.getKey());
         if (downloadInfo == null) return;
-        downloadInfo.setSpeed("等待中");
+        downloadInfo.setSpeed("");
         downloadInfo.setStatus(DownloadInfo.waiting);
     }
 
@@ -108,10 +121,11 @@ public class DownloadService extends Service {
 
     @Download.onTaskFail
     public void onTaskFail(DownloadTask task) {
-        Toast.makeText(getApplicationContext(), task.getDownloadEntity().getFileName() + " 下载失败", Toast.LENGTH_SHORT).show();
+        ToastUtil.show(task.getDownloadEntity().getFileName() + " 下载失败");
         DownloadInfo downloadInfo = tasks.get(task.getKey());
         if (downloadInfo == null) return;
-        downloadInfo.setSpeed("下载失败");
+        downloadInfo.setSpeed("");
+        downloadInfo.setProgress("下载失败，点击重试");
         downloadInfo.setStatus(DownloadInfo.error);
     }
 
@@ -121,8 +135,13 @@ public class DownloadService extends Service {
         VideoDetail videoDetail = tasks.get(task.getKey()).getVideo();
         WushanApp.getInstance().getDbHelper().saveVideo(videoDetail);
         tasks.remove(task.getKey());
-        Toast.makeText(getApplicationContext(), task.getDownloadEntity().getFileName() + " 下载完成", Toast.LENGTH_SHORT).show();
-
+        ToastUtil.show(task.getDownloadEntity().getFileName() + " 下载完成");
+        Handler handler = DownloadedFragment.handler;
+        if (handler != null) {
+            Message message = new Message();
+            message.what = DownloadedFragment.update;
+            handler.sendMessage(message);
+        }
     }
 
     @Download.onTaskRunning

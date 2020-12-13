@@ -52,14 +52,13 @@ public class TagVideoActivity extends AppCompatActivity {
         tag = (Tag) getIntent().getSerializableExtra("tag");
         name.setText(tag.getTagZh());
         info.setText(tag.getTag() + "  " + tag.getVideoCount() + "个视频");
-        content.setLayoutManager(new GridLayoutManager(this, 2));
+        content.setLayoutManager(new LinearLayoutManager(this));
         content.setNestedScrollingEnabled(false);
         content.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                //列表中LastVisibleItem为倒数第二行时，加载更多
-                if (manager.findLastCompletelyVisibleItemPosition() + 1 >= manager.getItemCount() && !isLoading && !loadingFinished) {
+                if (manager.findLastVisibleItemPosition() + 2 >= manager.getItemCount() && !isLoading && !loadingFinished) {
                     System.out.println(manager.getItemCount());
                     page++;
                     VideoPresenter.getInstance().getVideosForTag(TagVideoActivity.this);

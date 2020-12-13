@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,12 +23,12 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.githang.statusbar.StatusBarCompat;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +36,14 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.listener.PlayerTouchListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.util.CommonUtils;
+import cn.ninanina.wushanvideo.util.DBHelper;
+import cn.ninanina.wushanvideo.util.FileUtil;
 
 public class VideoDetailActivity extends AppCompatActivity {
     @BindView(R.id.detail_player)
@@ -179,7 +182,17 @@ public class VideoDetailActivity extends AppCompatActivity {
         detailPlayer.setShowFastForwardButton(false);
         detailPlayer.setShowPreviousButton(false);
         detailPlayer.setShowRewindButton(false);
-        VideoPresenter.getInstance().getSrc(this, video.getId());
+        DBHelper dbHelper = WushanApp.getInstance().getDbHelper();
+        String name = dbHelper.getNameById(video.getId());
+        if (!StringUtils.isEmpty(name)) name = FileUtil.getVideoDir() + "/" + name;
+        video.setSrc(name);
+        if (!CommonUtils.isSrcValid(video.getSrc()))
+            VideoPresenter.getInstance().getSrcForDetail(this, video.getId());
+        else {
+            ((DetailFragment) fragments.get(0)).enableDownload();
+            ((DetailFragment) fragments.get(0)).videoDetail.setSrc(video.getSrc());
+            startPlaying(video.getSrc());
+        }
     }
 
     @Override
@@ -222,13 +235,17 @@ public class VideoDetailActivity extends AppCompatActivity {
     }
 
     public void startPlaying(String src) {
+        DataHolder.getInstance().recordViewed(video.getId());
         loading.setVisibility(View.GONE);
         shadow.setVisibility(View.GONE);
         cover.setVisibility(View.GONE);
         video.setSrc(src);
 
-        ((DetailFragment) fragments.get(0)).enableDownload();
-        ((DetailFragment) fragments.get(0)).videoDetail.setSrc(src);
+        detailPlayer.postDelayed(() -> {
+            ((DetailFragment) fragments.get(0)).enableDownload();
+            ((DetailFragment) fragments.get(0)).videoDetail.setSrc(src);
+        }, 1000);
+        detailPlayer.performClick();
         // Build the media item.
         MediaItem mediaItem = MediaItem.fromUri(src);
         // Set the media item to be played.

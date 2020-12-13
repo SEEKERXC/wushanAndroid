@@ -10,7 +10,7 @@ import cn.ninanina.wushanvideo.util.DialogManager;
 /**
  * 展示视频选项
  */
-public class DefaultVideoOptionClickListener implements VideoOptionClickListener {
+public class DefaultVideoOptionClickListener implements VideoClickListener {
     private Context context;
 
     public DefaultVideoOptionClickListener(Context context) {
@@ -18,7 +18,7 @@ public class DefaultVideoOptionClickListener implements VideoOptionClickListener
     }
 
     @Override
-    public void onVideoOptionClicked(VideoDetail videoDetail) {
+    public void onClick(VideoDetail videoDetail) {
         AlertDialog dialog = DialogManager.getInstance().newVideoOptionDialog(context, videoDetail);
         dialog.show();
     }

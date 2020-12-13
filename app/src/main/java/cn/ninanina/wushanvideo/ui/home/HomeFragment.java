@@ -95,6 +95,7 @@ public class HomeFragment extends Fragment {
         historyButton.setOnClickListener(v -> {
             if (!WushanApp.loggedIn()) {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
+                return;
             }
             Intent intent = new Intent(getContext(), HistoryActivity.class);
             startActivity(intent);

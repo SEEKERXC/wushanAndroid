@@ -2,11 +2,15 @@ package cn.ninanina.wushanvideo.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -14,6 +18,7 @@ import java.util.Objects;
 
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
 import cn.ninanina.wushanvideo.model.bean.common.User;
 import cn.ninanina.wushanvideo.ui.MainActivity;
@@ -21,6 +26,7 @@ import cn.ninanina.wushanvideo.ui.me.LoginFragment;
 import cn.ninanina.wushanvideo.ui.me.ProfileActivity;
 import cn.ninanina.wushanvideo.ui.me.RegisterFragment;
 import cn.ninanina.wushanvideo.util.EncodeUtil;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -142,6 +148,9 @@ public class CommonPresenter extends BasePresenter {
                 });
     }
 
+    /**
+     * 程序自动登录
+     */
     private void login(Context context) {
         String appKey = WushanApp.getAppKey();
         SharedPreferences profile = WushanApp.getProfile();
@@ -171,6 +180,9 @@ public class CommonPresenter extends BasePresenter {
                     });
     }
 
+    /**
+     * 用户主动登录
+     */
     public void login(LoginFragment fragment) {
         String appKey = WushanApp.getAppKey();
         String username = fragment.getUsernameEdit().getText().toString();
@@ -194,13 +206,21 @@ public class CommonPresenter extends BasePresenter {
                             User user = pairResult.getData().getSecond();
                             user.setPassword(password);
                             updateUserProfile(user);
-                            Toast.makeText(fragment.getContext(), "登录成功，欢迎回来！", Toast.LENGTH_SHORT).show();
-                            Objects.requireNonNull(fragment.getActivity()).finish();
+
+                            MainActivity.getInstance().initData();
+                            //todo:播放初始化数据动画，待收藏夹加载完成后结束activity
+                            for (int i = 1; i < 20; i++) {
+                                fragment.getPasswordEdit().postDelayed(() -> {
+                                    if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
+                                        fragment.getActivity().finish();
+                                    }
+                                }, i * 100);
+                            }
+                            ToastUtil.show("登录成功，欢迎回来！");
                         }
                     });
     }
 
-    //TODO:logout
     public void logout(ProfileActivity activity) {
         SharedPreferences profile = WushanApp.getProfile();
         SharedPreferences.Editor editor = profile.edit();
@@ -220,6 +240,33 @@ public class CommonPresenter extends BasePresenter {
                 });
     }
 
+    public void updateUser() {
+        SharedPreferences profile = WushanApp.getProfile();
+        getCommonService().updateUser(getAppKey(), getToken(),
+                profile.getString("gender", ""),
+                profile.getString("password", ""),
+                profile.getString("nickname", ""),
+                profile.getInt("userAge", 0),
+                profile.getBoolean("straight", true))
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(userResult -> {
+                    ToastUtil.show("成功");
+                    updateUserProfile(userResult.getData());
+                    Handler handler = ProfileActivity.handler;
+                    if (handler != null) {
+                        Message message = new Message();
+                        message.what = ProfileActivity.update;
+                        handler.sendMessage(message);
+                    }
+                });
+    }
+
     private void updateUserProfile(User user) {
         SharedPreferences profile = WushanApp.getProfile();
         SharedPreferences.Editor editor = profile.edit();
@@ -229,6 +276,7 @@ public class CommonPresenter extends BasePresenter {
                 .putString("nickname", user.getNickname())
                 .putInt("userAge", user.getAge())
                 .putString("gender", user.getGender())
+                .putBoolean("straight", user.getStraight())
                 .putLong("registerTime", user.getRegisterTime())
                 .putLong("lastLoginTime", user.getLastLoginTime())
                 .apply();

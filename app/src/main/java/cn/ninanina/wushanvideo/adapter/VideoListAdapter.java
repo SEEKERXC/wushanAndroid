@@ -22,7 +22,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
-import cn.ninanina.wushanvideo.adapter.listener.VideoOptionClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.util.CommonUtils;
@@ -30,9 +29,9 @@ import cn.ninanina.wushanvideo.util.CommonUtils;
 public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Object> dataList;
     private VideoClickListener listener;
-    private VideoOptionClickListener optionsClickListener;
+    private VideoClickListener optionsClickListener;
 
-    public VideoListAdapter(List<Object> dataList, VideoClickListener itemClickListener, VideoOptionClickListener optionsClickListener) {
+    public VideoListAdapter(List<Object> dataList, VideoClickListener itemClickListener, VideoClickListener optionsClickListener) {
         this.dataList = dataList;
         this.listener = itemClickListener;
         this.optionsClickListener = optionsClickListener;
@@ -69,8 +68,12 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             String sTag = strTag.toString();
             if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
             videoCardHolder.label.setText(sTag);
-            videoCardHolder.videoCard.setOnClickListener(v -> listener.onVideoClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
-            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onVideoOptionClicked((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.itemView.setOnClickListener(v -> listener.onClick((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onClick((VideoDetail) dataList.get(holder.getLayoutPosition())));
+            videoCardHolder.itemView.setOnLongClickListener(v -> {
+                optionsClickListener.onClick((VideoDetail) dataList.get(holder.getLayoutPosition()));
+                return true;
+            });
         }
     }
 

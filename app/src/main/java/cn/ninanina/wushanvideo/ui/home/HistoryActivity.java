@@ -2,6 +2,9 @@ package cn.ninanina.wushanvideo.ui.home;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -28,6 +31,7 @@ import cn.ninanina.wushanvideo.adapter.HistoryAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.HistoryClickListener;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
@@ -65,6 +69,7 @@ public class HistoryActivity extends AppCompatActivity {
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
         swipe.setColorSchemeResources(R.color.tabColor);
         swipe.setRefreshing(true);
+        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
         initEvents();
     }
 
@@ -108,11 +113,17 @@ public class HistoryActivity extends AppCompatActivity {
         else dataList.add(Boolean.FALSE);
         HistoryAdapter adapter = (HistoryAdapter) content.getAdapter();
         if (adapter == null) {
-            content.setAdapter(new HistoryAdapter(dataList));
+            content.setAdapter(new HistoryAdapter(dataList, new DefaultVideoClickListener(this), new HistoryClickListener(this)));
         } else {
             adapter.insert(dataList);
         }
         this.swipe.setRefreshing(false);
+    }
+
+    public void delete(List<Pair<VideoUserViewed, VideoDetail>> pairs) {
+        HistoryAdapter adapter = (HistoryAdapter) content.getAdapter();
+        if (adapter != null)
+            adapter.delete(pairs);
     }
 
 }

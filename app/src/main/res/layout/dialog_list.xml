@@ -2,13 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:maxHeight="400dp"
     android:paddingTop="15dp">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/playlists"
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:paddingStart="4dp"
         android:paddingEnd="4dp" />
 

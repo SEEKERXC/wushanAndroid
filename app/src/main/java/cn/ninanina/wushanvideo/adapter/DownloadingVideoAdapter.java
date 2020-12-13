@@ -11,14 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.model.bean.common.DownloadInfo;
+import cn.ninanina.wushanvideo.ui.MainActivity;
 
 public class DownloadingVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -45,7 +44,14 @@ public class DownloadingVideoAdapter extends RecyclerView.Adapter<RecyclerView.V
         downloadingHolder.progress.setText(downloadInfo.getProgress());
         int width = downloadingHolder.unfinished.getMeasuredWidth();
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) downloadingHolder.finished.getLayoutParams();
-        layoutParams.width = width * downloadInfo.getPercentage() / 100;
+        if (downloadInfo.getPercentage() != 0)
+            layoutParams.width = width * downloadInfo.getPercentage() / 100;
+        downloadingHolder.itemView.setOnClickListener(v -> {
+            int status = downloadInfo.getStatus();
+            if (status != DownloadInfo.running)
+                MainActivity.getInstance().downloadService.resumeTask(downloadInfo);
+
+        });
     }
 
     @Override

@@ -40,4 +40,14 @@ public interface CommonService {
     @POST("user/logout")
     Observable<Result<ObjectUtils.Null>> logout(@Query("appKey") String appKey,
                                                 @Query("token") String token);
+
+    @POST("user/update")
+    Observable<Result<User>> updateUser(@Query("appKey") String appKey,
+                                        @Query("token") String token,
+                                        @Query("gender") String gender,
+                                        @Query("password") String password,
+                                        @Query("nickname") String nickname,
+                                        @Query("age") Integer age,
+                                        @Query("straight") Boolean straight);
+
 }

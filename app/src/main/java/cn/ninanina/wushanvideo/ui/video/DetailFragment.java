@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.ui.video;
 
+import android.app.Dialog;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.DialogInterface;
@@ -27,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -44,10 +46,10 @@ import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
+import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 import me.gujun.android.taggroup.TagGroup;
 
-//todo:设计成单个recyclerview，通过两个适配器解决。
 public class DetailFragment extends Fragment {
 
     @BindView(R.id.scroll)
@@ -96,19 +98,6 @@ public class DetailFragment extends Fragment {
     public final int page = 0;
     public final int size = 30;
 
-    private DownloadService downloadService;
-    private ServiceConnection downloadServiceConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder binder) {
-            DownloadService.DownloadBinder downloadBinder = (DownloadService.DownloadBinder) binder;
-            downloadService = downloadBinder.getService();
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-        }
-    };
-
     public DetailFragment(VideoDetail videoDetail) {
         super();
         this.videoDetail = videoDetail;
@@ -140,12 +129,14 @@ public class DetailFragment extends Fragment {
         if (!StringUtils.isEmpty(videoDetail.getTitleZh()))
             titleBuilder.append("（机翻：").append(videoDetail.getTitleZh()).append("）");
         titleTextView.setText(titleBuilder.toString());
-        List<String> strTags = new ArrayList<>();
-        for (Tag tag : videoDetail.getTags()) {
-            if (!StringUtils.isEmpty(tag.getTagZh())) strTags.add(tag.getTagZh());
-            else strTags.add(tag.getTag());
+        if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
+            List<String> strTags = new ArrayList<>();
+            for (Tag tag : videoDetail.getTags()) {
+                if (!StringUtils.isEmpty(tag.getTagZh())) strTags.add(tag.getTagZh());
+                else strTags.add(tag.getTag());
+            }
+            videoTags.setTags(strTags);
         }
-        videoTags.setTags(strTags);
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setSmoothScrollbarEnabled(true);
         relatedVideos.setLayoutManager(manager);
@@ -156,9 +147,6 @@ public class DetailFragment extends Fragment {
         refreshCollect();
         refreshDownload();
         refreshLikeAndDislike();
-
-        final Intent intent = new Intent(getContext(), DownloadService.class);
-        Objects.requireNonNull(getContext()).bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
 
         bindEvents();
     }
@@ -177,9 +165,11 @@ public class DetailFragment extends Fragment {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
                 return;
             }
-            AlertDialog dialog = DialogManager.getInstance().newCollectDialog(getContext(), videoDetail);
+
+            Dialog dialog = DialogManager.getInstance().newCollectDialog(getContext(), videoDetail);
             dialog.setOnDismissListener(dialog1 -> {
-                for (int i = 1; i <= 30; i++) {
+                for (int i = 1; i <= 10; i++) {
+                    if (collectImg == null) return;
                     collectImg.postDelayed(() -> refreshCollect(), i * 100);
                 }
             });
@@ -199,7 +189,7 @@ public class DetailFragment extends Fragment {
                 Toast.makeText(getContext(), "已经下载了", Toast.LENGTH_SHORT).show();
             } else {
                 downloaded = true;
-                new DefaultDownloadClickListener(downloadService).onClick(videoDetail);
+                new DefaultDownloadClickListener(MainActivity.getInstance().downloadService).onClick(videoDetail);
                 downloadNum.postDelayed(() -> refreshDownload(), 200);
             }
         }
@@ -235,7 +225,7 @@ public class DetailFragment extends Fragment {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
                 return;
             }
-            VideoPresenter.getInstance().dislikeVideo(getContext(), videoDetail.getId());
+            VideoPresenter.getInstance().dislikeVideo(videoDetail.getId());
             YoYo.with(Techniques.Tada)
                     .duration(500)
                     .playOn(dislikeImg);
@@ -256,6 +246,7 @@ public class DetailFragment extends Fragment {
     }
 
     public void enableDownload() {
+        if (downloadImg == null || downloadNum == null) return;
         if (downloaded) return;
         downloadEnabled = true;
         downloadImg.setImageResource(R.drawable.download_enabled);
@@ -264,11 +255,14 @@ public class DetailFragment extends Fragment {
 
     //刷新收藏状态
     public void refreshCollect() {
+        if (collectImg == null || collectNum == null) return;
         if (!DataHolder.getInstance().collectedVideo(videoDetail.getId())) {
             collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_enabled));
         } else {
             collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_clicked));
         }
+        if (videoDetail.getCollected() > 0)
+            collectNum.setText(String.valueOf(videoDetail.getCollected()));
     }
 
     //刷新下载状态
@@ -284,7 +278,7 @@ public class DetailFragment extends Fragment {
         }
     }
 
-    //刷新喜好状态
+    //刷新喜好
     public void refreshLikeAndDislike() {
         disliked = DataHolder.getInstance().dislikedVideo(videoDetail.getId());
         liked = DataHolder.getInstance().likedVideo(videoDetail.getId());
@@ -292,6 +286,9 @@ public class DetailFragment extends Fragment {
             dislikeImg.setImageResource(R.drawable.dislike_clicked);
         if (liked)
             likeImg.setImageResource(R.drawable.like_clicked);
+        if (videoDetail.getLiked() > 0) likeNum.setText(String.valueOf(videoDetail.getLiked()));
+        if (videoDetail.getDisliked() > 0)
+            dislikeNum.setText(String.valueOf(videoDetail.getDisliked()));
     }
 
     public LinearLayout getContent() {
