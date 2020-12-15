@@ -39,6 +39,7 @@ import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
+import cn.ninanina.wushanvideo.ui.home.LikeActivity;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
@@ -72,8 +73,10 @@ public class MeFragment extends Fragment {
     LinearLayout menuHistory;
     @BindView(R.id.menu_later)
     LinearLayout watchLater;
-    @BindView(R.id.menu_calendar)
-    LinearLayout menuCalendar;
+    @BindView(R.id.menu_like)
+    LinearLayout menuLike;
+    //    @BindView(R.id.menu_calendar)
+//    LinearLayout menuCalendar;
     @BindView(R.id.menu_setting)
     LinearLayout menuSetting;
     @BindView(R.id.menu_info)
@@ -165,7 +168,7 @@ public class MeFragment extends Fragment {
         newCollectDir.setOnClickListener(v -> {
             if (WushanApp.loggedIn())
                 DialogManager.getInstance().newCreatePlaylistDialog(MeFragment.this).show();
-            else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
+            else DialogManager.getInstance().newLoginDialog(getActivity()).show();
         });
         menuDownload.setOnClickListener(v -> {
             if (WushanApp.loggedIn()) {
@@ -181,6 +184,10 @@ public class MeFragment extends Fragment {
             Intent intent = new Intent(getContext(), WatchLaterActivity.class);
             startActivity(intent);
         });
+        menuLike.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), LikeActivity.class);
+            startActivity(intent);
+        });
     }
 
     public void refreshPlaylist() {
@@ -189,13 +196,16 @@ public class MeFragment extends Fragment {
             if (!CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
                 if (showPlaylists) {
                     PlaylistAdapter adapter = new PlaylistAdapter(DataHolder.getInstance().getPlaylists(), new ShowPlaylistClickListener(getContext()));
-                    adapter.setLongClickListener(new PlaylistLongClickListener(getContext()));
+                    adapter.setLongClickListener(new PlaylistLongClickListener(getActivity()));
                     playlist.setAdapter(adapter);
                     collectIcon.setImageResource(R.drawable.down);
                 } else {
                     playlist.setAdapter(new PlaylistAdapter(new ArrayList<>(), new ShowPlaylistClickListener(getContext())));
                     collectIcon.setImageResource(R.drawable.up);
                 }
+            } else {
+                PlaylistAdapter adapter = (PlaylistAdapter) playlist.getAdapter();
+                if (adapter != null) adapter.clear();
             }
         } else {
             PlaylistAdapter adapter = (PlaylistAdapter) playlist.getAdapter();

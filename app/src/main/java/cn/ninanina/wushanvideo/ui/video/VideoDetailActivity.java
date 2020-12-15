@@ -41,6 +41,7 @@ import cn.ninanina.wushanvideo.adapter.listener.PlayerTouchListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.DBHelper;
 import cn.ninanina.wushanvideo.util.FileUtil;
@@ -63,7 +64,7 @@ public class VideoDetailActivity extends AppCompatActivity {
 
     SimpleExoPlayer player;
 
-    private List<Fragment> fragments = new ArrayList<>(2);
+    public List<Fragment> fragments = new ArrayList<>(2);
     private List<String> tabTitles = new ArrayList<String>() {{
         add("详情");
         add("评论");
@@ -71,7 +72,7 @@ public class VideoDetailActivity extends AppCompatActivity {
 
     FragmentStateAdapter adapter;
 
-    private VideoDetail video;
+    public VideoDetail video;
 
     private int playerHeight;
 
@@ -91,6 +92,7 @@ public class VideoDetailActivity extends AppCompatActivity {
 
         initDetail();
         initPlayer();
+        MainActivity.getInstance().videoActivityStack.push(this);
     }
 
     @Override
@@ -205,6 +207,7 @@ public class VideoDetailActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         player.release();
+        MainActivity.getInstance().videoActivityStack.pop();
     }
 
     @Override

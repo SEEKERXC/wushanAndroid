@@ -13,8 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@android:color/white"
-        android:paddingStart="7dp"
-        android:paddingEnd="7dp">
+        android:paddingStart="7dp">
 
         <FrameLayout
             android:id="@+id/back"
@@ -36,6 +35,7 @@
         </FrameLayout>
 
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
@@ -47,30 +47,63 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/edit"
+            android:id="@+id/statistics"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginEnd="10dp"
-            android:background="@android:color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="2dp"
             android:gravity="center_vertical"
-            android:text="@string/edit"
-            android:textSize="13sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/statistics"
+            android:textColor="@color/tabColor"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/title"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="20dp"
+<!--        <ImageView-->
+<!--            android:id="@+id/search"-->
+<!--            android:layout_width="17dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_marginEnd="12dp"-->
+<!--            android:clickable="true"-->
+<!--            android:focusable="true"-->
+<!--            android:foreground="?android:attr/selectableItemBackground"-->
+<!--            android:src="@drawable/search"-->
+<!--            app:layout_constraintEnd_toStartOf="@+id/rank_content"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+        <LinearLayout
+            android:id="@+id/rank_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?android:attr/selectableItemBackground"
-            android:src="@drawable/search"
-            app:layout_constraintEnd_toStartOf="@id/edit"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/lines"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@drawable/three_lines"
+                app:layout_constraintEnd_toStartOf="@id/rank"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/rank"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:paddingStart="4dp"
+                android:paddingEnd="16dp"
+                android:text="更新时间"
+                android:textColor="@color/tabColor"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View

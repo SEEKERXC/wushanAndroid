@@ -32,6 +32,7 @@ public class VideoListFragment extends Fragment {
     private String type;
 
     private boolean isLoading = false;
+    private boolean loadingFinished = false;
     public final int size = 10;
 
     @Nullable
@@ -57,7 +58,7 @@ public class VideoListFragment extends Fragment {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 //列表中LastVisibleItem为倒数第2行时，加载更多
-                if (manager.findLastVisibleItemPosition() + 2 >= manager.getItemCount() && !isLoading) {
+                if (manager.findLastVisibleItemPosition() + 3 >= manager.getItemCount() && !isLoading && !loadingFinished) {
                     VideoPresenter.getInstance().getRecommendVideoList(VideoListFragment.this, VideoPresenter.RecyclerViewOp.APPEND);
                 }
                 super.onScrolled(recyclerView, dx, dy);
@@ -83,6 +84,10 @@ public class VideoListFragment extends Fragment {
 
     public void setLoading(boolean loading) {
         isLoading = loading;
+    }
+
+    public void setLoadingFinished(boolean loadingFinished) {
+        this.loadingFinished = loadingFinished;
     }
 
 }

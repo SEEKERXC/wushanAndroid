@@ -5,8 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,10 +29,12 @@ public class TagVideoActivity extends AppCompatActivity {
     ImageView back;
     @BindView(R.id.tag_name)
     TextView name;
-    @BindView(R.id.option)
-    ImageView option;
+    @BindView(R.id.search)
+    FrameLayout search;
     @BindView(R.id.info)
     TextView info;
+    @BindView(R.id.swipe)
+    public SwipeRefreshLayout swipe;
     @BindView(R.id.content)
     RecyclerView content;
 
@@ -61,13 +65,14 @@ public class TagVideoActivity extends AppCompatActivity {
                 if (manager.findLastVisibleItemPosition() + 2 >= manager.getItemCount() && !isLoading && !loadingFinished) {
                     System.out.println(manager.getItemCount());
                     page++;
-                    VideoPresenter.getInstance().getVideosForTag(TagVideoActivity.this);
+                    VideoPresenter.getInstance().getVideosForTag(TagVideoActivity.this, VideoPresenter.RecyclerViewOp.APPEND);
                 }
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
+        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));//todo
         back.setOnClickListener(v -> TagVideoActivity.this.finish());
-        VideoPresenter.getInstance().getVideosForTag(this);
+        VideoPresenter.getInstance().getVideosForTag(this, VideoPresenter.RecyclerViewOp.INIT);
     }
 
     public Tag getTag() {

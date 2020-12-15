@@ -5,8 +5,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.view.Gravity;
 import android.view.MenuItem;
+import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +24,7 @@ import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
+import java.util.Stack;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,11 +35,13 @@ import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
 import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
+import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class MainActivity extends AppCompatActivity {
     private static MainActivity mainActivity;
 
-    private Fragment[] fragments;
+    public Fragment[] fragments;
     private HomeFragment homeFragment;
     private TagFragment tagFragment;
     private InstantFragment instantFragment;
@@ -55,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceDisconnected(ComponentName name) {
         }
     };
+
+    public Stack<VideoDetailActivity> videoActivityStack = new Stack<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
                     transaction.add(R.id.main_container, fragments[index]);
                 }
                 transaction.show(fragments[index]).commitAllowingStateLoss();
+                getSupportFragmentManager().executePendingTransactions();
+
                 StyledPlayerView playerView = ((InstantFragment) fragments[2]).getPlayerView();
                 if (index != 2 && playerView != null) {
                     Objects.requireNonNull(playerView.getPlayer()).pause();
@@ -133,10 +145,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //标注加载完视频的收藏夹数量
+    public int playlistLoadingFinished = 0;
+
     //在登录之后初始化数据
     public void initData() {
         VideoPresenter.getInstance().loadPlaylists();
-        VideoPresenter.getInstance().loadLikedAndDisliked(this);
+        VideoPresenter.getInstance().loadLikedAndDisliked();
         VideoPresenter.getInstance().loadAllHistory();
     }
 

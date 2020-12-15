@@ -35,11 +35,14 @@ import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class PlaylistActivity extends AppCompatActivity {
     @BindView(R.id.back)
     FrameLayout back;
+    @BindView(R.id.edit)
+    TextView edit;
     @BindView(R.id.playlist_cover)
     SimpleDraweeView cover;
     @BindView(R.id.playlist_name)
@@ -54,8 +57,8 @@ public class PlaylistActivity extends AppCompatActivity {
     private Playlist playlist;
 
     public static Handler handler;
-    public static final int updateOne = 0;
     public static final int deleteOne = 1;
+    public static final int updateInfo = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +71,15 @@ public class PlaylistActivity extends AppCompatActivity {
         bindEvent();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler = null;
+    }
 
     private void bindEvent() {
         back.setOnClickListener(v -> PlaylistActivity.this.finish());
+        edit.setOnClickListener(v -> DialogManager.getInstance().newPlaylistOptionDialog(PlaylistActivity.this, playlist).show());
     }
 
     private void initData() {
@@ -85,11 +94,10 @@ public class PlaylistActivity extends AppCompatActivity {
         handler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
-                if (msg.what == updateOne) {
-                    adapter.updateOne(msg.arg1);
-                    refreshData();
-                } else if (msg.what == deleteOne) {
+                if (msg.what == deleteOne) {
                     adapter.deleteOne(msg.arg1);
+                    refreshData();
+                } else if (msg.what == updateInfo) {
                     refreshData();
                 }
                 super.handleMessage(msg);

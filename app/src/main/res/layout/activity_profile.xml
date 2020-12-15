@@ -85,7 +85,6 @@
                         android:paddingBottom="13dp">
 
 
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
@@ -100,9 +99,9 @@
                             android:id="@+id/profile_username"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/profile"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -151,9 +150,9 @@
                             android:id="@+id/profile_password"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/password"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -170,8 +169,8 @@
                 android:layout_marginTop="10dp"
                 app:cardCornerRadius="5dp"
                 app:cardElevation="0dp"
-                app:cardMaxElevation="0dp"
-                app:cardPreventCornerOverlap="false">
+                app:cardPreventCornerOverlap="false"
+                app:cardUseCompatPadding="false">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -216,9 +215,9 @@
                             android:id="@+id/profile_nickname"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/nickname"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -267,10 +266,9 @@
                         <TextView
                             android:id="@+id/profile_gender"
                             android:layout_width="wrap_content"
-                            android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
-                            android:text="@string/gender"
-                            android:textSize="16sp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="12dp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -320,7 +318,7 @@
                             android:id="@+id/profile_age"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/zero"
                             android:textSize="16sp"
                             app:layout_constraintEnd_toEndOf="parent"
@@ -372,19 +370,14 @@
                             android:id="@+id/profile_orientation"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/straight"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/divider" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -429,9 +422,9 @@
                             android:id="@+id/profile_register"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/register_time"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -468,9 +461,9 @@
                             android:id="@+id/profile_login"
                             android:layout_width="wrap_content"
                             android:layout_height="25dp"
-                            android:layout_marginEnd="20dp"
+                            android:layout_marginEnd="12dp"
                             android:text="@string/last_login_time"
-                            android:textSize="16sp"
+                            android:textSize="15sp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 

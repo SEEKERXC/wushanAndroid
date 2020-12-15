@@ -33,9 +33,12 @@ public class FileUtil {
         if (byteLength < 1024) return "0KB";
         else if (byteLength < 1024 * 1024) {
             return byteLength / 1024 + "KB";
-        } else {
+        } else if (byteLength < 1024 * 1024 * 1024) {
             double MB = (double) byteLength / (1024 * 1024);
             return String.format(Locale.CHINA, "%.1f", MB) + "MB";
+        } else {
+            double GB = (double) byteLength / (1024 * 1024 * 1024);
+            return String.format(Locale.CHINA, "%.2f", GB) + "GB";
         }
     }
 }

@@ -1,6 +1,7 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -18,6 +19,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,9 +31,13 @@ import cn.ninanina.wushanvideo.adapter.DownloadedVideoAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DownloadOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.OfflineVideoClickListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.common.VideoSortBy;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.FileUtil;
+import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class DownloadedFragment extends Fragment {
     @BindView(R.id.list)
@@ -43,6 +49,8 @@ public class DownloadedFragment extends Fragment {
     public final static int update = 0;
     public final static int updateOne = 1;
     public final static int deleteOne = 2;
+
+    public VideoSortBy sortBy = VideoSortBy.UPDATE_TIME;
 
     @Nullable
     @Override
@@ -76,7 +84,20 @@ public class DownloadedFragment extends Fragment {
         loadData();
     }
 
-    private void loadData() {
+    @Override
+    public void onStop() {
+        super.onStop();
+        handler = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        handler = null;
+    }
+
+    public void loadData() {
+        long totalLength = 0;
         File dir = FileUtil.getVideoDir();
         File[] videos = dir.listFiles();
         List<VideoDetail> videoDetails = new ArrayList<>();
@@ -85,16 +106,34 @@ public class DownloadedFragment extends Fragment {
                 String name = file.getName();
                 if (!name.endsWith(".mp4")) continue;
                 VideoDetail videoDetail = WushanApp.getInstance().getDbHelper().getVideo(name);
+                if (videoDetail == null) continue;
                 if (videoDetail.getId() == null) continue;
                 videoDetail.setSrc(dir.getAbsolutePath() + "/" + name);
                 videoDetail.setUpdateTime(file.lastModified());
                 videoDetail.setSize(file.length());
                 videoDetails.add(videoDetail);
+                totalLength += file.length();
             }
-        Collections.sort(videoDetails, (o1, o2) -> o2.getUpdateTime().intValue() - o1.getUpdateTime().intValue());
+        switch (sortBy) {
+            case UPDATE_TIME:
+                Collections.sort(videoDetails, (o1, o2) -> o2.getUpdateTime().intValue() - o1.getUpdateTime().intValue());
+                break;
+            case PLAY:
+                Collections.sort(videoDetails, (o1, o2) -> DataHolder.getInstance().viewedCount(o2.getId()) - DataHolder.getInstance().viewedCount(o1.getId()));
+                break;
+            case NAME:
+                break;
+            case SIZE:
+                Collections.sort(videoDetails, (o1, o2) -> o2.getSize().intValue() - o1.getSize().intValue());
+                break;
+            case DURATION:
+                Collections.sort(videoDetails, (o1, o2) -> CommonUtils.getDurationSeconds(o2.getDuration()) - CommonUtils.getDurationSeconds(o1.getDuration()));
+                break;
+        }
         list.setAdapter(new DownloadedVideoAdapter(new ArrayList<>(videoDetails),
                 new OfflineVideoClickListener(getContext()),
                 new DownloadOptionClickListener(getContext())));
+        ((DownloadActivity) Objects.requireNonNull(getActivity())).statistics.setText("已用" + FileUtil.getSize(totalLength));
         swipeRefreshLayout.setRefreshing(false);
     }
 }

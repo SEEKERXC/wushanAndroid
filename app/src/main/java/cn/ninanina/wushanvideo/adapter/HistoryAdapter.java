@@ -4,6 +4,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -15,6 +16,7 @@ import com.facebook.drawee.view.SimpleDraweeView;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -82,7 +84,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             else videoHolder.videoTitle.setText(videoDetail.getTitleZh());
             videoHolder.viewCount.setText("观看次数：" + viewed.getViewCount());
             videoHolder.videoDuration.setText(CommonUtils.getDurationString(videoDetail.getDuration()));
-            videoHolder.lastTime.setText("上次观看时间：" + TimeUtil.getTime(viewed.getTime()));
+            videoHolder.lastTime.setText("上次观看：" + TimeUtil.getTime(viewed.getTime()));
             videoHolder.itemView.setOnClickListener(v -> videoClickListener.onClick(videoDetail));
             videoHolder.itemView.setOnLongClickListener(v -> {
                 optionClickListener.onClicked(pair);
@@ -120,11 +122,29 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyItemRangeInserted(count, data.size());
     }
 
-    public void delete(List<Pair<VideoUserViewed, VideoDetail>> pairs) {
-        for (Pair<VideoUserViewed, VideoDetail> pair : pairs) {
-            dataList.remove(pair);
+    public void delete(List<VideoUserViewed> list) {
+        for (VideoUserViewed viewed : list) {
+            int indexToDelete = -1;
+            for (int i = 0; i < dataList.size(); i++) {
+                Object o = dataList.get(i);
+                if (o instanceof Pair) {
+                    Pair<VideoUserViewed, VideoDetail> pair = (Pair<VideoUserViewed, VideoDetail>) o;
+                    if (pair.getFirst().equals(viewed)) {
+                        indexToDelete = i;
+                        break;
+                    }
+                }
+            }
+            if (indexToDelete < 0) return;
+            dataList.remove(indexToDelete);
+            notifyItemRemoved(indexToDelete);
         }
-        notifyDataSetChanged();
+    }
+
+    public void deleteAll() {
+        int size = dataList.size();
+        dataList.clear();
+        notifyItemRangeRemoved(0, size);
     }
 
     static final class VideoHolder extends RecyclerView.ViewHolder {
@@ -139,7 +159,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         @BindView(R.id.lastTime)
         TextView lastTime;
         @BindView(R.id.video_action)
-        ImageButton videoMore;
+        FrameLayout videoMore;
 
         public VideoHolder(@NonNull View itemView) {
             super(itemView);

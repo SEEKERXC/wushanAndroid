@@ -125,9 +125,10 @@ public class ToWatchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     public void delete(List<Pair<ToWatch, VideoDetail>> pairs) {
         for (Pair<ToWatch, VideoDetail> pair : pairs) {
-            dataList.remove(pair);
+            int index = dataList.indexOf(pair);
+            if (index >= 0) dataList.remove(index);
+            notifyItemRemoved(index);
         }
-        notifyDataSetChanged();
     }
 
     @Override

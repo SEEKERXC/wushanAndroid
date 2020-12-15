@@ -37,6 +37,7 @@ public class TagSuggestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         SuggestHolder suggestHolder = (SuggestHolder) holder;
         suggestHolder.tag.setText(suggest.get(position).getTagZh());
+        suggestHolder.tagEn.setText("(" + suggest.get(position).getTag() + ")");
         suggestHolder.count.setText(String.valueOf(suggest.get(position).getVideoCount()));
         suggestHolder.itemView.setOnClickListener(v -> {
             recyclerView.setVisibility(View.GONE);
@@ -52,6 +53,8 @@ public class TagSuggestAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     static final class SuggestHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tag)
         TextView tag;
+        @BindView(R.id.tagEn)
+        TextView tagEn;
         @BindView(R.id.count)
         TextView count;
 

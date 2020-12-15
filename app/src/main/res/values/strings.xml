@@ -11,7 +11,7 @@
     <string name="xiazai">下载管理</string>
     <string name="shoucang">我的收藏</string>
     <string name="shezhi">设置</string>
-    <string name="guanyu">关于我们</string>
+    <string name="guanyu">关于/分享</string>
     <string name="zhanghao">请输入账号</string>
     <string name="mima">请输入密码</string>
     <string name="confirm">请确认密码</string>
@@ -98,4 +98,7 @@
     <string name="rank_download">下载多</string>
     <string name="duration_all">所有时长</string>
     <string name="tag_filter">标签筛选</string>
+    <string name="statistics">统计</string>
+    <string name="rank">排序</string>
+    <string name="me_like">我喜欢的</string>
 </resources>

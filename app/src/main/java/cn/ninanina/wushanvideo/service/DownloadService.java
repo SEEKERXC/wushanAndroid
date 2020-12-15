@@ -12,17 +12,22 @@ import androidx.annotation.Nullable;
 
 import com.arialyy.annotations.Download;
 import com.arialyy.aria.core.Aria;
+import com.arialyy.aria.core.download.DownloadEntity;
+import com.arialyy.aria.core.download.DownloadReceiver;
 import com.arialyy.aria.core.task.DownloadTask;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.common.DownloadInfo;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.ui.video.DetailFragment;
 import cn.ninanina.wushanvideo.ui.video.DownloadedFragment;
+import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import cn.ninanina.wushanvideo.util.PermissionUtils;
 import cn.ninanina.wushanvideo.util.ToastUtil;
@@ -42,6 +47,7 @@ public class DownloadService extends Service {
         long taskId = Aria.download(this)
                 .load(videoDetail.getSrc())
                 .setFilePath(path)
+                .ignoreFilePathOccupy()
                 .create();
         if (taskId == -1) {
             ToastUtil.show("创建下载失败，请稍后重试");
@@ -121,6 +127,7 @@ public class DownloadService extends Service {
 
     @Download.onTaskFail
     public void onTaskFail(DownloadTask task) {
+        if (task == null) return;
         ToastUtil.show(task.getDownloadEntity().getFileName() + " 下载失败");
         DownloadInfo downloadInfo = tasks.get(task.getKey());
         if (downloadInfo == null) return;
@@ -142,10 +149,25 @@ public class DownloadService extends Service {
             message.what = DownloadedFragment.update;
             handler.sendMessage(message);
         }
+        if (!MainActivity.getInstance().videoActivityStack.empty()) {
+            VideoDetailActivity detailActivity = null;
+            for (VideoDetailActivity activity : MainActivity.getInstance().videoActivityStack) {
+                if (activity.video.getSrc().equals(task.getKey())) detailActivity = activity;
+            }
+            if (detailActivity == null) return;
+            DetailFragment fragment = (DetailFragment) detailActivity.fragments.get(0);
+            Handler handler1 = fragment.handler;
+            if (handler1 != null && task.getKey().equals(fragment.videoDetail.getSrc())) {
+                Message message = new Message();
+                message.what = DetailFragment.downloadFinish;
+                handler1.sendMessage(message);
+            }
+        }
     }
 
     @Download.onTaskRunning
     public void onTaskRunning(DownloadTask task) {
+        //发送给下载页面
         long len = task.getFileSize();
         long current = task.getCurrentProgress();
 
@@ -155,5 +177,22 @@ public class DownloadService extends Service {
         downloadInfo.setSpeed(FileUtil.getSize(task.getSpeed()) + "/s");
         downloadInfo.setProgress(FileUtil.getSize(current) + "/" + FileUtil.getSize(len));
         downloadInfo.setPercentage(task.getPercent());
+
+        //发送给视频页面
+        String src = task.getKey();
+        if (!MainActivity.getInstance().videoActivityStack.empty()) {
+            VideoDetailActivity activity = null;
+            for (VideoDetailActivity detailActivity : MainActivity.getInstance().videoActivityStack) {
+                if (detailActivity.video.getSrc().equals(task.getKey())) activity = detailActivity;
+            }
+            if (activity == null) return;
+            DetailFragment fragment = (DetailFragment) activity.fragments.get(0);
+            Handler handler = fragment.handler;
+            if (handler != null && src.equals(fragment.videoDetail.getSrc())) {
+                Message message = new Message();
+                message.what = DetailFragment.downloading;
+                handler.sendMessage(message);
+            }
+        }
     }
 }

@@ -1,24 +1,21 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.app.Dialog;
-import android.app.Service;
-import android.content.ComponentName;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
@@ -33,19 +30,19 @@ import com.google.android.gms.common.util.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
-import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 import me.gujun.android.taggroup.TagGroup;
@@ -55,7 +52,7 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.scroll)
     NestedScrollView scrollView;
     @BindView(R.id.content)
-    LinearLayout content;
+    public LinearLayout content;
     @BindView(R.id.video_detail_title)
     TextView titleTextView;
     @BindView(R.id.video_detail_info)
@@ -89,19 +86,24 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.detail_related_videos)
     RecyclerView relatedVideos;
 
-    VideoDetail videoDetail;
+    public VideoDetail videoDetail;
     private boolean downloadEnabled = false;
     private boolean downloaded;
     private boolean disliked;
     private boolean liked;
 
-    public final int page = 0;
-    public final int size = 30;
+    public int page = 0;
+    public final int size = 10;//分三次加载，共加载30个相关视频
 
-    public DetailFragment(VideoDetail videoDetail) {
+    public Handler handler;
+    public static final int downloading = 0;//正在下载
+    public static final int downloadFinish = 1; //下载完成
+    public static final int refreshData = 2;//刷新收藏数、喜欢和不喜欢数
+
+    public DetailFragment(VideoDetail v) {
         super();
-        this.videoDetail = videoDetail;
-        this.videoDetail.setViewed(this.videoDetail.getViewed() / 100);
+        videoDetail = v;
+        videoDetail.setViewed(videoDetail.getViewed() / 100);
     }
 
     @Nullable
@@ -129,26 +131,54 @@ public class DetailFragment extends Fragment {
         if (!StringUtils.isEmpty(videoDetail.getTitleZh()))
             titleBuilder.append("（机翻：").append(videoDetail.getTitleZh()).append("）");
         titleTextView.setText(titleBuilder.toString());
+        Collections.sort(videoDetail.getTags(), (o1, o2) -> o2.getVideoCount() - o1.getVideoCount());
         if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
             List<String> strTags = new ArrayList<>();
             for (Tag tag : videoDetail.getTags()) {
+                if (strTags.contains(tag.getTagZh()) || strTags.contains(tag.getTag())) continue;
                 if (!StringUtils.isEmpty(tag.getTagZh())) strTags.add(tag.getTagZh());
                 else strTags.add(tag.getTag());
             }
             videoTags.setTags(strTags);
+            videoTags.setOnTagClickListener(tag -> {
+                for (Tag tag1 : videoDetail.getTags()) {
+                    if (tag1.getTagZh().equals(tag) || tag1.getTag().equals(tag)) {
+                        new TagClickListener(getContext()).onTagClicked(tag1);
+                    }
+                }
+            });
         }
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setSmoothScrollbarEnabled(true);
         relatedVideos.setLayoutManager(manager);
         relatedVideos.setNestedScrollingEnabled(false);
-        relatedVideos.setHasFixedSize(true);
-        VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId());
+        VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), true);
+        page++;
+        VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), false);
+        page++;
+        VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), false);
+
 
         refreshCollect();
         refreshDownload();
         refreshLikeAndDislike();
 
         bindEvents();
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (downloadNum == null) return;
+                if (msg.what == downloading) {
+                    downloadNum.setText("正在下载");
+                } else if (msg.what == downloadFinish) {
+                    downloadNum.setText("下载完成");
+                } else if (msg.what == refreshData) {
+                    refreshCollect();
+                    refreshLikeAndDislike();
+                }
+                super.handleMessage(msg);
+            }
+        };
     }
 
     private void bindEvents() {
@@ -166,7 +196,7 @@ public class DetailFragment extends Fragment {
                 return;
             }
 
-            Dialog dialog = DialogManager.getInstance().newCollectDialog(getContext(), videoDetail);
+            Dialog dialog = DialogManager.getInstance().newCollectDialog(getActivity(), videoDetail);
             dialog.setOnDismissListener(dialog1 -> {
                 for (int i = 1; i <= 10; i++) {
                     if (collectImg == null) return;
@@ -202,7 +232,7 @@ public class DetailFragment extends Fragment {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
                 return;
             }
-            VideoPresenter.getInstance().likeVideo(getContext(), videoDetail.getId());
+            VideoPresenter.getInstance().likeVideo(getActivity(), videoDetail);
             YoYo.with(Techniques.Bounce)
                     .duration(500)
                     .playOn(likeImg);
@@ -215,6 +245,11 @@ public class DetailFragment extends Fragment {
                 likeNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
                 liked = true;
             }
+            if (disliked) {
+                dislikeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.dislike_enabled));
+                dislikeNum.setTextColor(getResources().getColor(R.color.tabColor, getContext().getTheme()));
+                disliked = false;
+            }
         }
     };
 
@@ -225,7 +260,7 @@ public class DetailFragment extends Fragment {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
                 return;
             }
-            VideoPresenter.getInstance().dislikeVideo(videoDetail.getId());
+            VideoPresenter.getInstance().dislikeVideo(getActivity(), videoDetail);
             YoYo.with(Techniques.Tada)
                     .duration(500)
                     .playOn(dislikeImg);
@@ -238,6 +273,11 @@ public class DetailFragment extends Fragment {
                 dislikeNum.setTextColor(getResources().getColor(R.color.black, getContext().getTheme()));
                 disliked = true;
             }
+            if (liked) {
+                likeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.like_enabled));
+                likeNum.setTextColor(getResources().getColor(R.color.tabColor, getContext().getTheme()));
+                liked = false;
+            }
         }
     };
 
@@ -246,7 +286,7 @@ public class DetailFragment extends Fragment {
     }
 
     public void enableDownload() {
-        if (downloadImg == null || downloadNum == null) return;
+        if (downloadImg == null || downloadNum == null || getContext() == null) return;
         if (downloaded) return;
         downloadEnabled = true;
         downloadImg.setImageResource(R.drawable.download_enabled);
@@ -255,7 +295,7 @@ public class DetailFragment extends Fragment {
 
     //刷新收藏状态
     public void refreshCollect() {
-        if (collectImg == null || collectNum == null) return;
+        if (collectImg == null || collectNum == null || getContext() == null) return;
         if (!DataHolder.getInstance().collectedVideo(videoDetail.getId())) {
             collectImg.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.shoucang_enabled));
         } else {
@@ -263,10 +303,12 @@ public class DetailFragment extends Fragment {
         }
         if (videoDetail.getCollected() > 0)
             collectNum.setText(String.valueOf(videoDetail.getCollected()));
+        else collectNum.setText("收藏");
     }
 
     //刷新下载状态
     public void refreshDownload() {
+        if (downloadNum == null || downloadImg == null) return;
         downloaded = WushanApp.getInstance().getDbHelper().downloaded(videoDetail.getId());
         if (downloaded) {
             downloadImg.setImageResource(R.drawable.download_clicked);
@@ -274,25 +316,27 @@ public class DetailFragment extends Fragment {
             downloadNum.setTextColor(getContext().getColor(R.color.tabColor));
         } else {
             downloadImg.setImageResource(R.drawable.download_enabled);
-            downloadNum.setText("下载");
+            if (videoDetail.getDownloaded() > 0)
+                downloadNum.setText(String.valueOf(videoDetail.getDownloaded()));
+            else downloadNum.setText("下载");
         }
     }
 
     //刷新喜好
     public void refreshLikeAndDislike() {
+        if (dislikeImg == null || dislikeNum == null || likeNum == null || likeImg == null) return;
         disliked = DataHolder.getInstance().dislikedVideo(videoDetail.getId());
         liked = DataHolder.getInstance().likedVideo(videoDetail.getId());
         if (disliked)
             dislikeImg.setImageResource(R.drawable.dislike_clicked);
         if (liked)
             likeImg.setImageResource(R.drawable.like_clicked);
-        if (videoDetail.getLiked() > 0) likeNum.setText(String.valueOf(videoDetail.getLiked()));
+        if (videoDetail.getLiked() > 0)
+            likeNum.setText(String.valueOf(videoDetail.getLiked()));
+        else likeNum.setText("喜欢");
         if (videoDetail.getDisliked() > 0)
             dislikeNum.setText(String.valueOf(videoDetail.getDisliked()));
-    }
-
-    public LinearLayout getContent() {
-        return content;
+        else dislikeNum.setText("不喜欢");
     }
 
     @Override
@@ -303,5 +347,11 @@ public class DetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        handler = null;
     }
 }

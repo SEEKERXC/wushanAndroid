@@ -57,8 +57,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public VideoDetail getVideo(String name) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query("video", new String[]{"*"}, "name = ?", new String[]{name}, null, null, null);
-        VideoDetail videoDetail = new VideoDetail();
+        VideoDetail videoDetail = null;
         while (cursor.moveToNext()) {
+            videoDetail = new VideoDetail();
             videoDetail.setId(cursor.getLong(cursor.getColumnIndex("_id")));
             videoDetail.setTitle(cursor.getString(cursor.getColumnIndex("title")));
             videoDetail.setTitleZh(cursor.getString(cursor.getColumnIndex("titleZh")));
@@ -88,15 +89,13 @@ public class DBHelper extends SQLiteOpenHelper {
         return i > 0 && result;
     }
 
-    public boolean renameVideo(VideoDetail videoDetail, String name) {
+    public boolean renameVideo(VideoDetail videoDetail, File renameTo) {
         File file = new File(FileUtil.getVideoDir().getAbsolutePath() + "/" + getNameById(videoDetail.getId()));
-        if (!name.endsWith(".mp4")) name += ".mp4";
-        File renameTo = new File(FileUtil.getVideoDir().getAbsolutePath() + "/" + name);
         if (!file.exists()) return false;
         boolean result = file.renameTo(renameTo);
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("name", name);
+        values.put("name", renameTo.getName());
         int i = db.update("video", values, "_id = ?", new String[]{String.valueOf(videoDetail.getId())});
         Handler handler = DownloadedFragment.handler;
         if (i > 0 && result && handler != null) {

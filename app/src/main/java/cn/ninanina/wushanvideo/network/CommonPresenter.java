@@ -53,7 +53,7 @@ public class CommonPresenter extends BasePresenter {
                     .subscribeOn(Schedulers.io())
                     .doOnError(throwable -> {
                         Looper.prepare();
-                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("网络开小差了~");
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
@@ -72,7 +72,7 @@ public class CommonPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -108,7 +108,7 @@ public class CommonPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                             Looper.prepare();
-                            Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                            ToastUtil.show("网络开小差了~");
                             Looper.loop();
                         }
                 )
@@ -117,15 +117,23 @@ public class CommonPresenter extends BasePresenter {
                     String code = pairResult.getRspCode();
                     if (code.equals(ResultMsg.APPKEY_INVALID.getCode())) {
                     } else if (code.equals(ResultMsg.USER_EXIST.getCode())) {
-                        Toast.makeText(fragment.getContext(), "用户已存在，请换个账号", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("用户已存在，请换个账号");
                     } else if (code.equals(ResultMsg.SUCCESS.getCode())) {
                         SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                         editor.putString("token", pairResult.getData().getFirst()).apply();
-                        Toast.makeText(fragment.getContext(), "注册成功！", Toast.LENGTH_SHORT).show();
                         User user = pairResult.getData().getSecond();
                         user.setPassword(password);
                         updateUserProfile(user);
-                        Objects.requireNonNull(fragment.getActivity()).finish();
+                        MainActivity.getInstance().initData();
+                        //todo:播放初始化数据动画，待收藏夹加载完成后结束activity
+                        for (int i = 1; i < 20; i++) {
+                            fragment.getPasswordEdit().postDelayed(() -> {
+                                if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
+                                    fragment.getActivity().finish();
+                                }
+                            }, i * 100);
+                        }
+                        ToastUtil.show("注册成功！");
                     }
                 });
     }
@@ -138,7 +146,7 @@ public class CommonPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -161,14 +169,14 @@ public class CommonPresenter extends BasePresenter {
                     .subscribeOn(Schedulers.io())
                     .doOnError(throwable -> {
                         Looper.prepare();
-                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("网络开小差了~");
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(pairResult -> {
                         String resCode = pairResult.getRspCode();
                         if (resCode.equals(ResultMsg.FAILED.getCode())) {
-                            Toast.makeText(context, "登录失败，用户名或密码不对", Toast.LENGTH_SHORT).show();
+                            ToastUtil.show("登录失败，用户名或密码不对");
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
                             SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                             editor.putString("token", pairResult.getData().getFirst()).apply();
@@ -192,14 +200,14 @@ public class CommonPresenter extends BasePresenter {
                     .subscribeOn(Schedulers.io())
                     .doOnError(throwable -> {
                         Looper.prepare();
-                        Toast.makeText(WushanApp.getInstance().getApplicationContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("网络开小差了~");
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(pairResult -> {
                         String resCode = pairResult.getRspCode();
                         if (resCode.equals(ResultMsg.FAILED.getCode())) {
-                            Toast.makeText(fragment.getContext(), "登录失败，用户名或密码不对", Toast.LENGTH_SHORT).show();
+                            ToastUtil.show("登录失败，用户名或密码错误");
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
                             SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                             editor.putString("token", pairResult.getData().getFirst()).apply();
@@ -228,13 +236,13 @@ public class CommonPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(activity, "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(nullResult -> {
-                    Toast.makeText(activity, "成功退出登录", Toast.LENGTH_SHORT).show();
-                    editor.remove("token").remove("userId").remove("username").remove("password").remove("nickname")
+                    ToastUtil.show("成功退出登录");
+                    editor.remove("token").remove("userId").remove("username").remove("password").remove("n+ickname")
                             .remove("userAge").remove("gender").remove("registerTime").remove("lastLoginTime").apply();
                     activity.finish();
                 });
@@ -256,8 +264,10 @@ public class CommonPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(userResult -> {
-                    ToastUtil.show("成功");
-                    updateUserProfile(userResult.getData());
+                    ToastUtil.show("操作成功");
+                    User user = userResult.getData();
+                    user.setPassword(profile.getString("password", ""));
+                    updateUserProfile(user);
                     Handler handler = ProfileActivity.handler;
                     if (handler != null) {
                         Message message = new Message();

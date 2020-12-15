@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:background="@color/popup"
+    android:background="@color/tagColor"
     android:orientation="horizontal">
 
     <FrameLayout
@@ -11,7 +11,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:layout_width="wrap_content"
@@ -34,7 +35,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:layout_width="wrap_content"
@@ -44,7 +46,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
-            android:text="0-30分钟"
+            android:text="0-20分钟"
             android:textColor="@color/tabColor"
             android:textSize="13sp" />
     </FrameLayout>
@@ -53,7 +55,10 @@
         android:id="@+id/duration_middle"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:layout_width="wrap_content"
@@ -63,7 +68,7 @@
             android:paddingTop="5dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
-            android:text="30-60分钟"
+            android:text="20-60分钟"
             android:textColor="@color/tabColor"
             android:textSize="13sp" />
     </FrameLayout>
@@ -72,7 +77,10 @@
         android:id="@+id/duration_long"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:layout_width="wrap_content"

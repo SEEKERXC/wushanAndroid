@@ -16,7 +16,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ui.home.WatchLaterActivity"></activity>
+        <activity android:name=".ui.home.LikeActivity"></activity>
+        <activity android:name=".ui.home.WatchLaterActivity" />
         <activity
             android:name=".ui.home.HistoryActivity"
             android:screenOrientation="portrait" />
@@ -44,7 +45,8 @@
         <activity
             android:name=".ui.me.LoginActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Full" />
+            android:theme="@style/AppTheme.Full"
+            android:windowSoftInputMode="stateHidden|adjustPan" />
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

@@ -73,6 +73,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <ImageView
+                    android:id="@+id/search"
                     android:layout_width="20dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="20dp"
@@ -95,22 +96,29 @@
                 android:layout_marginTop="10dp"
                 android:orientation="horizontal">
 
+
                 <FrameLayout
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_marginStart="8dp"
                     android:layout_weight="5">
 
-                    <com.facebook.drawee.view.SimpleDraweeView
-                        android:id="@+id/playlist_cover"
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cover_card"
                         android:layout_width="match_parent"
-                        android:layout_height="130dp"
+                        android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:placeholderImage="@drawable/cover1"
-                        fresco:roundedCornerRadius="10dp"
-                        fresco:viewAspectRatio="1" />
+                        app:cardCornerRadius="8dp">
+
+                        <com.facebook.drawee.view.SimpleDraweeView
+                            android:id="@+id/playlist_cover"
+                            android:layout_width="match_parent"
+                            android:layout_height="130dp"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:placeholderImage="@drawable/cover1"
+                            fresco:viewAspectRatio="1" />
+                    </androidx.cardview.widget.CardView>
                 </FrameLayout>
 
 

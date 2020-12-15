@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,8 +38,8 @@ import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private Context context;
-    private List<Object> dataList;
+    private Activity activity;
+    public List<Object> dataList;
 
     private VideoClickListener videoClickListener;
     private DownloadClickListener downloadListener;
@@ -46,8 +47,8 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     private final int typeVideo = 0;
 
-    public InstantVideoAdapter(Context context, List<Object> dataList) {
-        this.context = context;
+    public InstantVideoAdapter(Activity activity, List<Object> dataList) {
+        this.activity = activity;
         this.dataList = dataList;
     }
 
@@ -70,7 +71,7 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 InstantVideoHolder videoHolder = (InstantVideoHolder) holder;
                 videoHolder.title.setText(StringUtils.isEmpty(videoDetail.getTitleZh()) ? videoDetail.getTitle() : videoDetail.getTitleZh());
 
-                SimpleExoPlayer player = new SimpleExoPlayer.Builder(context).build();
+                SimpleExoPlayer player = new SimpleExoPlayer.Builder(activity).build();
                 if (CommonUtils.isSrcValid(videoDetail.getSrc())) {
                     MediaItem mediaItem = MediaItem.fromUri(videoDetail.getSrc());
                     player.setMediaItem(mediaItem);
@@ -89,44 +90,56 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 videoHolder.middle.setOnClickListener(v -> videoClickListener.onClick(videoDetail));
                 videoHolder.collectButton.setOnClickListener(v -> {
                     if (!WushanApp.loggedIn()) {
-                        DialogManager.getInstance().newLoginDialog(context).show();
+                        DialogManager.getInstance().newLoginDialog(activity).show();
                         return;
                     }
-                    DialogManager.getInstance().newCollectDialog(context, videoDetail).show();
+                    DialogManager.getInstance().newCollectDialog(activity, videoDetail).show();
                 });
+                if (videoDetail.getCollected() > 0)
+                    videoHolder.collectText.setText(String.valueOf(videoDetail.getCollected()));
                 videoHolder.downloadButton.setOnClickListener(v -> {
                     if (!WushanApp.loggedIn()) {
-                        DialogManager.getInstance().newLoginDialog(context).show();
+                        DialogManager.getInstance().newLoginDialog(activity).show();
                         return;
                     }
                     downloadListener.onClick(videoDetail);
                 });
+                if (videoDetail.getDownloaded() > 0)
+                    videoHolder.downloadText.setText(String.valueOf(videoDetail.getDownloaded()));
                 final boolean[] liked = {DataHolder.getInstance().likedVideo(videoDetail.getId())};
                 boolean disliked = DataHolder.getInstance().dislikedVideo(videoDetail.getId());
                 if (liked[0])
-                    videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like_clicked));
+                    videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.like_clicked));
                 if (disliked)
-                    videoHolder.dislikeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.dislike_clicked));
+                    videoHolder.dislikeImg.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.dislike_clicked));
                 videoHolder.likeButton.setOnClickListener(v -> {
                     if (!WushanApp.loggedIn()) {
-                        DialogManager.getInstance().newLoginDialog(context).show();
+                        DialogManager.getInstance().newLoginDialog(activity).show();
                         return;
                     }
                     liked[0] = !liked[0];
-                    VideoPresenter.getInstance().likeVideo(context, videoDetail.getId());
+                    VideoPresenter.getInstance().likeVideo(activity, videoDetail);
                     if (liked[0])
-                        videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like_clicked));
+                        videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.like_clicked));
                     else
-                        videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.like));
+                        videoHolder.likeImg.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.like));
                 });
+                if (videoDetail.getLiked() > 0)
+                    videoHolder.likeText.setText(String.valueOf(videoDetail.getLiked()));
                 videoHolder.dislikeButton.setOnClickListener(v -> {
+                    if (!WushanApp.loggedIn()) {
+                        DialogManager.getInstance().newLoginDialog(activity).show();
+                        return;
+                    }
                     player.release();
                     int index = dataList.indexOf(videoDetail);
                     dataList.remove(videoDetail);
                     notifyItemRemoved(index);
                     ToastUtil.show("将减少类似推荐");
-                    VideoPresenter.getInstance().dislikeVideo(videoDetail.getId());
+                    VideoPresenter.getInstance().dislikeVideo(activity, videoDetail);
                 });
+                if (videoDetail.getDisliked() > 0)
+                    videoHolder.dislikeText.setText(String.valueOf(videoDetail.getDisliked()));
         }
     }
 

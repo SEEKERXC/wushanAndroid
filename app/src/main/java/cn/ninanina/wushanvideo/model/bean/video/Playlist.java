@@ -14,6 +14,7 @@ public class Playlist implements Serializable {
     private Long id;
     private String name;
     private String cover;
+    private Boolean userSetCover;
     private Long createTime;
     private Long updateTime;
     private Integer count;

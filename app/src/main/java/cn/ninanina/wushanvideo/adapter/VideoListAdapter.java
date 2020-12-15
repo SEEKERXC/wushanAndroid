@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -101,7 +102,7 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         @BindView(R.id.video_label)
         TextView label;
         @BindView(R.id.video_more)
-        ImageButton videoMore;
+        FrameLayout videoMore;
         @BindView(R.id.video_card)
         CardView videoCard;
 

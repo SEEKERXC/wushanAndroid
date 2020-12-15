@@ -103,6 +103,15 @@ public interface VideoService {
                                                 @Query("name") String name,
                                                 @Query("token") String token);
 
+    //更新播单
+    @POST("video/playlist/update")
+    Observable<Result<Playlist>> updatePlaylist(@Query("appKey") String appKey,
+                                                @Query("token") String token,
+                                                @Query("dirId") Long dirId,
+                                                @Query("coverUrl") String coverUrl,
+                                                @Query("name") String name,
+                                                @Query("isPublic") Boolean isPublic);
+
     //删除播单
     @POST("video/playlist/delete")
     Observable<Result<ObjectUtils.Null>> deletePlaylist(@Query("appKey") String appKey,
@@ -156,6 +165,13 @@ public interface VideoService {
     @GET("video/liked")
     Observable<Result<List<Long>>> likedVideo(@Query("appKey") String appKey,
                                               @Query("token") String token);
+
+    //部分喜欢的视频
+    @GET("video/like")
+    Observable<Result<List<VideoDetail>>> likedVideos(@Query("appKey") String appKey,
+                                                      @Query("token") String token,
+                                                      @Query("offset") Integer offset,
+                                                      @Query("limit") Integer limit);
 
     //不喜欢/取消不喜欢视频
     @POST("video/dislike")

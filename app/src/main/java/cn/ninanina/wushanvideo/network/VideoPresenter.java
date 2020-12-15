@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.network;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
@@ -39,10 +40,12 @@ import cn.ninanina.wushanvideo.model.bean.common.VideoSortBy;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
+import cn.ninanina.wushanvideo.model.bean.video.ToWatch;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
+import cn.ninanina.wushanvideo.ui.home.LikeActivity;
 import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
@@ -55,6 +58,7 @@ import cn.ninanina.wushanvideo.ui.video.DetailFragment;
 import cn.ninanina.wushanvideo.ui.video.PlaylistActivity;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 import cn.ninanina.wushanvideo.util.CommonUtils;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.MessageUtils;
 import cn.ninanina.wushanvideo.util.ToastUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -82,20 +86,25 @@ public class VideoPresenter extends BasePresenter {
                 .timeout(6, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    Toast.makeText(recyclerView.getContext(), "网络开小差了~", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("网络开小差了，请下拉刷新~");
                     fragment.setLoading(false);
-                    //TODO:如果空白，点击刷新
+                    fragment.setRefreshing(false);
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
                     List<VideoDetail> videoDetails = listResult.getData();
+                    if (videoDetails.isEmpty()) {
+                        fragment.setLoadingFinished(true);
+                        ToastUtil.show("没有更多了~");
+                        return;
+                    }
                     //1个广告+3个视频（开头也是广告）
                     List<Object> dataList = new ArrayList<>(videoDetails);
                     switch (recyclerViewOp) {
                         case INIT:
                             VideoListAdapter adapter = new VideoListAdapter(dataList,
-                                    new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getContext()));
+                                    new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getActivity()));
                             recyclerView.setAdapter(adapter);
                             break;
                         case SWIPE:
@@ -116,33 +125,32 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void getRelatedVideos(DetailFragment fragment, long videoId) {
+    public void getRelatedVideos(DetailFragment fragment, long videoId, boolean showLoading) {
+        if (showLoading) DialogManager.getInstance().showPending(fragment.getActivity());
         String appKey = getAppKey();
         RecyclerView recyclerView = fragment.getRelatedRecyclerView();
         getVideoService().getRelatedVideos(appKey, videoId, fragment.page * fragment.size, fragment.size)
                 .subscribeOn(Schedulers.io())
-                .timeout(5, TimeUnit.SECONDS)
+                .timeout(10, TimeUnit.SECONDS)
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
-                    LinearLayout content = fragment.getContent();
-                    if (content.getChildCount() > 0 && content.getChildAt(content.getChildCount() - 1) instanceof TextView) {
-                        content.removeViewAt(content.getChildCount() - 1);
-                    }
-                    TextView textView = new TextView(fragment.getContext());
-                    LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    layoutParams.setMargins(25, 20, 10, 20);
-                    textView.setLayoutParams(layoutParams);
-                    textView.setGravity(Gravity.CENTER_HORIZONTAL);
-                    content.addView(textView);
+                    if (fragment.getContext() == null || CollectionUtils.isEmpty(listResult.getData()))
+                        return;
                     List<VideoDetail> videoDetails = listResult.getData();
-                    recyclerView.setAdapter(new SingleVideoListAdapter(new ArrayList<>(videoDetails),
-                            new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getContext())));
-                    textView.setText("~ 我是有底线的 ~");
+                    if (recyclerView.getAdapter() == null) {
+                        recyclerView.setAdapter(new SingleVideoListAdapter(new ArrayList<>(videoDetails),
+                                new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getActivity())));
+                    } else {
+                        SingleVideoListAdapter adapter = (SingleVideoListAdapter) recyclerView.getAdapter();
+                        adapter.insert(new ArrayList<>(listResult.getData()));
+                    }
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
@@ -200,8 +208,9 @@ public class VideoPresenter extends BasePresenter {
                     VideoDetail detail = videoDetailResult.getData();
                     if (CommonUtils.isSrcValid(detail.getSrc())) {
                         videoDetailActivity.startPlaying(detail.getSrc());
+                        loadAllHistory();
                     } else
-                        Toast.makeText(videoDetailActivity, "视频已经被原作者删除了，抱歉！", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("视频已经被原作者删除了，抱歉！");
                 });
     }
 
@@ -265,6 +274,7 @@ public class VideoPresenter extends BasePresenter {
                     video.setSrc(src);
                     DataHolder.getInstance().recordViewed(video.getId());
                     new DefaultVideoClickListener(context).onClick(video);
+                    loadAllHistory();
                 });
     }
 
@@ -287,12 +297,14 @@ public class VideoPresenter extends BasePresenter {
     /**
      * 新建收藏夹，创建完成后加入给定的recyclerView中
      */
-    public void createPlaylist(String name) {
+    public void createPlaylist(Activity activity, String name) {
+        DialogManager.getInstance().showPending(activity);
         getVideoService().createPlaylist(getAppKey(), name, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -300,15 +312,40 @@ public class VideoPresenter extends BasePresenter {
                     DataHolder.getInstance().getPlaylists().add(playlistResult.getData());
                     ToastUtil.show("创建成功");
                     MessageUtils.updatePlaylist();
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
-    public void deletePlaylist(Playlist playlist) {
+    public void updatePlaylist(Activity activity, Playlist playlist) {
+        DialogManager.getInstance().showPending(activity);
+        getVideoService().updatePlaylist(getAppKey(), getToken(), playlist.getId(), playlist.getCover(), playlist.getName(), playlist.getIsPublic())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(playlistResult -> {
+                    if (playlistResult.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
+                        ToastUtil.show("操作成功");
+                        DataHolder.getInstance().getPlaylists().remove(playlist);
+                        DataHolder.getInstance().getPlaylists().add(playlist);
+                        MessageUtils.updatePlaylist();
+                        DialogManager.getInstance().dismissPending();
+                    }
+                });
+    }
+
+    public void deletePlaylist(Activity activity, Playlist playlist) {
+        DialogManager.getInstance().showPending(activity);
         getVideoService().deletePlaylist(getAppKey(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -317,6 +354,7 @@ public class VideoPresenter extends BasePresenter {
                         ToastUtil.show("删除成功");
                         DataHolder.getInstance().getPlaylists().remove(playlist);
                         MessageUtils.updatePlaylist();
+                        DialogManager.getInstance().dismissPending();
                     }
                 });
     }
@@ -324,12 +362,14 @@ public class VideoPresenter extends BasePresenter {
     /**
      * 收藏视频
      */
-    public void collectVideo(VideoDetail videoDetail, Playlist playlist) {
+    public void collectVideo(Activity activity, VideoDetail videoDetail, Playlist playlist) {
+        DialogManager.getInstance().showPending(activity);
         getVideoService().collectVideo(getAppKey(), videoDetail.getId(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -346,27 +386,31 @@ public class VideoPresenter extends BasePresenter {
                         videoDetail.setCollected(videoDetail.getCollected() + 1);
                         playlist.getVideoDetails().add(videoDetail);
                         playlist.setUpdateTime(System.currentTimeMillis());
-                        playlist.setCover(videoDetail.getCoverUrl());
+                        if (!playlist.getUserSetCover())
+                            playlist.setCover(videoDetail.getCoverUrl());
                         playlist.setCount(playlist.getCount() + 1);
                     }
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
     /**
      * 取消收藏
      */
-    public void cancelCollect(VideoDetail videoDetail, Playlist playlist) {
+    public void cancelCollect(Activity activity, VideoDetail videoDetail, Playlist playlist) {
+        DialogManager.getInstance().showPending(activity);
         getVideoService().cancelCollect(getAppKey(), videoDetail.getId(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
-                        ToastUtil.show("成功");
+                        ToastUtil.show("操作成功");
                         videoDetail.setCollected(videoDetail.getCollected() - 1);
                         playlist.getVideoDetails().remove(videoDetail);
                         playlist.setCount(playlist.getCount() - 1);
@@ -379,13 +423,9 @@ public class VideoPresenter extends BasePresenter {
                             message.arg1 = Math.toIntExact(videoDetail.getId());
                             handler.sendMessage(message);
                         }
-                        Handler handler1 = MeFragment.handler;
-                        if (handler1 != null) {
-                            Message message = new Message();
-                            message.what = MeFragment.updatePlaylist;
-                            handler1.sendMessage(message);
-                        }
+                        MessageUtils.updatePlaylist();
                     }
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
@@ -423,7 +463,13 @@ public class VideoPresenter extends BasePresenter {
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(listResult -> playlist.setVideoDetails(listResult.getData()));
+                    .subscribe(listResult -> {
+                        playlist.setVideoDetails(listResult.getData());
+                        MainActivity.getInstance().playlistLoadingFinished++;
+                        if (DataHolder.getInstance().getPlaylists().size() == MainActivity.getInstance().playlistLoadingFinished) {
+                            MessageUtils.updatePlaylist();
+                        }
+                    });
         }
     }
 
@@ -446,7 +492,7 @@ public class VideoPresenter extends BasePresenter {
                             //TODO:处理空评论
                         } else {
                             commentFragment.setLoadComplete(true);
-                            Toast.makeText(commentFragment.getContext(), "没有更多啦~", Toast.LENGTH_SHORT).show();
+                            ToastUtil.show("没有更多啦~");
                         }
                         return;
                     }
@@ -462,16 +508,18 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void publishComment(CommentFragment commentFragment) {
+        DialogManager.getInstance().showPending(commentFragment.getActivity());
         getVideoService().commentOn(getAppKey(), commentFragment.getVideoDetail().getId(), commentFragment.getInput().getText().toString(), getToken(), null)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    Toast.makeText(commentFragment.getContext(), "评论成功！", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("评论成功！");
                     commentFragment.getInput().setText("");
                     Comment comment = result.getData();
                     RecyclerView recyclerView = commentFragment.getRecyclerView();
@@ -483,6 +531,7 @@ public class VideoPresenter extends BasePresenter {
                         CommentAdapter adapter = (CommentAdapter) recyclerView.getAdapter();
                         adapter.insert(comment);
                     }
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
@@ -509,13 +558,12 @@ public class VideoPresenter extends BasePresenter {
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> {
-                    adapter.update(result.getData(), position);
-                });
+                .subscribe(result -> adapter.update(result.getData(), position));
     }
 
     public void getTags(TagFragment tagFragment) {
         tagFragment.setLoading(true);
+        tagFragment.swipe.setRefreshing(true);
         char c = tagFragment.getC();
         getVideoService().getTags(getAppKey(), c, tagFragment.getPage(), tagFragment.size)
                 .subscribeOn(Schedulers.io())
@@ -523,19 +571,21 @@ public class VideoPresenter extends BasePresenter {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
                     tagFragment.setLoading(false);
+                    tagFragment.swipe.setRefreshing(false);
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
+                    tagFragment.setLoading(false);
+                    tagFragment.swipe.setRefreshing(false);
                     if (CollectionUtils.isEmpty(result.getData())) {
                         tagFragment.setLoadingFinished(true);
-                        Toast.makeText(tagFragment.getContext(), "没有更多啦", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("没有更多啦");
                         return;
                     }
                     TagAdapter tagAdapter = (TagAdapter) tagFragment.getContent().getAdapter();
                     assert tagAdapter != null;
                     tagAdapter.insert(result.getData());
-                    tagFragment.setLoading(false);
                 });
     }
 
@@ -554,8 +604,9 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void getVideosForTag(TagVideoActivity activity) {
+    public void getVideosForTag(TagVideoActivity activity, RecyclerViewOp op) {
         activity.setLoading(true);
+        activity.swipe.setRefreshing(true);
         Tag tag = activity.getTag();
         VideoSortBy sortBy = activity.getSort();
         getVideoService().getTagVideos(getAppKey(), tag.getId(), activity.getPage() * activity.size, activity.size, sortBy.getCode())
@@ -564,6 +615,7 @@ public class VideoPresenter extends BasePresenter {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
                     activity.setLoading(false);
+                    activity.swipe.setRefreshing(false);
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -571,15 +623,19 @@ public class VideoPresenter extends BasePresenter {
                     List<Object> dataList = new ArrayList<>(result.getData());
                     if (dataList.size() <= 0) {
                         activity.setLoadingFinished(true);
-                        Toast.makeText(activity, "没有更多啦", Toast.LENGTH_SHORT).show();
+                        ToastUtil.show("没有更多啦");
                     }
                     SingleVideoListAdapter adapter = (SingleVideoListAdapter) activity.getContent().getAdapter();
-                    if (adapter == null) {
+                    if (op == RecyclerViewOp.INIT && adapter == null) {
                         activity.getContent().setAdapter(new SingleVideoListAdapter(dataList, new DefaultVideoClickListener(activity), new DefaultVideoOptionClickListener(activity)));
-                    } else {
+                    } else if (adapter != null && op == RecyclerViewOp.APPEND) {
                         adapter.insert(dataList);
+                    } else if (adapter != null && op == RecyclerViewOp.SWIPE) {
+                        adapter.insertToStart(dataList);
+
                     }
                     activity.setLoading(false);
+                    activity.swipe.setRefreshing(false);
                 });
     }
 
@@ -595,7 +651,7 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    if (result.getData().size() < activity.size) {
+                    if (CollectionUtils.isEmpty(result.getData()) || result.getData().size() < activity.size) {
                         activity.loadingFinished = true;
                     }
                     activity.showData(result.getData());
@@ -603,21 +659,26 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void deleteHistory(List<Pair<VideoUserViewed, VideoDetail>> histories, HistoryActivity activity) {
+    public void deleteHistory(List<VideoUserViewed> histories, HistoryActivity activity, boolean all) {
+        DialogManager.getInstance().showPending(activity);
         List<Long> historyIds = new ArrayList<>();
-        for (Pair<VideoUserViewed, VideoDetail> history : histories)
-            historyIds.add(history.getFirst().getId());
+        for (VideoUserViewed history : histories)
+            historyIds.add(history.getId());
         getVideoService().deleteHistory(getAppKey(), getToken(), historyIds)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    ToastUtil.show("成功");
-                    activity.delete(histories);
+                    ToastUtil.show("操作成功");
+                    if (all) activity.deleteAll();
+                    else
+                        activity.delete(histories);
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
@@ -634,7 +695,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribe(result -> instantFragment.showData(result.getData()));
     }
 
-    public void downloadVideo(Context context, long videoId) {
+    public void downloadVideo(long videoId) {
         getVideoService().downloadVideo(getAppKey(), videoId, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -647,49 +708,70 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void likeVideo(Context context, long videoId) {
-        getVideoService().likeVideo(getAppKey(), getToken(), videoId)
+    public void likeVideo(Activity activity, VideoDetail videoDetail) {
+        DialogManager.getInstance().showPending(activity);
+        getVideoService().likeVideo(getAppKey(), getToken(), videoDetail.getId())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) {
+                        ToastUtil.show("请先登录");
+                        return;
+                    }
                     if (result.getData()) {
-                        DataHolder.getInstance().getLikedVideos().add(videoId);
-                        ToastUtil.show("感谢推荐，好运连连！");
+                        DataHolder.getInstance().getLikedVideos().add(videoDetail.getId());
+                        DataHolder.getInstance().getDislikedVideos().remove(videoDetail.getId());
+                        videoDetail.setLiked(videoDetail.getLiked() + 1);
+                        ToastUtil.show("感谢推荐！");
                     } else {
-                        DataHolder.getInstance().getLikedVideos().remove(videoId);
+                        DataHolder.getInstance().getLikedVideos().remove(videoDetail.getId());
+                        videoDetail.setLiked(videoDetail.getLiked() - 1);
                         ToastUtil.show("取消喜欢");
                     }
+                    DialogManager.getInstance().dismissPending();
+                    MessageUtils.refreshVideoData(videoDetail);
                 });
     }
 
-    public void dislikeVideo(long videoId) {
-        getVideoService().dislikeVideo(getAppKey(), getToken(), videoId)
+    public void dislikeVideo(Activity activity, VideoDetail videoDetail) {
+        DialogManager.getInstance().showPending(activity);
+        getVideoService().dislikeVideo(getAppKey(), getToken(), videoDetail.getId())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
                     ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) {
+                        ToastUtil.show("请先登录");
+                        return;
+                    }
                     if (result.getData()) {
-                        DataHolder.getInstance().getDislikedVideos().add(videoId);
+                        DataHolder.getInstance().getDislikedVideos().add(videoDetail.getId());
+                        DataHolder.getInstance().getLikedVideos().remove(videoDetail.getId());
+                        videoDetail.setDisliked(videoDetail.getDisliked() + 1);
                         ToastUtil.show("感谢反馈！");
-                        //todo:给视频列表发送消息
                     } else {
-                        DataHolder.getInstance().getDislikedVideos().remove(videoId);
+                        DataHolder.getInstance().getDislikedVideos().remove(videoDetail.getId());
+                        videoDetail.setDisliked(videoDetail.getDisliked() - 1);
                         ToastUtil.show("取消不喜欢");
                     }
+                    DialogManager.getInstance().dismissPending();
+                    MessageUtils.refreshVideoData(videoDetail);
                 });
     }
 
     //加载用户喜欢和不喜欢的所有videoId，需要在登录之后调用
-    public void loadLikedAndDisliked(Context context) {
+    public void loadLikedAndDisliked() {
         getVideoService().likedVideo(getAppKey(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -710,6 +792,28 @@ public class VideoPresenter extends BasePresenter {
                 .subscribe(result -> DataHolder.getInstance().setDislikedVideos(result.getData()));
     }
 
+    public void getLikedVideos(LikeActivity likeActivity) {
+        likeActivity.loading = true;
+        likeActivity.swipe.setRefreshing(true);
+        getVideoService().likedVideos(getAppKey(), getToken(), likeActivity.page * likeActivity.size, likeActivity.size)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    likeActivity.loading = false;
+                    likeActivity.swipe.setRefreshing(false);
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getData().size() <= 0)
+                        likeActivity.loadingFinished = true;
+                    likeActivity.showData(result.getData());
+                    likeActivity.loading = false;
+                    likeActivity.swipe.setRefreshing(false);
+                });
+    }
+
     //加载所有历史记录
     public void loadAllHistory() {
         getVideoService().getAllHistory(getAppKey(), getToken())
@@ -723,21 +827,45 @@ public class VideoPresenter extends BasePresenter {
     }
 
     //增加稍后观看
-    public void addToWatch(long videoId) {
+    public void addToWatch(Activity activity, long videoId) {
+        DialogManager.getInstance().showPending(activity);
         getVideoService().newToWatch(getAppKey(), getToken(), videoId)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
-                        ToastUtil.show("成功");
+                        ToastUtil.show("已添加到稍后观看列表");
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
-    //todo:删除稍后观看
+    //删除稍后观看
+    public void deleteWatchLater(WatchLaterActivity activity, List<Pair<ToWatch, VideoDetail>> pairs) {
+        DialogManager.getInstance().showPending(activity);
+        List<Long> ids = new ArrayList<>();
+        for (Pair<ToWatch, VideoDetail> pair : pairs) ids.add(pair.getFirst().getId());
+        getVideoService().deleteToWatch(getAppKey(), getToken(), ids)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
+                        ToastUtil.show("操作成功");
+                    DialogManager.getInstance().dismissPending();
+                    activity.deleteData(pairs);
+                });
+    }
 
     //获取稍后观看
     public void getWatchLater(WatchLaterActivity watchLaterActivity) {

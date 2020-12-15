@@ -19,7 +19,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.flyco.dialog.widget.MaterialDialog;
 import com.githang.statusbar.StatusBarCompat;
+import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +34,12 @@ import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.HistoryClickListener;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class HistoryActivity extends AppCompatActivity {
@@ -46,10 +50,8 @@ public class HistoryActivity extends AppCompatActivity {
     RecyclerView content;
     @BindView(R.id.back)
     FrameLayout back;
-    @BindView(R.id.calendar)
-    ImageView calendar;
-    @BindView(R.id.search)
-    ImageView search;
+    @BindView(R.id.delete)
+    FrameLayout delete;
 
     public int page = 0;
     public final int size = 10;
@@ -69,16 +71,17 @@ public class HistoryActivity extends AppCompatActivity {
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
         swipe.setColorSchemeResources(R.color.tabColor);
         swipe.setRefreshing(true);
-        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
+        VideoPresenter.getInstance().getHistoryVideos(this);
+
         initEvents();
     }
 
     private void initEvents() {
-        calendar.setOnClickListener(v -> {
-            DatePickerDialog datePickerDialog = new DatePickerDialog(this);
-            datePickerDialog.show();
-        });
         back.setOnClickListener(v -> HistoryActivity.this.finish());
+        delete.setOnClickListener(v -> {
+            if (!CollectionUtils.isEmpty(DataHolder.getInstance().getAllViewed()))
+                DialogManager.getInstance().newDeleteAllHistoryDialog(this).show();
+        });
         content.setLayoutManager(new LinearLayoutManager(this));
         content.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -92,7 +95,7 @@ public class HistoryActivity extends AppCompatActivity {
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        VideoPresenter.getInstance().getHistoryVideos(this);
+        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
     }
 
     public void showData(List<Pair<VideoUserViewed, VideoDetail>> data) {
@@ -120,10 +123,16 @@ public class HistoryActivity extends AppCompatActivity {
         this.swipe.setRefreshing(false);
     }
 
-    public void delete(List<Pair<VideoUserViewed, VideoDetail>> pairs) {
+    public void delete(List<VideoUserViewed> vieweds) {
         HistoryAdapter adapter = (HistoryAdapter) content.getAdapter();
         if (adapter != null)
-            adapter.delete(pairs);
+            adapter.delete(vieweds);
+    }
+
+    public void deleteAll() {
+        HistoryAdapter adapter = (HistoryAdapter) content.getAdapter();
+        if (adapter != null)
+            adapter.deleteAll();
     }
 
 }

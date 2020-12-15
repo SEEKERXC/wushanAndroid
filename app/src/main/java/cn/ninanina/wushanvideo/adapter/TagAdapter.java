@@ -53,6 +53,12 @@ public class TagAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return tags.size();
     }
 
+    public void clear() {
+        int size = tags.size();
+        tags.clear();
+        notifyItemRangeRemoved(0, size);
+    }
+
     public void insert(List<Tag> newTags) {
         this.tags.addAll(newTags);
         notifyDataSetChanged();

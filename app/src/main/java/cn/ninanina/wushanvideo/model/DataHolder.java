@@ -1,7 +1,9 @@
 package cn.ninanina.wushanvideo.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
@@ -20,6 +22,7 @@ public class DataHolder {
         playlists = new ArrayList<>();
         likedVideos = new ArrayList<>();
         dislikedVideos = new ArrayList<>();
+        allViewed = new ArrayList<>();
     }
 
     public static DataHolder getInstance() {
@@ -81,7 +84,8 @@ public class DataHolder {
         if (!WushanApp.loggedIn()) return false;
         for (VideoUserViewed viewed : allViewed) {
             if (viewed.getVideoId() == videoId) {
-                if (System.currentTimeMillis() - viewed.getTime() < 6 * 3600 * 1000) return false;
+                if (System.currentTimeMillis() - viewed.getTime() < 6 * 3600 * 1000)
+                    return false;
                 viewed.setViewCount(viewed.getViewCount() + 1);
                 viewed.setTime(System.currentTimeMillis());
                 viewed.setViewCount(viewed.getViewCount() + 1);

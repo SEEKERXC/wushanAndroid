@@ -128,6 +128,11 @@ public class CommentFragment extends Fragment {
                 layoutParams.bottomMargin = 0;
             }
         });
+        input.setOnClickListener(v -> {
+            if (!WushanApp.loggedIn()) {
+                DialogManager.getInstance().newLoginDialog(getContext()).show();
+            }
+        });
     }
 
 

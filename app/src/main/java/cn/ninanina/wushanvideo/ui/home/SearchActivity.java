@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -67,7 +66,7 @@ public class SearchActivity extends AppCompatActivity {
     InputMethodManager imm;
     List<VideoSortBy> sortBys = new ArrayList<VideoSortBy>() {{
         add(VideoSortBy.DEFAULT);
-        add(VideoSortBy.PLAY);
+        add(VideoSortBy.VIEWED);
         add(VideoSortBy.COLLECT);
         add(VideoSortBy.DOWNLOAD);
     }};
@@ -103,7 +102,7 @@ public class SearchActivity extends AppCompatActivity {
     private void initSearch() {
         imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
         cancel.setOnClickListener(v -> {
-            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+//            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
             this.finish();
         });
         searchEdit.requestFocus();

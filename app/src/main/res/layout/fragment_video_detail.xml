@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/scroll"
@@ -238,9 +239,11 @@
                 android:layout_marginBottom="12dp"
                 app:atg_backgroundColor="@color/tagColor"
                 app:atg_borderColor="@android:color/white"
+                app:atg_horizontalPadding="6dp"
                 app:atg_horizontalSpacing="20dp"
                 app:atg_textColor="@color/exo_black_opacity_30"
                 app:atg_textSize="13sp"
+                app:atg_verticalPadding="3dp"
                 app:atg_verticalSpacing="8dp" />
 
         </LinearLayout>

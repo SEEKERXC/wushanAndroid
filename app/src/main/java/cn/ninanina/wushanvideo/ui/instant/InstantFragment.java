@@ -5,10 +5,14 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -65,6 +69,9 @@ public class InstantFragment extends Fragment {
         public void onServiceDisconnected(ComponentName name) {
         }
     };
+
+    public Handler handler;
+    public static final int updateData = 0;
 
     @Nullable
     @Override
@@ -128,6 +135,34 @@ public class InstantFragment extends Fragment {
         final Intent intent = new Intent(getContext(), DownloadService.class);
         Objects.requireNonNull(getContext()).bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
         VideoPresenter.getInstance().getInstantVideos(this);
+
+        handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (msg.what == updateData) {
+                    InstantVideoAdapter adapter = (InstantVideoAdapter) recyclerView.getAdapter();
+                    if (adapter == null) return;
+                    VideoDetail videoDetail = (VideoDetail) msg.obj;
+                    int index = adapter.dataList.indexOf(videoDetail);
+                    if (index >= 0) {
+                        View content = recyclerView.getChildAt(index);
+                        TextView collectNum = content.findViewById(R.id.collect_text);
+                        TextView downloadNum = content.findViewById(R.id.download_text);
+                        TextView likeNum = content.findViewById(R.id.like_text);
+                        if (videoDetail.getCollected() > 0)
+                            collectNum.setText(String.valueOf(videoDetail.getCollected()));
+                        else collectNum.setText("收藏");
+                        if (videoDetail.getDownloaded() > 0)
+                            downloadNum.setText(String.valueOf(videoDetail.getDownloaded()));
+                        else downloadNum.setText("下载");
+                        if (videoDetail.getLiked() > 0)
+                            likeNum.setText(String.valueOf(videoDetail.getLiked()));
+                        else likeNum.setText("喜欢");
+                    }
+                }
+                super.handleMessage(msg);
+            }
+        };
     }
 
     @Override
@@ -151,7 +186,7 @@ public class InstantFragment extends Fragment {
 
     public void showData(List<VideoDetail> videoDetails) {
         if (recyclerView.getAdapter() == null) {
-            InstantVideoAdapter adapter = new InstantVideoAdapter(getContext(), new ArrayList<>(videoDetails))
+            InstantVideoAdapter adapter = new InstantVideoAdapter(getActivity(), new ArrayList<>(videoDetails))
                     .setVideoClickListener(new DefaultVideoClickListener(getContext()))
                     .setDownloadListener(new DefaultDownloadClickListener(downloadService));
             recyclerView.setAdapter(adapter);

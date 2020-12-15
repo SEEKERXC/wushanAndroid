@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:background="@color/popup"
+    android:background="@color/tagColor"
     android:orientation="horizontal">
 
     <FrameLayout
@@ -11,7 +11,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/default_text"
@@ -35,7 +36,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/play_text"
@@ -57,7 +59,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/collect_text"
@@ -79,7 +82,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:foreground="?android:attr/selectableItemBackground">
 
         <TextView
             android:id="@+id/download_text"

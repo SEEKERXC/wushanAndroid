@@ -8,6 +8,7 @@ import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.MainActivity;
+import cn.ninanina.wushanvideo.util.DBHelper;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import cn.ninanina.wushanvideo.util.ToastUtil;
 
@@ -21,10 +22,12 @@ public class DefaultDownloadClickListener implements DownloadClickListener {
 
     @Override
     public void onClick(VideoDetail videoDetail) {
+        DBHelper dbHelper = WushanApp.getInstance().getDbHelper();
         String path = FileUtil.getVideoDir().getAbsolutePath() + "/" + FileUtil.getVideoFileName(videoDetail);
         File file = new File(path);
         if (file.exists()) {
             if (showMessage) ToastUtil.show("视频已下载");
+            dbHelper.saveVideo(videoDetail);
             return;
         }
         DownloadService downloadService = MainActivity.getInstance().downloadService;
@@ -36,7 +39,7 @@ public class DefaultDownloadClickListener implements DownloadClickListener {
             return;
         }
         if (showMessage) ToastUtil.show("开始下载");
-        VideoPresenter.getInstance().downloadVideo(WushanApp.getInstance().getApplicationContext(), videoDetail.getId());
+        VideoPresenter.getInstance().downloadVideo(videoDetail.getId());
         downloadService.newTask(videoDetail, path);
     }
 }

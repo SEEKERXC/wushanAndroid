@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,6 +41,8 @@ public class TagFragment extends Fragment {
     RecyclerView suggest;
     @BindView(R.id.index)
     RecyclerView index;
+    @BindView(R.id.swipe)
+    public SwipeRefreshLayout swipe;
     @BindView(R.id.content)
     RecyclerView content;
 
@@ -49,7 +52,10 @@ public class TagFragment extends Fragment {
     public final int size = 20;
     private boolean isLoading = false;
     private boolean loadingFinished = false;
-    private Character c;
+    private Character c = '~';
+    View lastClickedView;
+    boolean indexCreated = false;
+
 
     @Nullable
     @Override
@@ -84,6 +90,8 @@ public class TagFragment extends Fragment {
             if (tagAdapter.isShowChinese()) languageText.setText(getString(R.string.chinese));
             else languageText.setText(getString(R.string.english));
         });
+        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
+        content.setAdapter(new TagAdapter(new ArrayList<>(), new TagClickListener(getContext())));
     }
 
 
@@ -112,7 +120,11 @@ public class TagFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 String word = s.toString().trim();
-                if (!StringUtils.isEmpty(word) && word.length() >= 2) {
+                boolean containsZh = false;
+                for (char c : word.toCharArray()) {
+                    if (String.valueOf(c).matches("[\\u4E00-\\u9FA5]+")) containsZh = true;
+                }
+                if (!StringUtils.isEmpty(word) && (containsZh || word.length() >= 2)) {
                     suggest.setVisibility(View.VISIBLE);
                     VideoPresenter.getInstance().getTagSuggest(TagFragment.this, word);
                 } else {
@@ -150,8 +162,6 @@ public class TagFragment extends Fragment {
     }
 
     class IndexAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        View lastClickedView;
-
         @NonNull
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -165,21 +175,25 @@ public class TagFragment extends Fragment {
             indexHolder.itemView.setOnClickListener(v -> {
                 if (lastClickedView != null)
                     lastClickedView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.tag_index_style));
-                indexHolder.itemView.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.comment_style));
-                lastClickedView = indexHolder.itemView;
-                content.setAdapter(new TagAdapter(new ArrayList<>(), new TagClickListener(getContext())));
+                v.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.comment_style));
+                lastClickedView = v;
                 page = 0;
                 loadingFinished = false;
                 languageText.setText(getString(R.string.chinese));
                 if (position == 0) { //热门
-
+                    c = '~';
                 } else if (position == indexWords.size() - 1) { //数字开头
-
+                    c = '#';
                 } else { //字母
                     c = (char) (position + 96);
-                    VideoPresenter.getInstance().getTags(TagFragment.this);
                 }
+                ((TagAdapter) content.getAdapter()).clear();
+                VideoPresenter.getInstance().getTags(TagFragment.this);
             });
+            if (position == 0 && !indexCreated) {
+                indexHolder.itemView.performClick();
+                indexCreated = true;
+            }
         }
 
         @Override

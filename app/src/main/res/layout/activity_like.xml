@@ -4,17 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fillViewport="true"
     android:orientation="vertical"
-    tools:context=".ui.home.WatchLaterActivity">
-
+    tools:context=".ui.home.LikeActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@android:color/white"
-        android:paddingStart="7dp"
-        android:paddingEnd="7dp">
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
 
         <FrameLayout
             android:id="@+id/back"
@@ -41,38 +39,23 @@
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
             android:gravity="center_vertical"
-            android:text="@string/watch_later"
+            android:text="@string/me_like"
             android:textColor="@android:color/black"
             android:textSize="15sp"
             app:layout_constraintStart_toEndOf="@id/back"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/edit"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="10dp"
-            android:background="@android:color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:gravity="center_vertical"
-            android:text="@string/edit"
-            android:textSize="13sp"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
 <!--        <ImageView-->
 <!--            android:id="@+id/search"-->
 <!--            android:layout_width="20dp"-->
 <!--            android:layout_height="match_parent"-->
-<!--            android:layout_marginEnd="20dp"-->
+<!--            android:layout_marginEnd="15dp"-->
 <!--            android:clickable="true"-->
 <!--            android:focusable="true"-->
-<!--            android:foreground="?android:attr/selectableItemBackground"-->
 <!--            android:src="@drawable/search"-->
-<!--            app:layout_constraintEnd_toStartOf="@id/edit"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
 <!--            app:layout_constraintTop_toTopOf="parent" />-->
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
@@ -88,7 +71,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/content"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
 </LinearLayout>

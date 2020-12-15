@@ -94,6 +94,7 @@ public class ProfileActivity extends AppCompatActivity {
             else gender = "女";
         }
         genderText.setText(gender);
+        ageText.setText(String.valueOf(profile.getInt("userAge", 18)));
         orientationText.setText(profile.getBoolean("straight", true) ? "直" : "弯");
     }
 
