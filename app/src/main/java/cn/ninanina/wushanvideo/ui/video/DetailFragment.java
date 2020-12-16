@@ -56,7 +56,7 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.video_detail_title)
     TextView titleTextView;
     @BindView(R.id.video_detail_info)
-    TextView infoTextView;
+    public TextView infoTextView;
     @BindView(R.id.video_detail_like_button)
     ConstraintLayout likeButton;
     @BindView(R.id.video_detail_like_img)
@@ -142,7 +142,7 @@ public class DetailFragment extends Fragment {
             videoTags.setTags(strTags);
             videoTags.setOnTagClickListener(tag -> {
                 for (Tag tag1 : videoDetail.getTags()) {
-                    if (tag1.getTagZh().equals(tag) || tag1.getTag().equals(tag)) {
+                    if ((!StringUtils.isEmpty(tag1.getTagZh()) && tag1.getTagZh().equals(tag)) || tag1.getTag().equals(tag)) {
                         new TagClickListener(getContext()).onTagClicked(tag1);
                     }
                 }
@@ -157,7 +157,6 @@ public class DetailFragment extends Fragment {
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), false);
         page++;
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), false);
-
 
         refreshCollect();
         refreshDownload();

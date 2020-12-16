@@ -57,6 +57,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:theme="@style/AppTheme.Full"
             android:windowSoftInputMode="stateHidden|adjustPan" />
+
         <activity
             android:name=".ui.MainActivity"
             android:screenOrientation="portrait"

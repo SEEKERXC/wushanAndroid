@@ -5,11 +5,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.view.Gravity;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,10 +23,11 @@ import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.TagAdapter;
 import cn.ninanina.wushanvideo.adapter.TagSuggestAdapter;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
+import cn.ninanina.wushanvideo.adapter.listener.CommentLongClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
-import cn.ninanina.wushanvideo.adapter.listener.ReplyCommentListener;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultCommentClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
@@ -50,7 +46,6 @@ import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
-import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagVideoActivity;
 import cn.ninanina.wushanvideo.ui.video.CommentFragment;
@@ -492,13 +487,12 @@ public class VideoPresenter extends BasePresenter {
                             //TODO:处理空评论
                         } else {
                             commentFragment.setLoadComplete(true);
-                            ToastUtil.show("没有更多啦~");
                         }
                         return;
                     }
                     RecyclerView recyclerView = commentFragment.getRecyclerView();
                     if (recyclerView.getAdapter() == null) {
-                        recyclerView.setAdapter(new CommentAdapter(comments, new ReplyCommentListener()));
+                        recyclerView.setAdapter(new CommentAdapter(comments, new DefaultCommentClickListener(commentFragment), new CommentLongClickListener()));
                     } else {
                         CommentAdapter adapter = (CommentAdapter) recyclerView.getAdapter();
                         adapter.insert(comments);
@@ -509,7 +503,7 @@ public class VideoPresenter extends BasePresenter {
 
     public void publishComment(CommentFragment commentFragment) {
         DialogManager.getInstance().showPending(commentFragment.getActivity());
-        getVideoService().commentOn(getAppKey(), commentFragment.getVideoDetail().getId(), commentFragment.getInput().getText().toString(), getToken(), null)
+        getVideoService().commentOn(getAppKey(), commentFragment.getVideoDetail().getId(), commentFragment.getInput().getText().toString(), getToken(), commentFragment.parentId)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
@@ -526,12 +520,14 @@ public class VideoPresenter extends BasePresenter {
                     if (recyclerView.getAdapter() == null) {
                         recyclerView.setAdapter(new CommentAdapter(new ArrayList<Comment>() {{
                             add(comment);
-                        }}, new ReplyCommentListener()));
+                        }}, new DefaultCommentClickListener(commentFragment), new CommentLongClickListener()));
                     } else {
                         CommentAdapter adapter = (CommentAdapter) recyclerView.getAdapter();
                         adapter.insert(comment);
                     }
                     DialogManager.getInstance().dismissPending();
+                    commentFragment.parentId = null;
+                    commentFragment.input.setHint("发条友善的评论");
                 });
     }
 
@@ -724,16 +720,18 @@ public class VideoPresenter extends BasePresenter {
                         ToastUtil.show("请先登录");
                         return;
                     }
-                    if (result.getData()) {
+                    if (result.getData().getLike()) {
                         DataHolder.getInstance().getLikedVideos().add(videoDetail.getId());
                         DataHolder.getInstance().getDislikedVideos().remove(videoDetail.getId());
-                        videoDetail.setLiked(videoDetail.getLiked() + 1);
                         ToastUtil.show("感谢推荐！");
                     } else {
                         DataHolder.getInstance().getLikedVideos().remove(videoDetail.getId());
-                        videoDetail.setLiked(videoDetail.getLiked() - 1);
                         ToastUtil.show("取消喜欢");
                     }
+                    videoDetail.setLike(result.getData().getLike());
+                    videoDetail.setLiked(result.getData().getLiked());
+                    videoDetail.setDislike(result.getData().getDislike());
+                    videoDetail.setDisliked(result.getData().getDisliked());
                     DialogManager.getInstance().dismissPending();
                     MessageUtils.refreshVideoData(videoDetail);
                 });
@@ -755,18 +753,19 @@ public class VideoPresenter extends BasePresenter {
                         ToastUtil.show("请先登录");
                         return;
                     }
-                    if (result.getData()) {
+                    if (result.getData().getDislike()) {
                         DataHolder.getInstance().getDislikedVideos().add(videoDetail.getId());
                         DataHolder.getInstance().getLikedVideos().remove(videoDetail.getId());
-                        videoDetail.setDisliked(videoDetail.getDisliked() + 1);
                         ToastUtil.show("感谢反馈！");
                     } else {
                         DataHolder.getInstance().getDislikedVideos().remove(videoDetail.getId());
-                        videoDetail.setDisliked(videoDetail.getDisliked() - 1);
                         ToastUtil.show("取消不喜欢");
                     }
+                    videoDetail.setLike(result.getData().getLike());
+                    videoDetail.setLiked(result.getData().getLiked());
+                    videoDetail.setDislike(result.getData().getDislike());
+                    videoDetail.setDisliked(result.getData().getDisliked());
                     DialogManager.getInstance().dismissPending();
-                    MessageUtils.refreshVideoData(videoDetail);
                 });
     }
 
@@ -884,6 +883,38 @@ public class VideoPresenter extends BasePresenter {
                         watchLaterActivity.loadingFinished = true;
                     watchLaterActivity.showData(result.getData());
                     watchLaterActivity.loading = false;
+                });
+    }
+
+    //获取当前观影人数
+    public void getAudience(VideoDetailActivity activity) {
+        getVideoService().getAudienceNum(getAppKey(), activity.video.getId())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    DetailFragment detailFragment = (DetailFragment) activity.fragments.get(0);
+                    String info = detailFragment.infoTextView.getText().toString();
+                    if (result.getData() > 0) {
+                        info += "，当前" + result.getData() + "人在看";
+                    }
+                    detailFragment.infoTextView.setText(info);
+                });
+    }
+
+    //退出播放
+    public void exitPlayer(VideoDetail videoDetail) {
+        getVideoService().exitVideoPlayer(getAppKey(), videoDetail.getId())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
                 });
     }
 

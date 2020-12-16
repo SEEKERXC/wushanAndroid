@@ -1,5 +1,7 @@
 package cn.ninanina.wushanvideo.ui.me;
 
+import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -8,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -17,9 +20,12 @@ import androidx.fragment.app.Fragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
 
 public class LoginFragment extends Fragment {
+    @BindView(R.id.root)
+    LinearLayout root;
     @BindView(R.id.login_username)
     EditText usernameEdit;
     @BindView(R.id.login_password)
@@ -79,6 +85,24 @@ public class LoginFragment extends Fragment {
         });
 
         loginButton.setOnClickListener(v -> CommonPresenter.getInstance().login(LoginFragment.this));
+
+        //测量并保存软键盘高度
+        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            Rect r = new Rect();
+            //获取当前界面可视部分
+            if (getActivity() == null) return;
+            getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
+            //获取屏幕的高度
+            int screenHeight = getActivity().getWindow().getDecorView().getRootView().getHeight();
+
+            //此处就是用来获取键盘的高度的， 在键盘没有弹出的时候 此高度为0 键盘弹出的时候为一个正数
+            if (screenHeight - r.bottom > 0) {
+                int keyboardHeight = screenHeight - r.bottom;
+                SharedPreferences profile = WushanApp.getProfile();
+                SharedPreferences.Editor editor = profile.edit();
+                editor.putInt("keyboardHeight", keyboardHeight).apply();
+            }
+        });
     }
 
     private void enableOrDisButton() {

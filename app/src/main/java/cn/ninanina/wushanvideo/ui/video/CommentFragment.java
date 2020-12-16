@@ -35,12 +35,16 @@ public class CommentFragment extends Fragment {
 
     private VideoDetail videoDetail;
 
+    @BindView(R.id.root)
+    ConstraintLayout root;
     @BindView(R.id.comments)
     RecyclerView recyclerView;
     @BindView(R.id.input)
-    EditText input;
+    public EditText input;
     @BindView(R.id.publish)
     TextView publish;
+    @BindView(R.id.header)
+    ConstraintLayout header;
     @BindView(R.id.footer)
     LinearLayout footer;
 
@@ -61,6 +65,9 @@ public class CommentFragment extends Fragment {
 
     //软键盘高度
     private int keyboardHeight;
+
+    //即将发表的评论的父评论id
+    public Long parentId;
 
     @Nullable
     @Override
@@ -106,26 +113,28 @@ public class CommentFragment extends Fragment {
         });
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) footer.getLayoutParams();
         //当键盘弹出隐藏的时候会 调用此方法。
-        input.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             Rect r = new Rect();
             //获取当前界面可视部分
             if (getActivity() == null) return;
             getActivity().getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
             //获取屏幕的高度
             int screenHeight = getActivity().getWindow().getDecorView().getRootView().getHeight();
+
             //此处就是用来获取键盘的高度的， 在键盘没有弹出的时候 此高度为0 键盘弹出的时候为一个正数
-            if (screenHeight - r.bottom > 0 && keyboardHeight == 0) {
+            if (screenHeight - r.bottom > 0) {
                 keyboardHeight = screenHeight - r.bottom;
                 SharedPreferences profile = WushanApp.getProfile();
                 SharedPreferences.Editor editor = profile.edit();
                 editor.putInt("keyboardHeight", keyboardHeight).apply();
-            }
+            } else input.clearFocus();
         });
         input.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
                 layoutParams.bottomMargin = keyboardHeight;
             } else {
                 layoutParams.bottomMargin = 0;
+                footer.setLayoutParams(layoutParams);
             }
         });
         input.setOnClickListener(v -> {

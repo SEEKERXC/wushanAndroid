@@ -17,5 +17,6 @@ public class Comment implements Serializable {
     private Boolean approved;
     private Boolean disapproved;
     private Long parentId;
+    private Comment parent;
     private User user;
 }

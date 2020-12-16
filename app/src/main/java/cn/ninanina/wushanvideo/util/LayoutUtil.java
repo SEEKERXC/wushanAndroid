@@ -68,4 +68,10 @@ public class LayoutUtil {
         Objects.requireNonNull(MainActivity.getInstance().getDisplay()).getRealMetrics(metrics);
         return metrics.widthPixels;
     }
+
+    public static int getScreenHeight() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        Objects.requireNonNull(MainActivity.getInstance().getDisplay()).getRealMetrics(metrics);
+        return metrics.heightPixels;
+    }
 }

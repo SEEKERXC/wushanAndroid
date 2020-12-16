@@ -2,19 +2,25 @@ package cn.ninanina.wushanvideo.ui.video;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -23,15 +29,21 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.githang.statusbar.StatusBarCompat;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -45,22 +57,46 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.DBHelper;
 import cn.ninanina.wushanvideo.util.FileUtil;
+import cn.ninanina.wushanvideo.util.LayoutUtil;
+import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class VideoDetailActivity extends AppCompatActivity {
+    @BindView(R.id.root)
+    LinearLayout root;
     @BindView(R.id.detail_player)
-    StyledPlayerView detailPlayer;
+    public StyledPlayerView detailPlayer;
     @BindView(R.id.detail_cover)
     SimpleDraweeView cover;
     @BindView(R.id.detail_tab)
     TabLayout tabLayout;
-    @BindView(R.id.video_detail_loading_shadow)
-    View shadow;
+    @BindView(R.id.detail_tab_card)
+    CardView tabCard;
+    @BindView(R.id.video_detail_shadow_bottom)
+    public View bottomShadow;
     @BindView(R.id.video_detail_loading)
     TextView loading;
     @BindView(R.id.detail_viewpager)
     ViewPager2 viewPager2;
     @BindView(R.id.video_detail_parent)
-    ConstraintLayout parent;
+    public ConstraintLayout parent;
+    @BindView(R.id.bottom_controller)
+    public LinearLayout bottomController;
+    @BindView(R.id.play_button)
+    FrameLayout playButton;
+    @BindView(R.id.play_icon)
+    ImageView playIcon;
+    @BindView(R.id.progress_not_played)
+    View notPlayed;
+    @BindView(R.id.progress_played)
+    View played;
+    @BindView(R.id.time)
+    TextView time;
+    @BindView(R.id.indicator)
+    ImageView indicator;
+    @BindView(R.id.progress_bar)
+    ConstraintLayout progressBar;
+    @BindView(R.id.full_button)
+    ImageView fullButton;
 
     SimpleExoPlayer player;
 
@@ -75,12 +111,12 @@ public class VideoDetailActivity extends AppCompatActivity {
     public VideoDetail video;
 
     private int playerHeight;
+    public boolean isFullScreen = false;
+    private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1); //用于获取当前播放时长
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContentView(R.layout.activity_video_detail);
         ButterKnife.bind(this);
@@ -169,7 +205,7 @@ public class VideoDetailActivity extends AppCompatActivity {
     }
 
     private void initPlayer() {
-        shadow.setVisibility(View.VISIBLE);
+        bottomShadow.setVisibility(View.VISIBLE);
         loading.setText("视频地址解析中...");
         cover.setAspectRatio(1.78f);
         cover.setImageURI(video.getCoverUrl());
@@ -179,15 +215,68 @@ public class VideoDetailActivity extends AppCompatActivity {
         layoutParams1.height = layoutParams.height;
         playerHeight = layoutParams.height;
         detailPlayer.setPlayer(player);
-        detailPlayer.setControllerShowTimeoutMs(1500);
-        detailPlayer.setShowNextButton(false);
-        detailPlayer.setShowFastForwardButton(false);
-        detailPlayer.setShowPreviousButton(false);
-        detailPlayer.setShowRewindButton(false);
+        detailPlayer.setUseController(false);
+        player.addListener(new Player.EventListener() {
+            @Override
+            public void onIsPlayingChanged(boolean isPlaying) {
+                if (!isPlaying) {
+                    bottomController.setVisibility(View.VISIBLE);
+                    bottomShadow.setVisibility(View.VISIBLE);
+                    playIcon.setImageResource(R.drawable.play_white);
+                } else {
+                    playIcon.setImageResource(R.drawable.pause);
+                }
+            }
+
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (state == Player.STATE_READY) {
+                    playButton.setOnClickListener(v -> {
+                        if (player.isPlaying()) player.pause();
+                        else player.play();
+                    });
+                    fullButton.setOnClickListener(v -> {
+                        if (isFullScreen)
+                            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                        else setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                    });
+                    long duration = player.getDuration();
+                    executorService.scheduleAtFixedRate(() -> runOnUiThread(() -> {
+                        ConstraintLayout.LayoutParams playedParams = (ConstraintLayout.LayoutParams) played.getLayoutParams();
+                        ConstraintLayout.LayoutParams indicatorParams = (ConstraintLayout.LayoutParams) indicator.getLayoutParams();
+                        int fullWidth = notPlayed.getMeasuredWidth();
+                        long position = player.getCurrentPosition();
+                        time.setText(TimeUtil.getDuration(position) + "/" + TimeUtil.getDuration(duration));
+                        if (position > 1000) {
+                            playedParams.height = LayoutUtil.dip2px(VideoDetailActivity.this, 3);
+                            int w = Double.valueOf((double) position / (double) duration * (double) fullWidth).intValue();
+                            if (w > 0) playedParams.width = w;
+                            played.setLayoutParams(playedParams);
+                            indicatorParams.leftMargin = w;
+                        }
+                    }), 500, 500, TimeUnit.MILLISECONDS);
+                    progressBar.setOnTouchListener((v, event) -> {
+                        float x = event.getX() - 10;
+                        if (x > 10) {
+                            int fullWidth = notPlayed.getMeasuredWidth();
+                            player.seekTo(Double.valueOf(x / (float) fullWidth * duration).longValue());
+                        }
+                        return true;
+                    });
+                } else if (state == Player.STATE_ENDED) {
+                    player.seekTo(0);
+                    player.play();
+                }
+            }
+        });
         DBHelper dbHelper = WushanApp.getInstance().getDbHelper();
         String name = dbHelper.getNameById(video.getId());
-        if (!StringUtils.isEmpty(name)) name = FileUtil.getVideoDir() + "/" + name;
-        video.setSrc(name);
+        if (!StringUtils.isEmpty(name)) {
+            name = FileUtil.getVideoDir() + "/" + name;
+            File file = new File(name);
+            if (file.exists() && file.canRead())
+                video.setSrc(name);
+        }
         if (!CommonUtils.isSrcValid(video.getSrc()))
             VideoPresenter.getInstance().getSrcForDetail(this, video.getId());
         else {
@@ -208,6 +297,8 @@ public class VideoDetailActivity extends AppCompatActivity {
         super.onDestroy();
         player.release();
         MainActivity.getInstance().videoActivityStack.pop();
+        executorService.shutdownNow();
+        VideoPresenter.getInstance().exitPlayer(video);
     }
 
     @Override
@@ -222,25 +313,30 @@ public class VideoDetailActivity extends AppCompatActivity {
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams)
                 detailPlayer.getLayoutParams();
         ConstraintLayout.LayoutParams params1 = (ConstraintLayout.LayoutParams) cover.getLayoutParams();
+        ConstraintLayout.LayoutParams shadowParams = (ConstraintLayout.LayoutParams) bottomShadow.getLayoutParams();
         //检查屏幕的方向
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT;
             params.height = ViewGroup.LayoutParams.MATCH_PARENT;
             params1.width = ViewGroup.LayoutParams.MATCH_PARENT;
             params1.height = ViewGroup.LayoutParams.MATCH_PARENT;
+            shadowParams.height = LayoutUtil.dip2px(this, 50);
             detailPlayer.performClick();
+            isFullScreen = true;
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             params.width = ViewGroup.LayoutParams.MATCH_PARENT;
             params.height = playerHeight;
             params1.width = ViewGroup.LayoutParams.MATCH_PARENT;
             params1.height = playerHeight;
+            shadowParams.height = LayoutUtil.dip2px(this, 40);
+            detailPlayer.performClick();
+            isFullScreen = false;
         }
     }
 
     public void startPlaying(String src) {
         DataHolder.getInstance().recordViewed(video.getId());
         loading.setVisibility(View.GONE);
-        shadow.setVisibility(View.GONE);
         cover.setVisibility(View.GONE);
         video.setSrc(src);
 
@@ -257,6 +353,8 @@ public class VideoDetailActivity extends AppCompatActivity {
         player.prepare();
         // Start the playback.
         player.play();
-        detailPlayer.setOnTouchListener(new PlayerTouchListener(parent, detailPlayer, video));
+        detailPlayer.setOnTouchListener(new PlayerTouchListener(this));
+        VideoPresenter.getInstance().getAudience(this);
     }
+
 }

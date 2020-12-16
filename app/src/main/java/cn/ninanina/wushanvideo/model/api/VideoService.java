@@ -51,11 +51,13 @@ public interface VideoService {
 
     //获取当前观影人数
     @GET("video/audience")
-    Observable<Result<Integer>> getAudienceNum(@Query("id") long id);
+    Observable<Result<Integer>> getAudienceNum(@Query("appKey") String appKey,
+                                               @Query("id") long id);
 
     //退出播放器调用
     @POST("video/exit")
-    Observable<Result<ObjectUtils.Null>> exitVideoPlayer(@Query("id") long id);
+    Observable<Result<ObjectUtils.Null>> exitVideoPlayer(@Query("appKey") String appKey,
+                                                         @Query("id") long id);
 
     //获取在线视频排行
     @GET("video/rank/online")
@@ -157,9 +159,9 @@ public interface VideoService {
 
     //喜欢/取消喜欢视频
     @POST("video/like")
-    Observable<Result<Boolean>> likeVideo(@Query("appKey") String appKey,
-                                          @Query("token") String token,
-                                          @Query("videoId") Long videoId);
+    Observable<Result<VideoDetail>> likeVideo(@Query("appKey") String appKey,
+                                              @Query("token") String token,
+                                              @Query("videoId") Long videoId);
 
     //所有喜欢的视频id
     @GET("video/liked")
@@ -175,9 +177,9 @@ public interface VideoService {
 
     //不喜欢/取消不喜欢视频
     @POST("video/dislike")
-    Observable<Result<Boolean>> dislikeVideo(@Query("appKey") String appKey,
-                                             @Query("token") String token,
-                                             @Query("videoId") Long videoId);
+    Observable<Result<VideoDetail>> dislikeVideo(@Query("appKey") String appKey,
+                                                 @Query("token") String token,
+                                                 @Query("videoId") Long videoId);
 
     //所有不喜欢的视频id
     @GET("video/disliked")

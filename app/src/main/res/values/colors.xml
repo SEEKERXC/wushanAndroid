@@ -14,6 +14,7 @@
     <color name="buttonClickColor">#F18686</color>
     <color name="disabled">#cdcdcd</color>
     <color name="nicknameColor">#F67593</color>
-    <color name="shadow">#A6371414</color>
+    <color name="shadow">#A61E0B0B</color>
     <color name="popup">#F1EAEA</color>
+    <color name="progress_no">#5BC4EAE2</color>
 </resources>

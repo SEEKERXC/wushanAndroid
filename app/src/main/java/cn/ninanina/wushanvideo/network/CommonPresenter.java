@@ -25,6 +25,7 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.me.LoginFragment;
 import cn.ninanina.wushanvideo.ui.me.ProfileActivity;
 import cn.ninanina.wushanvideo.ui.me.RegisterFragment;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.EncodeUtil;
 import cn.ninanina.wushanvideo.util.ToastUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -214,12 +215,12 @@ public class CommonPresenter extends BasePresenter {
                             User user = pairResult.getData().getSecond();
                             user.setPassword(password);
                             updateUserProfile(user);
-
                             MainActivity.getInstance().initData();
-                            //todo:播放初始化数据动画，待收藏夹加载完成后结束activity
+                            DialogManager.getInstance().showPending(fragment.getActivity());
                             for (int i = 1; i < 20; i++) {
                                 fragment.getPasswordEdit().postDelayed(() -> {
                                     if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
+                                        DialogManager.getInstance().dismissPending();
                                         fragment.getActivity().finish();
                                     }
                                 }, i * 100);

@@ -174,19 +174,37 @@ public class MeFragment extends Fragment {
             if (WushanApp.loggedIn()) {
                 Intent intent = new Intent(getContext(), DownloadActivity.class);
                 startActivity(intent);
-            } else Toast.makeText(getContext(), "请先登录哦~", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            }
         });
         menuHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), HistoryActivity.class);
-            startActivity(intent);
+            if (!WushanApp.loggedIn()) {
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getContext(), HistoryActivity.class);
+                startActivity(intent);
+            }
         });
         watchLater.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), WatchLaterActivity.class);
-            startActivity(intent);
+            if (!WushanApp.loggedIn()) {
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getContext(), WatchLaterActivity.class);
+                startActivity(intent);
+            }
         });
         menuLike.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), LikeActivity.class);
-            startActivity(intent);
+            if (!WushanApp.loggedIn()) {
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            } else {
+                Intent intent = new Intent(getContext(), LikeActivity.class);
+                startActivity(intent);
+            }
         });
     }
 

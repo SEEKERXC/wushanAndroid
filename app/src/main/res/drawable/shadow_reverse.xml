@@ -4,5 +4,5 @@
     <gradient
         android:angle="270.0"
         android:endColor="@android:color/transparent"
-        android:startColor="#A6371414" />
+        android:startColor="#A6583535" />
 </shape>

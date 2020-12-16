@@ -1,5 +1,10 @@
 package cn.ninanina.wushanvideo.adapter;
 
+import android.graphics.Color;
+import android.hardware.camera2.params.ColorSpaceTransform;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +23,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
-import cn.ninanina.wushanvideo.adapter.listener.ReplyCommentListener;
+import cn.ninanina.wushanvideo.adapter.listener.CommentLongClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.DefaultCommentClickListener;
 import cn.ninanina.wushanvideo.model.bean.common.User;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
@@ -26,11 +32,13 @@ import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     List<Comment> commentList;
-    ReplyCommentListener replyListener;
+    DefaultCommentClickListener replyListener;
+    CommentLongClickListener longClickListener;
 
-    public CommentAdapter(List<Comment> commentList, ReplyCommentListener replyListener) {
+    public CommentAdapter(List<Comment> commentList, DefaultCommentClickListener replyListener, CommentLongClickListener longClickListener) {
         this.commentList = commentList;
         this.replyListener = replyListener;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -47,7 +55,13 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         commentHolder.cover.setImageURI(user.getPhoto());
         commentHolder.nickname.setText(user.getNickname());
         commentHolder.time.setText(TimeUtil.getFullTime(comment.getTime()));
-        commentHolder.content.setText(comment.getContent());
+        if (comment.getParent() != null) {
+            SpannableString spannableString = new SpannableString("回复 @" + comment.getParent().getUser().getNickname() + " :" + comment.getContent());
+            spannableString.setSpan(new ForegroundColorSpan(Color.BLUE), 3, comment.getParent().getUser().getNickname().length() + 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            commentHolder.content.setText(spannableString);
+        } else {
+            commentHolder.content.setText(comment.getContent());
+        }
         commentHolder.likeNum.setText(String.valueOf(comment.getApprove()));
         commentHolder.dislikeNum.setText(String.valueOf(comment.getDisapprove()));
         if (comment.getApproved())
@@ -58,7 +72,11 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         else commentHolder.dislikeIcon.setImageResource(R.drawable.dislike);
         commentHolder.likeButton.setOnClickListener(v -> VideoPresenter.getInstance().approveComment(CommentAdapter.this, position));
         commentHolder.dislikeButton.setOnClickListener(v -> VideoPresenter.getInstance().disapproveComment(CommentAdapter.this, position));
-        commentHolder.holder.setOnClickListener(v -> replyListener.onCommentListener(comment));
+        commentHolder.holder.setOnClickListener(v -> replyListener.onClick(comment));
+        commentHolder.holder.setOnLongClickListener(v -> {
+            longClickListener.onClick(comment);
+            return true;
+        });
     }
 
     @Override

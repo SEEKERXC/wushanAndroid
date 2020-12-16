@@ -24,7 +24,9 @@ public class VideoDetail implements Serializable {
     private Integer collected;
     private Integer downloaded;
     private Integer liked;
+    private Boolean like;
     private Integer disliked;
+    private Boolean dislike;
     private Long size;
     private List<Tag> tags;
 }
