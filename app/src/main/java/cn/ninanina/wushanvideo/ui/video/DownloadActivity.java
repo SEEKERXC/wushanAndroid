@@ -11,6 +11,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -52,6 +53,8 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.DBHelper;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import cn.ninanina.wushanvideo.util.LayoutUtil;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
+import cn.ninanina.wushanvideo.util.ScreenStatusReceiver;
 
 public class DownloadActivity extends AppCompatActivity {
     @BindView(R.id.back)
@@ -69,6 +72,8 @@ public class DownloadActivity extends AppCompatActivity {
 
     DownloadedFragment downloadedFragment;
     DownloadingFragment downloadingFragment;
+
+    private ScreenStatusReceiver mScreenStatusReceiver;
 
     private DownloadService downloadService;
     private ServiceConnection downloadServiceConn = new ServiceConnection() {
@@ -95,6 +100,7 @@ public class DownloadActivity extends AppCompatActivity {
         setContentView(R.layout.activity_download);
         ButterKnife.bind(this);
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
+        WushanApp.getInstance().addActivity(this);
         downloadedFragment = new DownloadedFragment();
         downloadingFragment = new DownloadingFragment();
         fragments.add(downloadedFragment);
@@ -162,6 +168,13 @@ public class DownloadActivity extends AppCompatActivity {
                 });
             }
         });
+
+        //监听亮屏与熄屏
+        mScreenStatusReceiver = new ScreenStatusReceiver();
+        IntentFilter screenStatusIF = new IntentFilter();
+        screenStatusIF.addAction(Intent.ACTION_SCREEN_ON);
+        screenStatusIF.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenStatusReceiver, screenStatusIF);
     }
 
     public DownloadService getDownloadService() {
@@ -172,6 +185,12 @@ public class DownloadActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         unbindService(downloadServiceConn);
+        unregisterReceiver(mScreenStatusReceiver);
+        WushanApp.getInstance().removeActivity(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 }

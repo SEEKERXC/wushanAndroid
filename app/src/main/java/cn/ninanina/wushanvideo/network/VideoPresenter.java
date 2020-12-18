@@ -14,6 +14,7 @@ import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import cn.ninanina.wushanvideo.WushanApp;
@@ -24,6 +25,7 @@ import cn.ninanina.wushanvideo.adapter.TagAdapter;
 import cn.ninanina.wushanvideo.adapter.TagSuggestAdapter;
 import cn.ninanina.wushanvideo.adapter.VideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.CommentLongClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.CommentOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
@@ -121,7 +123,7 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void getRelatedVideos(DetailFragment fragment, long videoId, boolean showLoading) {
-        if (showLoading) DialogManager.getInstance().showPending(fragment.getActivity());
+        if (showLoading) DialogManager.getInstance().showPending(fragment.getActivity(), "加载中");
         String appKey = getAppKey();
         RecyclerView recyclerView = fragment.getRelatedRecyclerView();
         getVideoService().getRelatedVideos(appKey, videoId, fragment.page * fragment.size, fragment.size)
@@ -135,8 +137,10 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listResult -> {
-                    if (fragment.getContext() == null || CollectionUtils.isEmpty(listResult.getData()))
+                    if (fragment.getContext() == null || CollectionUtils.isEmpty(listResult.getData())) {
+                        DialogManager.getInstance().dismissPending();
                         return;
+                    }
                     List<VideoDetail> videoDetails = listResult.getData();
                     if (recyclerView.getAdapter() == null) {
                         recyclerView.setAdapter(new SingleVideoListAdapter(new ArrayList<>(videoDetails),
@@ -290,10 +294,27 @@ public class VideoPresenter extends BasePresenter {
     }
 
     /**
+     * 记录播放时长
+     */
+    public void recordWatch(long videoId, int seconds) {
+        if (!WushanApp.loggedIn()) return;
+        getVideoService().recordWatch(getAppKey(), getToken(), videoId, seconds)
+                .subscribeOn(Schedulers.io())
+                .timeout(3, TimeUnit.SECONDS)
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(videoDetailResult -> {
+                });
+    }
+
+    /**
      * 新建收藏夹，创建完成后加入给定的recyclerView中
      */
-    public void createPlaylist(Activity activity, String name) {
-        DialogManager.getInstance().showPending(activity);
+    public void createPlaylist(Activity activity, String name, VideoDetail videoDetail) {
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().createPlaylist(getAppKey(), name, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -308,11 +329,13 @@ public class VideoPresenter extends BasePresenter {
                     ToastUtil.show("创建成功");
                     MessageUtils.updatePlaylist();
                     DialogManager.getInstance().dismissPending();
+                    if (videoDetail != null)
+                        collectVideo(activity, videoDetail, playlistResult.getData());
                 });
     }
 
     public void updatePlaylist(Activity activity, Playlist playlist) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().updatePlaylist(getAppKey(), getToken(), playlist.getId(), playlist.getCover(), playlist.getName(), playlist.getIsPublic())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -334,7 +357,7 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void deletePlaylist(Activity activity, Playlist playlist) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().deletePlaylist(getAppKey(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -349,6 +372,7 @@ public class VideoPresenter extends BasePresenter {
                         ToastUtil.show("删除成功");
                         DataHolder.getInstance().getPlaylists().remove(playlist);
                         MessageUtils.updatePlaylist();
+                        MessageUtils.deletePlaylist();
                         DialogManager.getInstance().dismissPending();
                     }
                 });
@@ -358,7 +382,7 @@ public class VideoPresenter extends BasePresenter {
      * 收藏视频
      */
     public void collectVideo(Activity activity, VideoDetail videoDetail, Playlist playlist) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().collectVideo(getAppKey(), videoDetail.getId(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -393,7 +417,7 @@ public class VideoPresenter extends BasePresenter {
      * 取消收藏
      */
     public void cancelCollect(Activity activity, VideoDetail videoDetail, Playlist playlist) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().cancelCollect(getAppKey(), videoDetail.getId(), playlist.getId(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -492,7 +516,7 @@ public class VideoPresenter extends BasePresenter {
                     }
                     RecyclerView recyclerView = commentFragment.getRecyclerView();
                     if (recyclerView.getAdapter() == null) {
-                        recyclerView.setAdapter(new CommentAdapter(comments, new DefaultCommentClickListener(commentFragment), new CommentLongClickListener()));
+                        recyclerView.setAdapter(new CommentAdapter(comments, new DefaultCommentClickListener(commentFragment), new CommentLongClickListener(commentFragment), new CommentOptionClickListener(commentFragment)));
                     } else {
                         CommentAdapter adapter = (CommentAdapter) recyclerView.getAdapter();
                         adapter.insert(comments);
@@ -502,7 +526,7 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void publishComment(CommentFragment commentFragment) {
-        DialogManager.getInstance().showPending(commentFragment.getActivity());
+        DialogManager.getInstance().showPending(commentFragment.getActivity(), "");
         getVideoService().commentOn(getAppKey(), commentFragment.getVideoDetail().getId(), commentFragment.getInput().getText().toString(), getToken(), commentFragment.parentId)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -513,21 +537,43 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    ToastUtil.show("评论成功！");
-                    commentFragment.getInput().setText("");
-                    Comment comment = result.getData();
-                    RecyclerView recyclerView = commentFragment.getRecyclerView();
-                    if (recyclerView.getAdapter() == null) {
-                        recyclerView.setAdapter(new CommentAdapter(new ArrayList<Comment>() {{
-                            add(comment);
-                        }}, new DefaultCommentClickListener(commentFragment), new CommentLongClickListener()));
-                    } else {
-                        CommentAdapter adapter = (CommentAdapter) recyclerView.getAdapter();
-                        adapter.insert(comment);
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
+                        ToastUtil.show("评论成功！");
+                        commentFragment.getInput().setText("");
+                        Comment comment = result.getData();
+                        RecyclerView recyclerView = commentFragment.getRecyclerView();
+                        if (recyclerView.getAdapter() == null) {
+                            recyclerView.setAdapter(new CommentAdapter(new ArrayList<Comment>() {{
+                                add(comment);
+                            }}, new DefaultCommentClickListener(commentFragment), new CommentLongClickListener(commentFragment), new CommentOptionClickListener(commentFragment)));
+                        } else {
+                            CommentAdapter adapter = (CommentAdapter) recyclerView.getAdapter();
+                            adapter.insert(comment);
+                        }
+                        commentFragment.parentId = null;
+                        commentFragment.input.setHint("发条友善的评论");
+                        commentFragment.recyclerView.smoothScrollToPosition(0);
                     }
                     DialogManager.getInstance().dismissPending();
-                    commentFragment.parentId = null;
-                    commentFragment.input.setHint("发条友善的评论");
+                });
+    }
+
+    public void deleteComment(CommentFragment fragment, Comment comment) {
+        DialogManager.getInstance().showPending(fragment.getActivity(), "");
+        getVideoService().deleteComment(getAppKey(), getToken(), comment.getId())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    CommentAdapter adapter = (CommentAdapter) fragment.recyclerView.getAdapter();
+                    Objects.requireNonNull(adapter).delete(comment);
+                    DialogManager.getInstance().dismissPending();
+                    ToastUtil.show("删除成功");
                 });
     }
 
@@ -650,13 +696,15 @@ public class VideoPresenter extends BasePresenter {
                     if (CollectionUtils.isEmpty(result.getData()) || result.getData().size() < activity.size) {
                         activity.loadingFinished = true;
                     }
-                    activity.showData(result.getData());
+                    if (!CollectionUtils.isEmpty(result.getData()))
+                        activity.showData(result.getData());
                     activity.loading = false;
+                    activity.swipe.setRefreshing(false);
                 });
     }
 
     public void deleteHistory(List<VideoUserViewed> histories, HistoryActivity activity, boolean all) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         List<Long> historyIds = new ArrayList<>();
         for (VideoUserViewed history : histories)
             historyIds.add(history.getId());
@@ -696,7 +744,6 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -705,7 +752,7 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void likeVideo(Activity activity, VideoDetail videoDetail) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().likeVideo(getAppKey(), getToken(), videoDetail.getId())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -738,7 +785,7 @@ public class VideoPresenter extends BasePresenter {
     }
 
     public void dislikeVideo(Activity activity, VideoDetail videoDetail) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().dislikeVideo(getAppKey(), getToken(), videoDetail.getId())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -765,6 +812,9 @@ public class VideoPresenter extends BasePresenter {
                     videoDetail.setLiked(result.getData().getLiked());
                     videoDetail.setDislike(result.getData().getDislike());
                     videoDetail.setDisliked(result.getData().getDisliked());
+                    if (activity instanceof LikeActivity) {
+                        ((LikeActivity) activity).delete(videoDetail);
+                    }
                     DialogManager.getInstance().dismissPending();
                 });
     }
@@ -827,7 +877,7 @@ public class VideoPresenter extends BasePresenter {
 
     //增加稍后观看
     public void addToWatch(Activity activity, long videoId) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         getVideoService().newToWatch(getAppKey(), getToken(), videoId)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -846,7 +896,7 @@ public class VideoPresenter extends BasePresenter {
 
     //删除稍后观看
     public void deleteWatchLater(WatchLaterActivity activity, List<Pair<ToWatch, VideoDetail>> pairs) {
-        DialogManager.getInstance().showPending(activity);
+        DialogManager.getInstance().showPending(activity, "");
         List<Long> ids = new ArrayList<>();
         for (Pair<ToWatch, VideoDetail> pair : pairs) ids.add(pair.getFirst().getId());
         getVideoService().deleteToWatch(getAppKey(), getToken(), ids)

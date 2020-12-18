@@ -18,11 +18,13 @@ import com.githang.statusbar.StatusBarCompat;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.common.VideoSortBy;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.home.SearchActivity;
 import cn.ninanina.wushanvideo.ui.home.VideoListFragment;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class TagVideoActivity extends AppCompatActivity {
     @BindView(R.id.back)
@@ -70,9 +72,17 @@ public class TagVideoActivity extends AppCompatActivity {
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
-        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));//todo
+        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
         back.setOnClickListener(v -> TagVideoActivity.this.finish());
         VideoPresenter.getInstance().getVideosForTag(this, VideoPresenter.RecyclerViewOp.INIT);
+        search.setOnClickListener(v -> ToastUtil.show("下个版本上线，敬请期待！"));
+        WushanApp.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     public Tag getTag() {

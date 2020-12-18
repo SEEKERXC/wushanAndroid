@@ -16,4 +16,9 @@ public class DownloadOptionClickListener implements VideoClickListener {
     public void onClick(VideoDetail videoDetail) {
         DialogManager.getInstance().newDownloadOptionDialog(context, videoDetail).show();
     }
+
+    @Override
+    public void playVideo(VideoDetail videoDetail) {
+
+    }
 }

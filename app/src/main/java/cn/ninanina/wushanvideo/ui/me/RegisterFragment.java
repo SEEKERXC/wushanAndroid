@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.ui.me;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -115,7 +117,13 @@ public class RegisterFragment extends Fragment {
             showHideRegister();
         });
 
-        registerButton.setOnClickListener(v -> CommonPresenter.getInstance().register(RegisterFragment.this));
+        registerButton.setOnClickListener(v -> {
+            InputMethodManager im = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (im != null) {
+                im.toggleSoftInput(InputMethodManager.HIDE_NOT_ALWAYS, 0);
+            }
+            CommonPresenter.getInstance().register(RegisterFragment.this);
+        });
 
         //测量并保存软键盘高度
         root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {

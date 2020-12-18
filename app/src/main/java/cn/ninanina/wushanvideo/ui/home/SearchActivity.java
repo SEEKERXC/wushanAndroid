@@ -31,6 +31,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.SearchResultAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
@@ -97,6 +98,13 @@ public class SearchActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initPopup();
         initSearch();
+        WushanApp.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void initSearch() {

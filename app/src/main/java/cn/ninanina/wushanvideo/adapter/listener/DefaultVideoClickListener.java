@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.DialogManager;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
 
 /**
  * 进入视频详情页面
@@ -25,6 +27,15 @@ public class DefaultVideoClickListener implements VideoClickListener {
 
     @Override
     public void onClick(VideoDetail videoDetail) {
+        if (PlayTimeManager.getTodayWatchTime() > 60 * 60) {
+            DialogManager.getInstance().newWatchPromptDialog(context, videoDetail, this).show();
+        } else {
+            playVideo(videoDetail);
+        }
+    }
+
+    @Override
+    public void playVideo(VideoDetail videoDetail) {
         Intent intent = new Intent(context, VideoDetailActivity.class);
         intent.putExtra("video", videoDetail);
         context.startActivity(intent);

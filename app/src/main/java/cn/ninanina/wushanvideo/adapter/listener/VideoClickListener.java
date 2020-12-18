@@ -7,4 +7,6 @@ import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
  */
 public interface VideoClickListener {
     void onClick(VideoDetail videoDetail);
+
+    void playVideo(VideoDetail videoDetail);
 }

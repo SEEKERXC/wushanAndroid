@@ -47,6 +47,8 @@ dependencies {
     implementation 'com.githang:status-bar-compat:0.7'
     //fresco
     implementation 'com.facebook.fresco:fresco:1.3.0'
+    //glide
+    implementation 'com.github.bumptech.glide:glide:4.10.0'
     //retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
@@ -78,4 +80,6 @@ dependencies {
     //下载与上传
     implementation 'com.arialyy.aria:core:3.8.5'
     annotationProcessor 'com.arialyy.aria:compiler:3.8.5'
+    //图片选择
+    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.6.0'
 }

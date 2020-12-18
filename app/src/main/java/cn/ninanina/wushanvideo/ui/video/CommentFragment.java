@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -19,10 +21,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.apache.commons.lang3.StringUtils;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.adapter.listener.SoftKeyBoardListener;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.util.DialogManager;
@@ -38,7 +43,7 @@ public class CommentFragment extends Fragment {
     @BindView(R.id.root)
     ConstraintLayout root;
     @BindView(R.id.comments)
-    RecyclerView recyclerView;
+    public RecyclerView recyclerView;
     @BindView(R.id.input)
     public EditText input;
     @BindView(R.id.publish)
@@ -66,6 +71,8 @@ public class CommentFragment extends Fragment {
     //软键盘高度
     private int keyboardHeight;
 
+    private SoftKeyBoardListener softKeyBoardListener;
+
     //即将发表的评论的父评论id
     public Long parentId;
 
@@ -80,6 +87,7 @@ public class CommentFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this, view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setNestedScrollingEnabled(true);
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
         keyboardHeight = WushanApp.getProfile().getInt("keyboardHeight", 0);
         Rect outRect = new Rect();
@@ -95,7 +103,7 @@ public class CommentFragment extends Fragment {
             if (!WushanApp.loggedIn()) {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
             } else {
-                if (!input.getText().toString().isEmpty() && input.getText().toString().length() > 1)
+                if (!input.getText().toString().trim().isEmpty() && input.getText().toString().trim().length() > 1)
                     VideoPresenter.getInstance().publishComment(this);
             }
         });
@@ -107,6 +115,10 @@ public class CommentFragment extends Fragment {
                 if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !isLoading && !loadComplete) {
                     page++;
                     VideoPresenter.getInstance().loadComments(CommentFragment.this);
+                }
+                if (StringUtils.isEmpty(input.getText().toString().trim())) {
+                    parentId = null;
+                    input.setHint("发条友善的评论");
                 }
                 super.onScrolled(recyclerView, dx, dy);
             }
@@ -127,7 +139,7 @@ public class CommentFragment extends Fragment {
                 SharedPreferences profile = WushanApp.getProfile();
                 SharedPreferences.Editor editor = profile.edit();
                 editor.putInt("keyboardHeight", keyboardHeight).apply();
-            } else input.clearFocus();
+            }
         });
         input.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
@@ -140,6 +152,20 @@ public class CommentFragment extends Fragment {
         input.setOnClickListener(v -> {
             if (!WushanApp.loggedIn()) {
                 DialogManager.getInstance().newLoginDialog(getContext()).show();
+            }
+        });
+        softKeyBoardListener = new SoftKeyBoardListener(getActivity());
+        //软键盘状态监听
+        softKeyBoardListener.setListener(new SoftKeyBoardListener.OnSoftKeyBoardChangeListener() {
+            @Override
+            public void keyBoardShow(int height) {
+                //软键盘已经显示，做逻辑
+
+            }
+
+            @Override
+            public void keyBoardHide(int height) {
+                input.clearFocus();
             }
         });
     }

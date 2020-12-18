@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -60,6 +61,10 @@ public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         videoHolder.download.setText(String.valueOf(videoDetail.getDownloaded()));
         videoHolder.itemView.setOnClickListener(v -> listener.onClick(videoDetail));
         videoHolder.videoMore.setOnClickListener(v -> optionsClickListener.onClick(videoDetail));
+        videoHolder.itemView.setOnLongClickListener(v -> {
+            optionsClickListener.onClick(videoDetail);
+            return true;
+        });
     }
 
     @Override
@@ -134,7 +139,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         @BindView(R.id.video_download)
         TextView download;
         @BindView(R.id.video_action)
-        ImageButton videoMore;
+        FrameLayout videoMore;
 
         private VideoHolder(View itemView) {
             super(itemView);

@@ -23,6 +23,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.PlaylistVideoAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
@@ -59,6 +60,7 @@ public class PlaylistActivity extends AppCompatActivity {
     public static Handler handler;
     public static final int deleteOne = 1;
     public static final int updateInfo = 2;
+    public static final int deleteThis = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +71,14 @@ public class PlaylistActivity extends AppCompatActivity {
         content.setLayoutManager(new LinearLayoutManager(this));
         initData();
         bindEvent();
+        WushanApp.getInstance().addActivity(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         handler = null;
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void bindEvent() {
@@ -99,6 +103,8 @@ public class PlaylistActivity extends AppCompatActivity {
                     refreshData();
                 } else if (msg.what == updateInfo) {
                     refreshData();
+                } else if (msg.what == deleteThis) {
+                    PlaylistActivity.this.finish();
                 }
                 super.handleMessage(msg);
             }

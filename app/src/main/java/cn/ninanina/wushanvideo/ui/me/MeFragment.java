@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,11 +22,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.facebook.drawee.generic.RoundingParams;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.common.util.CollectionUtils;
+import com.luck.picture.lib.PictureSelector;
+import com.luck.picture.lib.config.PictureMimeType;
+import com.luck.picture.lib.entity.LocalMedia;
+import com.luck.picture.lib.listener.OnResultCallbackListener;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,17 +43,28 @@ import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.PlaylistLongClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.ShowPlaylistClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
-import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.LikeActivity;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
+import cn.ninanina.wushanvideo.util.GlideEngine;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class MeFragment extends Fragment {
     @BindView(R.id.swipe)
     SwipeRefreshLayout swipe;
-    @BindView(R.id.fragment_me_top)
+    @BindView(R.id.notification)
+    ConstraintLayout notification;
+    @BindView(R.id.new_notification)
+    ImageView newNotification;
+    @BindView(R.id.header)
+    ConstraintLayout header;
+    @BindView(R.id.photo)
+    SimpleDraweeView photo;
+    @BindView(R.id.nickname)
+    TextView nicknameText;
+    @BindView(R.id.login)
     LinearLayout top;
     @BindView(R.id.welcome)
     TextView welcome;
@@ -65,6 +82,8 @@ public class MeFragment extends Fragment {
     ImageView collectIcon;
     @BindView(R.id.collect_new_dir)
     ConstraintLayout newCollectDir;
+    @BindView(R.id.collect_divider)
+    View collectDivider1;
     @BindView(R.id.collect_list)
     RecyclerView playlist;
     @BindView(R.id.menu_download)
@@ -124,21 +143,32 @@ public class MeFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        checkForUser();
+        refreshUser();
         refreshPlaylist();
     }
 
-    private void checkForUser() {
+    private void refreshUser() {
         SharedPreferences profile = WushanApp.getProfile();
-        if (!StringUtils.isEmpty(profile.getString("username", ""))) {
+        if (WushanApp.loggedIn()) {
+            top.setVisibility(View.GONE);
+            header.setVisibility(View.VISIBLE);
             String nickname = profile.getString("nickname", "");
-            top.removeView(login_register_button);
-            welcome.setText("欢迎来到巫山小视频 ~ " + nickname);
-        } else {
-            if (top.indexOfChild(login_register_button) < 0) {
-                top.addView(login_register_button, 1);
+            String photoUri = profile.getString("photo", "");
+            String gender = profile.getString("gender", "");
+            nicknameText.setText(nickname);
+            RoundingParams roundingParams = RoundingParams.asCircle();
+            photo.getHierarchy().setRoundingParams(roundingParams);
+            if (!StringUtils.isEmpty(photoUri)) {
+                photo.setImageURI(photoUri);
+            } else {
+                if (gender.equals("MALE")) {
+                    photo.setImageURI("res://cn.ninanina.wushanvideo/" + R.drawable.photo_male);
+                } else
+                    photo.setImageURI("res://cn.ninanina.wushanvideo/" + R.drawable.photo_female);
             }
-            welcome.setText(R.string.welcome);
+        } else {
+            top.setVisibility(View.VISIBLE);
+            header.setVisibility(View.GONE);
         }
     }
 
@@ -167,7 +197,7 @@ public class MeFragment extends Fragment {
         });
         newCollectDir.setOnClickListener(v -> {
             if (WushanApp.loggedIn())
-                DialogManager.getInstance().newCreatePlaylistDialog(MeFragment.this).show();
+                DialogManager.getInstance().newCreatePlaylistDialog(getActivity(), null).show();
             else DialogManager.getInstance().newLoginDialog(getActivity()).show();
         });
         menuDownload.setOnClickListener(v -> {
@@ -206,6 +236,32 @@ public class MeFragment extends Fragment {
                 startActivity(intent);
             }
         });
+        header.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ProfileActivity.class);
+            startActivity(intent);
+            //todo:下个版本：个人主页、评论点击头像跳转到他人主页
+        });
+        photo.setOnClickListener(v -> {
+            PictureSelector.create(this)
+                    .openGallery(PictureMimeType.ofAll())
+                    .imageEngine(GlideEngine.createGlideEngine())
+                    .maxSelectNum(1)
+                    .forResult(new OnResultCallbackListener<LocalMedia>() {
+                        @Override
+                        public void onResult(List<LocalMedia> result) {
+                            SharedPreferences.Editor editor = WushanApp.getProfile().edit();
+                            editor.putString("photo", result.get(0).getPath()).apply();
+                        }
+
+                        @Override
+                        public void onCancel() {
+                            // onCancel Callback
+                        }
+                    });
+        });
+        notification.setOnClickListener(v -> {
+            ToastUtil.show("暂无通知");
+        });
     }
 
     public void refreshPlaylist() {
@@ -217,9 +273,11 @@ public class MeFragment extends Fragment {
                     adapter.setLongClickListener(new PlaylistLongClickListener(getActivity()));
                     playlist.setAdapter(adapter);
                     collectIcon.setImageResource(R.drawable.down);
+                    collectDivider1.setVisibility(View.VISIBLE);
                 } else {
                     playlist.setAdapter(new PlaylistAdapter(new ArrayList<>(), new ShowPlaylistClickListener(getContext())));
                     collectIcon.setImageResource(R.drawable.up);
+                    collectDivider1.setVisibility(View.GONE);
                 }
             } else {
                 PlaylistAdapter adapter = (PlaylistAdapter) playlist.getAdapter();

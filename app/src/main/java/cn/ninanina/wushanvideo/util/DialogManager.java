@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,9 +45,11 @@ import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.OptionAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.CollectPlaylistClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.Option;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
+import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.model.bean.video.ToWatch;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
@@ -58,6 +62,8 @@ import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.me.LoginActivity;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.me.ProfileActivity;
+import cn.ninanina.wushanvideo.ui.video.CommentFragment;
+import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 
 /**
  * 管理对话框。
@@ -84,6 +90,7 @@ public class DialogManager {
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_list, null, false);
         RecyclerView recyclerView = frameLayout.findViewById(R.id.content);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
+        //设置最大高度
         frameLayout.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             int height = frameLayout.getHeight();
             int maxHeight = LayoutUtil.dip2px(activity, 400);
@@ -92,9 +99,12 @@ public class DialogManager {
                 //这里一定是frameLayout，不然会转换异常，由此可见alertdialog底层是frameLayout
             }
         });
+        //标题
+        ConstraintLayout title = (ConstraintLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_collect_header, null, false);
+        ConstraintLayout newFolderBtn = title.findViewById(R.id.new_folder_btn);
+
         Dialog collectDialog = new AlertDialog.Builder(activity)
-                .setTitle("收藏视频")
-                .setIcon(R.drawable.directory)
+                .setCustomTitle(title)
                 .setView(frameLayout)
                 .create();
         List<Playlist> playlists = DataHolder.getInstance().getPlaylists();
@@ -102,8 +112,13 @@ public class DialogManager {
             PlaylistAdapter adapter = new PlaylistAdapter(playlists, videoDetail, new CollectPlaylistClickListener(activity, videoDetail, collectDialog));
             adapter.showDownloadNum = false;
             recyclerView.setAdapter(adapter);
-        } else
-            ToastUtil.show("请先创建收藏夹");
+        } else {
+            return newCreatePlaylistDialog(activity, videoDetail);
+        }
+        newFolderBtn.setOnClickListener(v -> {
+            collectDialog.dismiss();
+            newCreatePlaylistDialog(activity, videoDetail).show();
+        });
         return collectDialog;
     }
 
@@ -203,7 +218,7 @@ public class DialogManager {
                 .setView(frameLayout)
                 .setPositiveButton("完成", (dialog, which) -> {
                     assert editText != null;
-                    String name = editText.getText().toString();
+                    String name = editText.getText().toString().trim();
                     if (name.length() <= 0 || name.length() > 16) return;
                     playlist.setName(name);
                     VideoPresenter.getInstance().updatePlaylist(activity, playlist);
@@ -229,12 +244,12 @@ public class DialogManager {
     }
 
     /**
-     * 创建收藏夹对话框
+     * 创建收藏夹对话框，如果给定video，则创建后立即收藏
      */
-    public AlertDialog newCreatePlaylistDialog(MeFragment fragment) {
-        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(fragment.getContext()).inflate(R.layout.dialog_one_edit, null, false);
+    public AlertDialog newCreatePlaylistDialog(Activity activity, VideoDetail videoDetail) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_one_edit, null, false);
         EditText editText = frameLayout.findViewById(R.id.edit);
-        AlertDialog newDirDialog = new AlertDialog.Builder(fragment.getContext())
+        AlertDialog newDirDialog = new AlertDialog.Builder(activity)
                 .setTitle("新建收藏夹")
                 .setIcon(R.drawable.new_directory)
                 .setView(frameLayout)
@@ -242,10 +257,10 @@ public class DialogManager {
                     assert editText != null;
                     String name = editText.getText().toString();
                     if (name.length() <= 0) return;
-                    VideoPresenter.getInstance().createPlaylist(fragment.getActivity(), name);
+                    VideoPresenter.getInstance().createPlaylist(activity, name, videoDetail);
                 })
                 .setOnDismissListener(dialog -> {
-                    InputMethodManager im = (InputMethodManager) fragment.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    InputMethodManager im = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                     if (im != null) {
                         im.toggleSoftInput(InputMethodManager.HIDE_NOT_ALWAYS, 0);
                     }
@@ -470,7 +485,7 @@ public class DialogManager {
                 .setView(frameLayout)
                 .setPositiveButton("完成", (dialog, which) -> {
                     assert editText != null;
-                    String name = editText.getText().toString();
+                    String name = editText.getText().toString().trim();
                     if (name.length() <= 0) return;
                     if (!name.endsWith(".mp4")) name += ".mp4";
                     if (dbHelper.getVideo(name) != null) {
@@ -574,8 +589,8 @@ public class DialogManager {
                 .setIcon(R.drawable.lock)
                 .setView(linearLayout)
                 .setPositiveButton("确认", (dialog1, which) -> {
-                    String p1 = edit1.getText().toString();
-                    String p2 = edit2.getText().toString();
+                    String p1 = edit1.getText().toString().trim();
+                    String p2 = edit2.getText().toString().trim();
                     if (!p1.equals(p2)) {
                         ToastUtil.show("两次密码不一致");
                         return;
@@ -641,7 +656,7 @@ public class DialogManager {
                 .setView(frameLayout)
                 .setPositiveButton("完成", (dialog, which) -> {
                     assert editText != null;
-                    String name = editText.getText().toString();
+                    String name = editText.getText().toString().trim();
                     if (name.length() <= 0) return;
                     SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                     editor.putString("nickname", name).apply();
@@ -752,7 +767,7 @@ public class DialogManager {
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_list, null, false);
         RecyclerView recyclerView = frameLayout.findViewById(R.id.content);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
-        AlertDialog videoOptionDialog = new AlertDialog.Builder(activity)
+        AlertDialog dialog = new AlertDialog.Builder(activity)
                 .setView(frameLayout)
                 .create();
         List<Option> options = new ArrayList<Option>() {{
@@ -760,26 +775,96 @@ public class DialogManager {
         }};
         List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
             add(v -> {
-                videoOptionDialog.dismiss();
+                dialog.dismiss();
                 VideoPresenter.getInstance().deleteWatchLater(activity, new ArrayList<Pair<ToWatch, VideoDetail>>() {{
                     add(pair);
                 }});
             });
         }};
         recyclerView.setAdapter(new OptionAdapter(options, listeners));
-        return videoOptionDialog;
+        return dialog;
+    }
+
+    /**
+     * 自己的评论选项
+     */
+    public Dialog newMyCommentOptionDialog(CommentFragment commentFragment, Comment comment) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(commentFragment.getContext()).inflate(R.layout.dialog_list, null, false);
+        RecyclerView recyclerView = frameLayout.findViewById(R.id.content);
+        recyclerView.setLayoutManager(new LinearLayoutManager(commentFragment.getContext()));
+        AlertDialog dialog = new AlertDialog.Builder(commentFragment.getContext())
+                .setView(frameLayout)
+                .create();
+        List<Option> options = new ArrayList<Option>() {{
+            add(new Option(R.drawable.delete, "删除"));
+        }};
+        List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
+            add(v -> {
+                dialog.dismiss();
+                VideoPresenter.getInstance().deleteComment(commentFragment, comment);
+            });
+        }};
+        recyclerView.setAdapter(new OptionAdapter(options, listeners));
+        return dialog;
+    }
+
+    /**
+     * 别人的评论选项
+     */
+    public Dialog newOthersCommentOptionDialog(CommentFragment commentFragment, Comment comment) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(commentFragment.getContext()).inflate(R.layout.dialog_list, null, false);
+        RecyclerView recyclerView = frameLayout.findViewById(R.id.content);
+        recyclerView.setLayoutManager(new LinearLayoutManager(commentFragment.getContext()));
+        AlertDialog dialog = new AlertDialog.Builder(commentFragment.getContext())
+                .setView(frameLayout)
+                .create();
+        List<Option> options = new ArrayList<Option>() {{
+            add(new Option(R.drawable.info, "举报"));
+        }};
+        List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
+            add(v -> {
+                dialog.dismiss();
+                // TODO: 2020/12/17 0017 举报评论 
+            });
+        }};
+        recyclerView.setAdapter(new OptionAdapter(options, listeners));
+        return dialog;
+    }
+
+    /**
+     * 今天看了很久了，提示一下是否继续观看
+     */
+    public MaterialDialog newWatchPromptDialog(Context context, VideoDetail videoDetail, VideoClickListener videoClickListener) {
+        String todayWatchTime = TimeUtil.getDurationZh(PlayTimeManager.getTodayWatchTime());
+        MaterialDialog dialog = new MaterialDialog(context)
+                .titleTextSize(16.0f)
+                .title("今天已经看了" + todayWatchTime + "，确定继续吗？")
+                .titleTextSize(15.0f)
+                .content("\n做个自律好宝宝(๑•̀ㅂ•́)و✧\n")
+                .contentTextSize(13.0f)
+                .btnNum(2)
+                .btnText("立即关闭APP", "继续看")
+                .btnTextSize(14.0f, 12.0f)
+                .btnTextColor(Color.RED, Color.BLUE);
+        dialog.setOnBtnClickL(() -> WushanApp.getInstance().onTerminate(), () -> {
+            dialog.dismiss();
+            videoClickListener.playVideo(videoDetail);
+        });
+        return dialog;
     }
 
     /**
      * 显示加载动画
      */
-    public void showPending(Activity activity) {
-        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.popup_loading, null, false);
+    public void showPending(Activity activity, String text) {
+        LinearLayout linearLayout = (LinearLayout) LayoutInflater.from(activity).inflate(R.layout.popup_loading, null, false);
         loading = new PopupWindow(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         loading.setFocusable(false);
         loading.setOutsideTouchable(false);
-        loading.setContentView(frameLayout);
+        loading.setContentView(linearLayout);
         View root = ((ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
+        TextView textView = linearLayout.findViewById(R.id.text);
+        if (!StringUtils.isEmpty(text)) textView.setText(text);
         loading.showAtLocation(root, Gravity.CENTER, 0, 0);
     }
 

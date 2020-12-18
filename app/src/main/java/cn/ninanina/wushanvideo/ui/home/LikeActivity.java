@@ -19,6 +19,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoOptionClickListener;
@@ -47,7 +48,14 @@ public class LikeActivity extends AppCompatActivity {
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
         ButterKnife.bind(this);
         bindEvents();
+        WushanApp.getInstance().addActivity(this);
         VideoPresenter.getInstance().getLikedVideos(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void bindEvents() {
@@ -75,5 +83,12 @@ public class LikeActivity extends AppCompatActivity {
                     new DefaultVideoClickListener(this),
                     new DefaultVideoOptionClickListener(this)));
         } else adapter.insert(new ArrayList<>(videoDetails));
+    }
+
+    public void delete(VideoDetail videoDetail) {
+        SingleVideoListAdapter adapter = (SingleVideoListAdapter) content.getAdapter();
+        if (adapter != null) {
+            adapter.delete(videoDetail);
+        }
     }
 }

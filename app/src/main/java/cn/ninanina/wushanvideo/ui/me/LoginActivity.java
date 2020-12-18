@@ -24,6 +24,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 
 public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.login_banner)
@@ -56,6 +57,13 @@ public class LoginActivity extends AppCompatActivity {
         banner.addBannerLifecycleObserver(this)
                 .setAdapter(new ImageAdapter(covers))
                 .setIndicator(new CircleIndicator(this));
+        WushanApp.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void initFragments() {

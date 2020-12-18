@@ -80,6 +80,13 @@ public class ProfileActivity extends AppCompatActivity {
                 super.handleMessage(msg);
             }
         };
+        WushanApp.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void refresh() {

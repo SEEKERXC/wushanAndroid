@@ -34,6 +34,15 @@ public class MessageUtils {
         }
     }
 
+    public static void deletePlaylist() {
+        Handler handler1 = PlaylistActivity.handler;
+        if (handler1 != null) {
+            Message message = new Message();
+            message.what = PlaylistActivity.deleteThis;
+            handler1.sendMessage(message);
+        }
+    }
+
     public static void refreshVideoData(VideoDetail videoDetail) {
         if (!MainActivity.getInstance().videoActivityStack.empty()) {
             VideoDetailActivity activity = MainActivity.getInstance().videoActivityStack.peek();
@@ -54,5 +63,9 @@ public class MessageUtils {
             message.obj = videoDetail;
             handler1.sendMessage(message);
         }
+    }
+
+    public static void dislikeVideo(VideoDetail videoDetail) {
+        // TODO: 2020/12/18 0018 发送不喜欢视频的消息，对各个activity进行更新
     }
 }

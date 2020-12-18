@@ -15,6 +15,8 @@ import cn.ninanina.wushanvideo.adapter.DownloadedVideoAdapter;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.video.DownloadedFragment;
+import cn.ninanina.wushanvideo.util.DialogManager;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
 
 public class OfflineVideoClickListener implements VideoClickListener {
     public OfflineVideoClickListener(Context context) {
@@ -25,6 +27,15 @@ public class OfflineVideoClickListener implements VideoClickListener {
 
     @Override
     public void onClick(VideoDetail videoDetail) {
+        if (PlayTimeManager.getTodayWatchTime() > 60 * 60) {
+            DialogManager.getInstance().newWatchPromptDialog(context, videoDetail, this).show();
+            return;
+        }
+        playVideo(videoDetail);
+    }
+
+    @Override
+    public void playVideo(VideoDetail videoDetail) {
         VideoPresenter.getInstance().recordViewed(videoDetail);
         Intent intent = new Intent(Intent.ACTION_VIEW);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -36,5 +47,7 @@ public class OfflineVideoClickListener implements VideoClickListener {
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
         context.startActivity(intent);
+        //开始播放计时
+        PlayTimeManager.startTiming(videoDetail.getId());
     }
 }

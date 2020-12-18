@@ -24,4 +24,8 @@ public class DefaultVideoOptionClickListener implements VideoClickListener {
         AlertDialog dialog = DialogManager.getInstance().newVideoOptionDialog(activity, videoDetail);
         dialog.show();
     }
+
+    @Override
+    public void playVideo(VideoDetail videoDetail) {
+    }
 }

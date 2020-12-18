@@ -18,7 +18,7 @@ public abstract class BasePresenter {
 
     private CommonService commonService = getRetrofit().create(CommonService.class);
 
-    protected Retrofit getRetrofit() {
+    private Retrofit getRetrofit() {
         return retrofit;
     }
 

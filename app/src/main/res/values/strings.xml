@@ -101,4 +101,9 @@
     <string name="statistics">统计</string>
     <string name="rank">排序</string>
     <string name="me_like">我喜欢的</string>
+    <string name="home_page">个人主页</string>
+    <string name="notification">通知</string>
+    <string name="my_create">我创建的</string>
+    <string name="my_collect">我收藏的</string>
+    <string name="add_to_new">添加到新收藏夹</string>
 </resources>

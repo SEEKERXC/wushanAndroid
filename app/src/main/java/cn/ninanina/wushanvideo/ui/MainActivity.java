@@ -29,6 +29,7 @@ import java.util.Stack;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
@@ -37,6 +38,7 @@ import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
 
 public class MainActivity extends AppCompatActivity {
     private static MainActivity mainActivity;
@@ -82,6 +84,8 @@ public class MainActivity extends AppCompatActivity {
         //初始化下载服务
         final Intent intent = new Intent(this, DownloadService.class);
         bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
+
+        WushanApp.getInstance().addActivity(this);
     }
 
     private void initFragments() {
@@ -158,6 +162,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        PlayTimeManager.stopTiming();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     public static MainActivity getInstance() {

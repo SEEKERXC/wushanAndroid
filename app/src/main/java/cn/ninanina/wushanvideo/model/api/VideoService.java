@@ -42,6 +42,13 @@ public interface VideoService {
                                                    @Query("withoutSrc") Boolean withoutSrc,
                                                    @Query("record") Boolean record);
 
+    //记录播放时长
+    @POST("video/record")
+    Observable<Result<ObjectUtils.Null>> recordWatch(@Query("appKey") String appKey,
+                                                     @Query("token") String token,
+                                                     @Query("videoId") Long videoId,
+                                                     @Query("time") Integer time);
+
     //获取相关视频
     @GET("video/related")
     Observable<Result<List<VideoDetail>>> getRelatedVideos(@Query("appKey") String appKey,
@@ -70,6 +77,12 @@ public interface VideoService {
                                           @Query("content") String content,
                                           @Query("token") String token,
                                           @Query("parentId") Long parentId);
+
+    //删除评论
+    @POST("video/comment/delete")
+    Observable<Result<ObjectUtils.Null>> deleteComment(@Query("appKey") String appKey,
+                                                       @Query("token") String token,
+                                                       @Query("commentId") Long commentId);
 
     //点赞评论
     @POST("video/comment/approve")

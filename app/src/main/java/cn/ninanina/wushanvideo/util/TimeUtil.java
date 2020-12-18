@@ -8,6 +8,7 @@ import java.time.temporal.TemporalUnit;
 import java.util.Calendar;
 
 public class TimeUtil {
+    //yyyy年MM月dd日 HH:mm
     public static String getFullTime(long millis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(millis);
@@ -50,6 +51,19 @@ public class TimeUtil {
             long minute = (seconds % 3600) / 60;
             long second = seconds % 3600 % 60;
             return (hour < 10 ? "0" + hour : hour) + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (second < 10 ? "0" + second : second);
+        }
+    }
+
+    /**
+     * 将秒时间段转换成hh小时mm分钟的形式
+     */
+    public static String getDurationZh(int seconds) {
+        int minutes = seconds / 60;
+        if (minutes < 60) return minutes + "分钟";
+        else {
+            int hours = minutes / 60;
+            minutes = minutes - hours * 60;
+            return hours + "小时" + minutes + "分钟";
         }
     }
 }

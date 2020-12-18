@@ -16,7 +16,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.facebook.drawee.generic.RoundingParams;
 import com.facebook.drawee.view.SimpleDraweeView;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -24,6 +27,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.adapter.listener.CommentLongClickListener;
+import cn.ninanina.wushanvideo.adapter.listener.CommentOptionClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultCommentClickListener;
 import cn.ninanina.wushanvideo.model.bean.common.User;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
@@ -34,11 +38,13 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     List<Comment> commentList;
     DefaultCommentClickListener replyListener;
     CommentLongClickListener longClickListener;
+    CommentOptionClickListener optionClickListener;
 
-    public CommentAdapter(List<Comment> commentList, DefaultCommentClickListener replyListener, CommentLongClickListener longClickListener) {
+    public CommentAdapter(List<Comment> commentList, DefaultCommentClickListener replyListener, CommentLongClickListener longClickListener, CommentOptionClickListener optionClickListener) {
         this.commentList = commentList;
         this.replyListener = replyListener;
         this.longClickListener = longClickListener;
+        this.optionClickListener = optionClickListener;
     }
 
     @NonNull
@@ -52,7 +58,16 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         CommentHolder commentHolder = (CommentHolder) holder;
         Comment comment = commentList.get(position);
         User user = comment.getUser();
-        commentHolder.cover.setImageURI(user.getPhoto());
+        SimpleDraweeView photo = commentHolder.cover;
+        RoundingParams roundingParams = RoundingParams.asCircle();
+        photo.getHierarchy().setRoundingParams(roundingParams);
+        if (!StringUtils.isEmpty(comment.getUser().getPhoto())) {
+            photo.setImageURI(comment.getUser().getPhoto());
+        } else {
+            if (comment.getUser().getGender().equals("MALE")) {
+                photo.setActualImageResource(R.drawable.photo_male);
+            } else photo.setActualImageResource(R.drawable.photo_female);
+        }
         commentHolder.nickname.setText(user.getNickname());
         commentHolder.time.setText(TimeUtil.getFullTime(comment.getTime()));
         if (comment.getParent() != null) {
@@ -77,6 +92,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             longClickListener.onClick(comment);
             return true;
         });
+        commentHolder.option.setOnClickListener(v -> optionClickListener.onClick(comment));
     }
 
     @Override
@@ -85,6 +101,9 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public void insert(List<Comment> comments) {
+        for (Comment comment : commentList) {
+            comments.remove(comment);
+        }
         commentList.addAll(comments);
         notifyDataSetChanged();
     }
@@ -97,6 +116,12 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void update(Comment comment, int position) {
         commentList.set(position, comment);
         notifyDataSetChanged();
+    }
+
+    public void delete(Comment comment) {
+        int index = commentList.indexOf(comment);
+        commentList.remove(index);
+        notifyItemRemoved(index);
     }
 
     public List<Comment> getCommentList() {

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fresco="http://schemas.android.com/tools"
     android:id="@+id/swipe"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -17,11 +18,95 @@
             android:paddingStart="8dp"
             android:paddingEnd="8dp">
 
-            <LinearLayout
-                android:id="@+id/fragment_me_top"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/notification"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="6dp">
+
+                <ImageView
+                    android:id="@+id/top_notification"
+                    android:layout_width="23dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/notification"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/new_notification"
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/circle_red"
+                    android:visibility="invisible"
+                    app:layout_constraintStart_toEndOf="@id/top_notification"
+                    app:layout_constraintTop_toTopOf="@id/top_notification" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
+                android:background="@android:color/white"
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:visibility="gone">
+
+                <com.facebook.drawee.view.SimpleDraweeView
+                    android:id="@+id/photo"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginStart="10dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/nickname"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="15dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="@id/photo"
+                    app:layout_constraintStart_toEndOf="@id/photo"
+                    app:layout_constraintTop_toTopOf="@id/photo" />
+
+                <TextView
+                    android:id="@+id/home_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="0dp"
+                    android:paddingBottom="10dp"
+                    android:text="@string/home_page"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/home_page_forward"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/home_page_forward"
+                    android:layout_width="13dp"
+                    android:layout_height="13sp"
+                    android:layout_marginEnd="5dp"
+                    android:src="@drawable/forward"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <LinearLayout
+                android:id="@+id/login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -52,18 +137,6 @@
                     android:visibility="invisible" />
 
             </LinearLayout>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                app:cardCornerRadius="5dp"
-                app:cardElevation="0dp"
-                app:cardMaxElevation="0dp"
-                app:cardPreventCornerOverlap="false">
-
-
-            </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -381,11 +454,22 @@
                     </LinearLayout>
 
                     <View
+                        android:id="@+id/collect_divider"
                         android:layout_width="match_parent"
                         android:layout_height="0.5dp"
                         android:layout_marginStart="10dp"
                         android:layout_marginEnd="10dp"
                         android:background="@color/divider" />
+
+                    <TextView
+                        android:id="@+id/my_create_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/my_create"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/collect_list"
@@ -393,56 +477,83 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:layout_marginBottom="5dp" />
+
+                    <View
+                        android:id="@+id/collect_divider2"
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@color/divider"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/others_create_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/my_collect"
+                        android:textSize="13sp"
+                        android:visibility="gone" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/collect_list2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:visibility="gone" />
                 </LinearLayout>
 
             </androidx.cardview.widget.CardView>
 
-<!--            <androidx.cardview.widget.CardView-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="10dp"-->
-<!--                app:cardCornerRadius="5dp"-->
-<!--                app:cardElevation="0dp"-->
-<!--                app:cardMaxElevation="0dp"-->
-<!--                app:cardPreventCornerOverlap="false">-->
+            <!--            <androidx.cardview.widget.CardView-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_marginTop="10dp"-->
+            <!--                app:cardCornerRadius="5dp"-->
+            <!--                app:cardElevation="0dp"-->
+            <!--                app:cardMaxElevation="0dp"-->
+            <!--                app:cardPreventCornerOverlap="false">-->
 
-<!--                <LinearLayout-->
-<!--                    android:id="@+id/menu_calendar"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="match_parent"-->
-<!--                    android:clickable="true"-->
-<!--                    android:focusable="true"-->
-<!--                    android:foreground="?android:attr/selectableItemBackground"-->
-<!--                    android:orientation="horizontal"-->
-<!--                    android:paddingStart="4dp"-->
-<!--                    android:paddingTop="15dp"-->
-<!--                    android:paddingEnd="4dp"-->
-<!--                    android:paddingBottom="13dp">-->
+            <!--                <LinearLayout-->
+            <!--                    android:id="@+id/menu_calendar"-->
+            <!--                    android:layout_width="match_parent"-->
+            <!--                    android:layout_height="match_parent"-->
+            <!--                    android:clickable="true"-->
+            <!--                    android:focusable="true"-->
+            <!--                    android:foreground="?android:attr/selectableItemBackground"-->
+            <!--                    android:orientation="horizontal"-->
+            <!--                    android:paddingStart="4dp"-->
+            <!--                    android:paddingTop="15dp"-->
+            <!--                    android:paddingEnd="4dp"-->
+            <!--                    android:paddingBottom="13dp">-->
 
-<!--                    <ImageView-->
-<!--                        android:layout_width="0dp"-->
-<!--                        android:layout_height="25dp"-->
-<!--                        android:layout_weight="1"-->
-<!--                        android:scaleType="centerInside"-->
-<!--                        android:src="@drawable/calendar_26bdbb" />-->
+            <!--                    <ImageView-->
+            <!--                        android:layout_width="0dp"-->
+            <!--                        android:layout_height="25dp"-->
+            <!--                        android:layout_weight="1"-->
+            <!--                        android:scaleType="centerInside"-->
+            <!--                        android:src="@drawable/calendar_26bdbb" />-->
 
-<!--                    <TextView-->
-<!--                        android:layout_width="0dp"-->
-<!--                        android:layout_height="25dp"-->
-<!--                        android:layout_weight="8"-->
-<!--                        android:gravity="center_vertical"-->
-<!--                        android:paddingStart="8dp"-->
-<!--                        android:paddingEnd="0dp"-->
-<!--                        android:text="@string/richeng"-->
-<!--                        android:textSize="15sp" />-->
+            <!--                    <TextView-->
+            <!--                        android:layout_width="0dp"-->
+            <!--                        android:layout_height="25dp"-->
+            <!--                        android:layout_weight="8"-->
+            <!--                        android:gravity="center_vertical"-->
+            <!--                        android:paddingStart="8dp"-->
+            <!--                        android:paddingEnd="0dp"-->
+            <!--                        android:text="@string/richeng"-->
+            <!--                        android:textSize="15sp" />-->
 
-<!--                    <ImageView-->
-<!--                        android:layout_width="0dp"-->
-<!--                        android:layout_height="25dp"-->
-<!--                        android:layout_weight="1"-->
-<!--                        android:src="@drawable/forward" />-->
-<!--                </LinearLayout>-->
-<!--            </androidx.cardview.widget.CardView>-->
+            <!--                    <ImageView-->
+            <!--                        android:layout_width="0dp"-->
+            <!--                        android:layout_height="25dp"-->
+            <!--                        android:layout_weight="1"-->
+            <!--                        android:src="@drawable/forward" />-->
+            <!--                </LinearLayout>-->
+            <!--            </androidx.cardview.widget.CardView>-->
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"

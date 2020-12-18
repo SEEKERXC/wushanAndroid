@@ -21,4 +21,9 @@ public class PlaylistVideoOptionClickListener implements VideoClickListener {
     public void onClick(VideoDetail videoDetail) {
         DialogManager.getInstance().newPlaylistVideoOptionDialog(activity, videoDetail, playlist).show();
     }
+
+    @Override
+    public void playVideo(VideoDetail videoDetail) {
+
+    }
 }

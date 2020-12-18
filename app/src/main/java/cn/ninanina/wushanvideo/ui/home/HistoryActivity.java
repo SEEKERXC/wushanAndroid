@@ -29,6 +29,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.HistoryAdapter;
 import cn.ninanina.wushanvideo.adapter.SingleVideoListAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
@@ -45,7 +46,7 @@ import cn.ninanina.wushanvideo.util.TimeUtil;
 public class HistoryActivity extends AppCompatActivity {
 
     @BindView(R.id.swipe)
-    SwipeRefreshLayout swipe;
+    public SwipeRefreshLayout swipe;
     @BindView(R.id.content)
     RecyclerView content;
     @BindView(R.id.back)
@@ -72,8 +73,15 @@ public class HistoryActivity extends AppCompatActivity {
         swipe.setColorSchemeResources(R.color.tabColor);
         swipe.setRefreshing(true);
         VideoPresenter.getInstance().getHistoryVideos(this);
+        WushanApp.getInstance().addActivity(this);
 
         initEvents();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void initEvents() {
@@ -120,7 +128,7 @@ public class HistoryActivity extends AppCompatActivity {
         } else {
             adapter.insert(dataList);
         }
-        this.swipe.setRefreshing(false);
+
     }
 
     public void delete(List<VideoUserViewed> vieweds) {

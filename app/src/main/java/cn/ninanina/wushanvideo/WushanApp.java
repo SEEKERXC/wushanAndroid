@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -12,6 +13,9 @@ import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.android.gms.ads.MobileAds;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
@@ -43,12 +47,6 @@ public class WushanApp extends Application {
         super.attachBaseContext(base);
     }
 
-    @Override
-    public void onTerminate() {
-        super.onTerminate();
-        dbHelper.close();
-    }
-
     public static WushanApp getInstance() {
         return application;
     }
@@ -63,6 +61,28 @@ public class WushanApp extends Application {
 
     public static boolean loggedIn() {
         return !StringUtils.isEmpty(getProfile().getString("username", ""));
+    }
+
+    private List<Activity> activities = new ArrayList<>();
+
+    public void addActivity(Activity activity) {
+        activities.add(activity);
+    }
+
+    public void removeActivity(Activity activity) {
+        activities.remove(activity);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        dbHelper.close();
+
+        for (Activity activity : activities) {
+            activity.finish();
+        }
+
+        System.exit(0);
     }
 
     public DBHelper getDbHelper() {

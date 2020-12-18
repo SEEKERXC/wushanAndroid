@@ -11,6 +11,7 @@ import android.widget.EditText;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
 import cn.ninanina.wushanvideo.ui.video.CommentFragment;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class DefaultCommentClickListener implements CommentClickListener {
     public DefaultCommentClickListener(CommentFragment commentFragment) {
@@ -23,7 +24,7 @@ public class DefaultCommentClickListener implements CommentClickListener {
     public void onClick(Comment comment) {
         long myId = WushanApp.getProfile().getLong("userId", 0);
         if (comment.getUser().getId() == myId) {
-
+            DialogManager.getInstance().newMyCommentOptionDialog(commentFragment, comment).show();
         } else {
             EditText editText = commentFragment.input;
             editText.setHint("回复 @" + comment.getUser().getNickname() + "：");

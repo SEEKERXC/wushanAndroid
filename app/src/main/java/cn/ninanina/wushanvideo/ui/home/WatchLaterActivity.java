@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -25,6 +26,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.OptionAdapter;
 import cn.ninanina.wushanvideo.adapter.ToWatchAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
@@ -66,6 +68,13 @@ public class WatchLaterActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         bindEvents();
         VideoPresenter.getInstance().getWatchLater(this);
+        WushanApp.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     private void bindEvents() {
@@ -89,6 +98,7 @@ public class WatchLaterActivity extends AppCompatActivity {
             FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(this).inflate(R.layout.dialog_list, null, false);
             RecyclerView recyclerView = frameLayout.findViewById(R.id.content);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            frameLayout.setBackground(ContextCompat.getDrawable(this, R.drawable.download_video_popup_style));
             PopupWindow popupWindow = new PopupWindow(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             popupWindow.setContentView(frameLayout);
             popupWindow.setOutsideTouchable(true);

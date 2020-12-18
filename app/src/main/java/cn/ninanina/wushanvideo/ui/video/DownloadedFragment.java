@@ -37,6 +37,7 @@ import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.FileUtil;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
 import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class DownloadedFragment extends Fragment {
@@ -85,9 +86,10 @@ public class DownloadedFragment extends Fragment {
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        handler = null;
+    public void onResume() {
+        super.onResume();
+        //停止播放计时
+        PlayTimeManager.stopTiming();
     }
 
     @Override

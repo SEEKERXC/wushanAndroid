@@ -92,6 +92,7 @@ public class CommonPresenter extends BasePresenter {
     }
 
     public void register(RegisterFragment fragment) {
+        DialogManager.getInstance().showPending(fragment.getActivity(), "注册中");
         String appKey = WushanApp.getAppKey();
         int genderCode = fragment.getGender();
         String gender = "";
@@ -102,14 +103,15 @@ public class CommonPresenter extends BasePresenter {
             case R.id.register_gender_female:
                 gender = "FEMALE";
         }
-        String username = fragment.getUsernameEdit().getText().toString();
-        String password = fragment.getPasswordEdit().getText().toString();
-        String nickname = fragment.getNicknameEdit().getText().toString();
+        String username = fragment.getUsernameEdit().getText().toString().trim();
+        String password = fragment.getPasswordEdit().getText().toString().trim();
+        String nickname = fragment.getNicknameEdit().getText().toString().trim();
         getCommonService().register(appKey, username, password, nickname, gender)
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                             Looper.prepare();
                             ToastUtil.show("网络开小差了~");
+                            DialogManager.getInstance().dismissPending();
                             Looper.loop();
                         }
                 )
@@ -136,6 +138,7 @@ public class CommonPresenter extends BasePresenter {
                         }
                         ToastUtil.show("注册成功！");
                     }
+                    DialogManager.getInstance().dismissPending();
                 });
     }
 
@@ -152,7 +155,7 @@ public class CommonPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
-                    if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login(context);
+                    if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login();
                     else MainActivity.getInstance().initData();
                 });
     }
@@ -160,7 +163,7 @@ public class CommonPresenter extends BasePresenter {
     /**
      * 程序自动登录
      */
-    private void login(Context context) {
+    private void login() {
         String appKey = WushanApp.getAppKey();
         SharedPreferences profile = WushanApp.getProfile();
         String username = profile.getString("username", "");
@@ -194,8 +197,9 @@ public class CommonPresenter extends BasePresenter {
      */
     public void login(LoginFragment fragment) {
         String appKey = WushanApp.getAppKey();
-        String username = fragment.getUsernameEdit().getText().toString();
-        String password = fragment.getPasswordEdit().getText().toString();
+        String username = fragment.getUsernameEdit().getText().toString().trim();
+        String password = fragment.getPasswordEdit().getText().toString().trim();
+        DialogManager.getInstance().showPending(fragment.getActivity(), "登录中");
         if (!StringUtils.isEmpty(username) && !StringUtils.isEmpty(password))
             getCommonService().login(appKey, username, password)
                     .subscribeOn(Schedulers.io())
@@ -209,6 +213,7 @@ public class CommonPresenter extends BasePresenter {
                         String resCode = pairResult.getRspCode();
                         if (resCode.equals(ResultMsg.FAILED.getCode())) {
                             ToastUtil.show("登录失败，用户名或密码错误");
+                            DialogManager.getInstance().dismissPending();
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
                             SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                             editor.putString("token", pairResult.getData().getFirst()).apply();
@@ -216,7 +221,6 @@ public class CommonPresenter extends BasePresenter {
                             user.setPassword(password);
                             updateUserProfile(user);
                             MainActivity.getInstance().initData();
-                            DialogManager.getInstance().showPending(fragment.getActivity());
                             for (int i = 1; i < 20; i++) {
                                 fragment.getPasswordEdit().postDelayed(() -> {
                                     if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
@@ -265,15 +269,19 @@ public class CommonPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(userResult -> {
-                    ToastUtil.show("操作成功");
-                    User user = userResult.getData();
-                    user.setPassword(profile.getString("password", ""));
-                    updateUserProfile(user);
-                    Handler handler = ProfileActivity.handler;
-                    if (handler != null) {
-                        Message message = new Message();
-                        message.what = ProfileActivity.update;
-                        handler.sendMessage(message);
+                    if (userResult.getRspCode().equals(ResultMsg.SUCCESS.getCode())) {
+                        ToastUtil.show("操作成功");
+                        User user = userResult.getData();
+                        user.setPassword(profile.getString("password", ""));
+                        updateUserProfile(user);
+                        Handler handler = ProfileActivity.handler;
+                        if (handler != null) {
+                            Message message = new Message();
+                            message.what = ProfileActivity.update;
+                            handler.sendMessage(message);
+                        }
+                    } else if (userResult.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) {
+                        ToastUtil.show("会话已过期，请重新打开APP");
                     }
                 });
     }
@@ -285,6 +293,7 @@ public class CommonPresenter extends BasePresenter {
                 .putString("username", user.getUsername())
                 .putString("password", user.getPassword())
                 .putString("nickname", user.getNickname())
+                .putString("photo", user.getPhoto())
                 .putInt("userAge", user.getAge())
                 .putString("gender", user.getGender())
                 .putBoolean("straight", user.getStraight())

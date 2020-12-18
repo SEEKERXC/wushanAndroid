@@ -9,6 +9,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.githang.statusbar.StatusBarCompat;
 
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -26,6 +27,13 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setTitle("设置");
         }
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
+        WushanApp.getInstance().addActivity(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        WushanApp.getInstance().removeActivity(this);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

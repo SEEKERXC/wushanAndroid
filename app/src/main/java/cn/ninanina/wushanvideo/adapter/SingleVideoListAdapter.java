@@ -102,6 +102,14 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         notifyItemInserted(dataList.size() - 1);
     }
 
+    public void delete(VideoDetail videoDetail) {
+        int index = dataList.indexOf(videoDetail);
+        if (index >= 0) {
+            dataList.remove(index);
+            notifyItemRemoved(index);
+        }
+    }
+
     static final class VideoCardHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.video_cover)
         SimpleDraweeView cover;

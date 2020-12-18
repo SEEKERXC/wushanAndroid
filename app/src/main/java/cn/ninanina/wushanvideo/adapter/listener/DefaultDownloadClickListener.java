@@ -27,7 +27,7 @@ public class DefaultDownloadClickListener implements DownloadClickListener {
         File file = new File(path);
         if (file.exists()) {
             if (showMessage) ToastUtil.show("视频已下载");
-            dbHelper.saveVideo(videoDetail);
+            if (!dbHelper.downloaded(videoDetail.getId())) dbHelper.saveVideo(videoDetail);
             return;
         }
         DownloadService downloadService = MainActivity.getInstance().downloadService;

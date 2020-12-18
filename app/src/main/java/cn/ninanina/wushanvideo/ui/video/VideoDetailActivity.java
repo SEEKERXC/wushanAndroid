@@ -58,6 +58,7 @@ import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.DBHelper;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import cn.ninanina.wushanvideo.util.LayoutUtil;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
 import cn.ninanina.wushanvideo.util.TimeUtil;
 
 public class VideoDetailActivity extends AppCompatActivity {
@@ -129,7 +130,9 @@ public class VideoDetailActivity extends AppCompatActivity {
         initDetail();
         initPlayer();
         MainActivity.getInstance().videoActivityStack.push(this);
+        WushanApp.getInstance().addActivity(this);
     }
+
 
     @Override
     protected void onStop() {
@@ -171,7 +174,9 @@ public class VideoDetailActivity extends AppCompatActivity {
     //隐藏软键盘并让editText失去焦点
     private void hideKeyboard(IBinder token) {
         EditText input = ((CommentFragment) fragments.get(1)).input;
-        if (input != null) input.clearFocus();
+        if (input != null) {
+            input.clearFocus();
+        }
         if (token != null) {
             //这里先获取InputMethodManager再调用他的方法来关闭软键盘
             //InputMethodManager就是一个管理窗口输入的manager
@@ -180,6 +185,7 @@ public class VideoDetailActivity extends AppCompatActivity {
                 im.hideSoftInputFromWindow(token, InputMethodManager.HIDE_NOT_ALWAYS);
             }
         }
+
     }
 
     private void initDetail() {
@@ -223,8 +229,10 @@ public class VideoDetailActivity extends AppCompatActivity {
                     bottomController.setVisibility(View.VISIBLE);
                     bottomShadow.setVisibility(View.VISIBLE);
                     playIcon.setImageResource(R.drawable.play_white);
+                    PlayTimeManager.stopTiming();
                 } else {
                     playIcon.setImageResource(R.drawable.pause);
+                    PlayTimeManager.startTiming(video.getId());
                 }
             }
 
@@ -299,6 +307,7 @@ public class VideoDetailActivity extends AppCompatActivity {
         MainActivity.getInstance().videoActivityStack.pop();
         executorService.shutdownNow();
         VideoPresenter.getInstance().exitPlayer(video);
+        WushanApp.getInstance().removeActivity(this);
     }
 
     @Override
@@ -338,6 +347,8 @@ public class VideoDetailActivity extends AppCompatActivity {
         DataHolder.getInstance().recordViewed(video.getId());
         loading.setVisibility(View.GONE);
         cover.setVisibility(View.GONE);
+        bottomShadow.setVisibility(View.INVISIBLE);
+        bottomController.setVisibility(View.INVISIBLE);
         video.setSrc(src);
 
         detailPlayer.postDelayed(() -> {
