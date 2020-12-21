@@ -16,17 +16,24 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.facebook.drawee.view.SimpleDraweeView;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -36,6 +43,7 @@ import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultVideoClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.network.AdManager;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.MainActivity;
@@ -56,6 +64,7 @@ public class InstantFragment extends Fragment {
     private int firstCompletelyVisible = -1;
     private StyledPlayerView playerView; //正在播放的player
     private List<SimpleExoPlayer> players = new ArrayList<>(); //保存播放了的player，用于释放资源
+    private List<SimpleDraweeView> covers = new ArrayList<>();
 
     private DownloadService downloadService;
     private ServiceConnection downloadServiceConn = new ServiceConnection() {
@@ -85,32 +94,45 @@ public class InstantFragment extends Fragment {
         ButterKnife.bind(this, view);
         swipe.setRefreshing(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.getRecycledViewPool().setMaxRecycledViews(InstantVideoAdapter.TYPE_VIDEO, 50);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            Set<Object> ads = new HashSet<>();
+
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !loading) {
-                    VideoPresenter.getInstance().getInstantVideos(InstantFragment.this);
+                    VideoPresenter.getInstance().getInstantVideos(InstantFragment.this, false);
                 }
                 int firstCompletePosition = manager.findFirstCompletelyVisibleItemPosition();
+                if (firstCompletePosition < 0) return;
+                if (!(((InstantVideoAdapter) recyclerView.getAdapter()).dataList.get(firstCompletePosition) instanceof VideoDetail)) {
+                    ads.add(((InstantVideoAdapter) recyclerView.getAdapter()).dataList.get(firstCompletePosition));
+                    return;
+                }
                 if (firstCompletePosition == firstCompletelyVisible) return;
                 firstCompletelyVisible = firstCompletePosition;
-                //释放上面的和下面的player
-                if (firstCompletePosition >= 3) {
-                    players.get(firstCompletePosition - 3).release();
+                //停止上面的和下面的player
+                if (firstCompletePosition - ads.size() - 4 >= 0 && firstCompletePosition - ads.size() - 4 < players.size()) {
+                    players.get(firstCompletePosition - ads.size() - 4).stop();
+                    covers.get(firstCompletePosition - ads.size() - 4).setVisibility(View.VISIBLE);
                 }
-                if (players.size() - firstCompletePosition > 3) {
+                if (players.size() - firstCompletePosition > 4) {
                     for (int i = players.size() - 1; i > players.size() - firstCompletePosition; i--) {
-                        players.get(i).release();
+                        players.get(i).stop();
                     }
                 }
                 //暂停播放之前的视频
                 if (playerView != null) {
                     Objects.requireNonNull(playerView.getPlayer()).pause();
-                    playerView.performClick();
                 }
                 View firstView = manager.findViewByPosition(firstCompletePosition);
-                playerView = firstView.findViewById(R.id.player);
+                if (firstView != null) {
+                    playerView = firstView.findViewById(R.id.player);
+                    SimpleDraweeView cover = firstView.findViewById(R.id.cover);
+                    if (!covers.contains(cover))
+                        covers.add(cover);
+                }
                 if (playerView != null) {
                     SimpleExoPlayer player = (SimpleExoPlayer) playerView.getPlayer();
                     assert player != null;
@@ -131,10 +153,15 @@ public class InstantFragment extends Fragment {
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
+        //todo:开头添加instant videos
+        swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
+
         //连接到下载服务
         final Intent intent = new Intent(getContext(), DownloadService.class);
         Objects.requireNonNull(getContext()).bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
-        VideoPresenter.getInstance().getInstantVideos(this);
+        if (!CollectionUtils.isEmpty(DataHolder.getInstance().getPreLoadInstantVideos()))
+            showData(DataHolder.getInstance().getPreLoadInstantVideos(), true);
+        else VideoPresenter.getInstance().getInstantVideos(this, true);
 
         handler = new Handler(Looper.getMainLooper()) {
             @Override
@@ -172,10 +199,20 @@ public class InstantFragment extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        for (Player player : players) player.stop();
+        for (SimpleDraweeView cover : covers) cover.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-        if (playerView != null && MainActivity.getInstance().lastIndex == 2)
-            Objects.requireNonNull(playerView.getPlayer()).play();
+        if (playerView != null && MainActivity.getInstance().lastIndex == 2) {
+            Player player = Objects.requireNonNull(playerView.getPlayer());
+            player.prepare();
+            player.play();
+        }
     }
 
     @Override
@@ -184,15 +221,27 @@ public class InstantFragment extends Fragment {
         Objects.requireNonNull(getContext()).unbindService(downloadServiceConn);
     }
 
-    public void showData(List<VideoDetail> videoDetails) {
+    public void showData(List<VideoDetail> videoDetails, boolean init) {
+        List<Object> dataList = new ArrayList<>();
+        if (init && AdManager.getInstance().size() >= 3) {
+            List<UnifiedNativeAd> ads = AdManager.getInstance().nextAds(3);
+            dataList.add(ads);
+        }
+        dataList.addAll(videoDetails);
+        for (int i = 0; i < limit / 5; i++) {
+            UnifiedNativeAd ad = AdManager.getInstance().nextAd();
+            if (ad != null) {
+                dataList.add(5 * (i + 1), ad);
+            }
+        }
         if (recyclerView.getAdapter() == null) {
-            InstantVideoAdapter adapter = new InstantVideoAdapter(getActivity(), new ArrayList<>(videoDetails))
+            InstantVideoAdapter adapter = new InstantVideoAdapter((AppCompatActivity) getActivity(), dataList)
                     .setVideoClickListener(new DefaultVideoClickListener(getContext()))
                     .setDownloadListener(new DefaultDownloadClickListener(downloadService));
             recyclerView.setAdapter(adapter);
         } else {
             InstantVideoAdapter adapter = (InstantVideoAdapter) recyclerView.getAdapter();
-            adapter.insert(new ArrayList<>(videoDetails));
+            adapter.insert(dataList);
         }
         this.swipe.setRefreshing(false);
     }

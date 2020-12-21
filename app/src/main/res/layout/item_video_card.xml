@@ -74,30 +74,31 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/video_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginTop="6dp"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textColor="@color/black"
-            android:textSize="14sp" />
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/tag_group"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="65dp"
             android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
             android:layout_marginBottom="4dp"
             android:orientation="horizontal"
             android:paddingTop="6dp">
 
             <TextView
+                android:id="@+id/video_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textColor="@color/black"
+                android:textSize="13sp"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
                 android:id="@+id/video_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLength="12"
@@ -105,8 +106,7 @@
                 android:textColor="@color/tabColor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintStart_toStartOf="parent" />
 
             <FrameLayout
                 android:id="@+id/video_more"
@@ -115,10 +115,8 @@
                 android:paddingStart="30dp"
                 android:paddingTop="4dp"
                 android:paddingEnd="0dp"
-                android:paddingBottom="4dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <ImageView
                     android:layout_width="18dp"

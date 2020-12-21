@@ -42,6 +42,7 @@ import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
+import cn.ninanina.wushanvideo.network.AdManager;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
@@ -131,27 +132,31 @@ public class DetailFragment extends Fragment {
         if (!StringUtils.isEmpty(videoDetail.getTitleZh()))
             titleBuilder.append("（机翻：").append(videoDetail.getTitleZh()).append("）");
         titleTextView.setText(titleBuilder.toString());
-        Collections.sort(videoDetail.getTags(), (o1, o2) -> o2.getVideoCount() - o1.getVideoCount());
         if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
-            List<String> strTags = new ArrayList<>();
-            for (Tag tag : videoDetail.getTags()) {
-                if (strTags.contains(tag.getTagZh()) || strTags.contains(tag.getTag())) continue;
-                if (!StringUtils.isEmpty(tag.getTagZh())) strTags.add(tag.getTagZh());
-                else strTags.add(tag.getTag());
-            }
-            videoTags.setTags(strTags);
-            videoTags.setOnTagClickListener(tag -> {
-                for (Tag tag1 : videoDetail.getTags()) {
-                    if ((!StringUtils.isEmpty(tag1.getTagZh()) && tag1.getTagZh().equals(tag)) || tag1.getTag().equals(tag)) {
-                        new TagClickListener(getContext()).onTagClicked(tag1);
-                    }
+            Collections.sort(videoDetail.getTags(), (o1, o2) -> o2.getVideoCount() - o1.getVideoCount());
+            if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
+                List<String> strTags = new ArrayList<>();
+                for (Tag tag : videoDetail.getTags()) {
+                    if (strTags.contains(tag.getTagZh()) || strTags.contains(tag.getTag()))
+                        continue;
+                    if (!StringUtils.isEmpty(tag.getTagZh())) strTags.add(tag.getTagZh());
+                    else strTags.add(tag.getTag());
                 }
-            });
+                videoTags.setTags(strTags);
+                videoTags.setOnTagClickListener(tag -> {
+                    for (Tag tag1 : videoDetail.getTags()) {
+                        if ((!StringUtils.isEmpty(tag1.getTagZh()) && tag1.getTagZh().equals(tag)) || tag1.getTag().equals(tag)) {
+                            new TagClickListener(getContext()).onTagClicked(tag1);
+                        }
+                    }
+                });
+            }
         }
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         manager.setSmoothScrollbarEnabled(true);
         relatedVideos.setLayoutManager(manager);
         relatedVideos.setNestedScrollingEnabled(false);
+        AdManager.getInstance().loadAds(1);
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), true);
         page++;
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), false);

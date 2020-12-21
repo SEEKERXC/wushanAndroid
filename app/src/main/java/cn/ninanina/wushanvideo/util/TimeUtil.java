@@ -63,7 +63,8 @@ public class TimeUtil {
         else {
             int hours = minutes / 60;
             minutes = minutes - hours * 60;
-            return hours + "小时" + minutes + "分钟";
+            if (minutes > 0) return hours + "小时" + minutes + "分钟";
+            else return hours + "小时";
         }
     }
 }

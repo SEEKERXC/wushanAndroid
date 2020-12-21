@@ -37,6 +37,8 @@ public class DataHolder {
     List<Long> dislikedVideos;
     //用户所有的浏览记录
     List<VideoUserViewed> allViewed;
+    //预加载instant videos
+    List<VideoDetail> preLoadInstantVideos;
 
     public Playlist getPlaylistVideos(long id) {
         for (Playlist playlist : playlists) {

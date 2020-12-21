@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -12,6 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.formats.MediaView;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,6 +24,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
@@ -30,25 +35,51 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private VideoClickListener listener;
     private VideoClickListener optionsClickListener;
 
+    private static final int TYPE_VIDEO = 0;
+    private static final int TYPE_AD = 1;
+
+    private int imageHeight = 0;
+    private int imageWidth = 0;
+
     public SingleVideoListAdapter(List<Object> dataList, VideoClickListener itemClickListener, VideoClickListener optionsClickListener) {
         this.dataList = dataList;
         this.listener = itemClickListener;
         this.optionsClickListener = optionsClickListener;
+        imageWidth = WushanApp.getConstants().getInt("small_image_width", 0);
+        imageHeight = WushanApp.getConstants().getInt("small_image_height", 0);
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new VideoCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_card_2, parent, false));
+        if (viewType == TYPE_VIDEO) {
+            return new VideoCardHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_card_2, parent, false));
+        } else if (viewType == TYPE_AD) {
+            return new AdHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_small_ad, parent, false));
+        }
+        return null;
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (dataList.get(position) instanceof VideoDetail) {
+        if (getItemViewType(position) == TYPE_VIDEO) {
             VideoCardHolder videoCardHolder = (VideoCardHolder) holder;
             VideoDetail videoDetail = (VideoDetail) dataList.get(position);
             videoCardHolder.cover.setAspectRatio(1.78f);
             videoCardHolder.cover.setImageURI(videoDetail.getCoverUrl());
+            if (imageHeight <= 0 || imageWidth <= 0) {
+                videoCardHolder.cover.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        imageHeight = videoCardHolder.cover.getMeasuredHeight();
+                        imageWidth = videoCardHolder.cover.getMeasuredWidth();
+                        WushanApp.getConstants().edit().putInt("small_image_width", imageWidth).putInt("small_image_height", imageHeight).apply();
+                        videoCardHolder.cover.getViewTreeObserver().removeOnPreDrawListener(this);
+                        return false;
+                    }
+                });
+
+            }
             if (StringUtils.isEmpty(videoDetail.getTitleZh()))
                 videoCardHolder.videoTitle.setText(videoDetail.getTitle());
             else videoCardHolder.videoTitle.setText(videoDetail.getTitleZh());
@@ -73,6 +104,19 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 optionsClickListener.onClick((VideoDetail) dataList.get(holder.getLayoutPosition()));
                 return true;
             });
+        } else if (getItemViewType(position) == TYPE_AD) {
+            AdHolder adHolder = (AdHolder) holder;
+            UnifiedNativeAd ad = (UnifiedNativeAd) dataList.get(position);
+            adHolder.adView.setNativeAd(ad);
+            adHolder.mediaView.setMediaContent(ad.getMediaContent());
+            adHolder.headline.setText(ad.getHeadline());
+            adHolder.body.setText(ad.getBody());
+            if (imageHeight > 0 && imageWidth > 0) {
+                ViewGroup.LayoutParams layoutParams = adHolder.mediaView.getLayoutParams();
+                layoutParams.width = imageWidth;
+                layoutParams.height = imageHeight;
+                adHolder.mediaView.setLayoutParams(layoutParams);
+            }
         }
     }
 
@@ -84,6 +128,13 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public long getItemId(int position) {
         return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (dataList.get(position) instanceof VideoDetail) return TYPE_VIDEO;
+        else if (dataList.get(position) instanceof UnifiedNativeAd) return TYPE_AD;
+        return super.getItemViewType(position);
     }
 
     public void insertToStart(List<Object> newData) {
@@ -128,6 +179,25 @@ public class SingleVideoListAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             super(itemView);
             if (!(itemView instanceof AdView))
                 ButterKnife.bind(this, itemView);
+        }
+    }
+
+    static final class AdHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.ad_view)
+        UnifiedNativeAdView adView;
+        @BindView(R.id.media_view)
+        MediaView mediaView;
+        @BindView(R.id.ad_headline)
+        TextView headline;
+        @BindView(R.id.ad_body)
+        TextView body;
+
+        public AdHolder(@NonNull View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+            adView.setMediaView(mediaView);
+            adView.setHeadlineView(headline);
+            adView.setBodyView(body);
         }
     }
 }

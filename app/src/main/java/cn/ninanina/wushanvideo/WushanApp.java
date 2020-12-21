@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.android.gms.ads.MobileAds;
+import com.google.gson.internal.$Gson$Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.network.AdManager;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.util.AppOpenManager;
 import cn.ninanina.wushanvideo.util.DBHelper;
@@ -29,6 +31,7 @@ public class WushanApp extends Application {
     private AppOpenManager appOpenManager;
 
     private SharedPreferences profile;
+    private SharedPreferences constants;
 
     @Override
     public void onCreate() {
@@ -39,7 +42,9 @@ public class WushanApp extends Application {
         });
         appOpenManager = new AppOpenManager(this);
         profile = getSharedPreferences("profile", MODE_PRIVATE);
+        constants = getSharedPreferences("constants", MODE_PRIVATE);
         dbHelper = new DBHelper(this);
+        AdManager.getInstance().loadAds(5);
     }
 
     @Override
@@ -53,6 +58,10 @@ public class WushanApp extends Application {
 
     public static SharedPreferences getProfile() {
         return application.profile;
+    }
+
+    public static SharedPreferences getConstants() {
+        return application.constants;
     }
 
     public static String getAppKey() {

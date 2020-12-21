@@ -31,8 +31,8 @@ public class TagVideoActivity extends AppCompatActivity {
     ImageView back;
     @BindView(R.id.tag_name)
     TextView name;
-    @BindView(R.id.search)
-    FrameLayout search;
+    @BindView(R.id.like)
+    FrameLayout like;
     @BindView(R.id.info)
     TextView info;
     @BindView(R.id.swipe)
@@ -75,7 +75,9 @@ public class TagVideoActivity extends AppCompatActivity {
         swipe.setOnRefreshListener(() -> swipe.setRefreshing(false));
         back.setOnClickListener(v -> TagVideoActivity.this.finish());
         VideoPresenter.getInstance().getVideosForTag(this, VideoPresenter.RecyclerViewOp.INIT);
-        search.setOnClickListener(v -> ToastUtil.show("下个版本上线，敬请期待！"));
+        like.setOnClickListener(v -> {
+            // TODO: 2020/12/21 0021 喜欢标签 
+        });
         WushanApp.getInstance().addActivity(this);
     }
 

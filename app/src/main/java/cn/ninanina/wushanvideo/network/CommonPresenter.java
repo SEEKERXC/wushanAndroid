@@ -128,7 +128,6 @@ public class CommonPresenter extends BasePresenter {
                         user.setPassword(password);
                         updateUserProfile(user);
                         MainActivity.getInstance().initData();
-                        //todo:播放初始化数据动画，待收藏夹加载完成后结束activity
                         for (int i = 1; i < 20; i++) {
                             fragment.getPasswordEdit().postDelayed(() -> {
                                 if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {

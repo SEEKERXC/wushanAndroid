@@ -239,7 +239,7 @@ public class MeFragment extends Fragment {
         header.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), ProfileActivity.class);
             startActivity(intent);
-            //todo:下个版本：个人主页、评论点击头像跳转到他人主页
+            //todo:下个版本：个人主页，以及评论点击头像跳转到他人主页
         });
         photo.setOnClickListener(v -> {
             PictureSelector.create(this)

@@ -17,6 +17,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,6 +43,8 @@ public class CommentFragment extends Fragment {
 
     @BindView(R.id.root)
     ConstraintLayout root;
+    @BindView(R.id.scroll)
+    NestedScrollView scroll;
     @BindView(R.id.comments)
     public RecyclerView recyclerView;
     @BindView(R.id.input)
@@ -121,6 +124,12 @@ public class CommentFragment extends Fragment {
                     input.setHint("发条友善的评论");
                 }
                 super.onScrolled(recyclerView, dx, dy);
+            }
+        });
+        scroll.setOnScrollChangeListener((View.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (StringUtils.isEmpty(input.getText().toString().trim())) {
+                parentId = null;
+                input.setHint("发条友善的评论");
             }
         });
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) footer.getLayoutParams();

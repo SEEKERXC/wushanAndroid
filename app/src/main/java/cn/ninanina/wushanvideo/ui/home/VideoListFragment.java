@@ -66,7 +66,6 @@ public class VideoListFragment extends Fragment {
         });
         swipeRefreshLayout.setRefreshing(true);
 
-        //TODO:加载完视频列表并显示完后，加载相关视频。
         VideoPresenter.getInstance().getRecommendVideoList(this, VideoPresenter.RecyclerViewOp.INIT);
     }
 

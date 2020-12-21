@@ -27,6 +27,10 @@ public class PlayTimeManager {
     //开始计时，并且不断向服务器更新
     public static void startTiming(long videoId) {
         instance.videoId = videoId;
+        if (instance.timingTask != null && !instance.timingTask.isTerminated()) {
+            instance.timingTask.shutdownNow();
+            instance.pendingTask.shutdownNow();
+        }
         instance.timingTask = new ScheduledThreadPoolExecutor(1);
         instance.pendingTask = new ScheduledThreadPoolExecutor(1);
         instance.timingTask.scheduleAtFixedRate(() ->
@@ -48,8 +52,8 @@ public class PlayTimeManager {
     //停止计时，停止向服务器更新
     public static void stopTiming() {
         if (instance.timingTask == null || instance.pendingTask == null) return;
-        instance.timingTask.shutdown();
-        instance.pendingTask.shutdown();
+        instance.timingTask.shutdownNow();
+        instance.pendingTask.shutdownNow();
     }
 
     //获取今天看视频的总时长（秒）

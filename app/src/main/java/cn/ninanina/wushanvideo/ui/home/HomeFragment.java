@@ -89,6 +89,10 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
         downloadButton.setOnClickListener(v -> {
+            if (!WushanApp.loggedIn()) {
+                DialogManager.getInstance().newLoginDialog(getContext()).show();
+                return;
+            }
             Intent intent = new Intent(getContext(), DownloadActivity.class);
             startActivity(intent);
         });

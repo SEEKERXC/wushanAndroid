@@ -288,7 +288,7 @@ public class DialogManager {
                 .btnNum(2)
                 .btnText("先逛逛", "马上登录")
                 .btnTextSize(12.0f, 15.0f)
-                .btnTextColor(R.color.black, R.color.tabColor);
+                .btnTextColor(Color.GRAY, Color.BLUE);
         loginDialog.setOnBtnClickL(null, () -> {
             loginDialog.dismiss();
             Intent intent = new Intent(context, LoginActivity.class);

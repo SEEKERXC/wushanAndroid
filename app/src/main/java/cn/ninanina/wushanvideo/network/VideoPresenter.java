@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -98,6 +99,12 @@ public class VideoPresenter extends BasePresenter {
                     }
                     //1个广告+3个视频（开头也是广告）
                     List<Object> dataList = new ArrayList<>(videoDetails);
+                    for (int i = 0; i < fragment.size / 5; i++) {
+                        UnifiedNativeAd ad = AdManager.getInstance().nextAd();
+                        if (ad != null) {
+                            dataList.add(5 * (i + 1), ad);
+                        }
+                    }
                     switch (recyclerViewOp) {
                         case INIT:
                             VideoListAdapter adapter = new VideoListAdapter(dataList,
@@ -120,6 +127,7 @@ public class VideoPresenter extends BasePresenter {
                     fragment.setRefreshing(false);
                     fragment.setLoading(false);
                 });
+        AdManager.getInstance().loadAds(fragment.size / 5 + 1);
     }
 
     public void getRelatedVideos(DetailFragment fragment, long videoId, boolean showLoading) {
@@ -141,13 +149,18 @@ public class VideoPresenter extends BasePresenter {
                         DialogManager.getInstance().dismissPending();
                         return;
                     }
-                    List<VideoDetail> videoDetails = listResult.getData();
+                    List<Object> dataList = new ArrayList<>(listResult.getData());
                     if (recyclerView.getAdapter() == null) {
-                        recyclerView.setAdapter(new SingleVideoListAdapter(new ArrayList<>(videoDetails),
-                                new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getActivity())));
+                        SingleVideoListAdapter adapter = new SingleVideoListAdapter(dataList,
+                                new DefaultVideoClickListener(fragment.getContext()), new DefaultVideoOptionClickListener(fragment.getActivity()));
+                        recyclerView.setAdapter(adapter);
+                        if (AdManager.getInstance().size() > 0)
+                            adapter.insertToStart(new ArrayList<Object>() {{
+                                add(AdManager.getInstance().nextAd());
+                            }});
                     } else {
                         SingleVideoListAdapter adapter = (SingleVideoListAdapter) recyclerView.getAdapter();
-                        adapter.insert(new ArrayList<>(listResult.getData()));
+                        adapter.insert(dataList);
                     }
                     DialogManager.getInstance().dismissPending();
                 });
@@ -204,6 +217,7 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(videoDetailResult -> {
+                    if (!videoDetailResult.getRspCode().equals(ResultMsg.SUCCESS.getCode())) return;
                     VideoDetail detail = videoDetailResult.getData();
                     if (CommonUtils.isSrcValid(detail.getSrc())) {
                         videoDetailActivity.startPlaying(detail.getSrc());
@@ -226,7 +240,9 @@ public class VideoPresenter extends BasePresenter {
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(videoDetailResult -> {
-                    if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc())) return;
+                    if (!videoDetailResult.getRspCode().equals(ResultMsg.SUCCESS.getCode())) return;
+                    if (videoDetailResult.getData() == null || !CommonUtils.isSrcValid(videoDetailResult.getData().getSrc()))
+                        return;
                     MediaItem mediaItem = MediaItem.fromUri(videoDetailResult.getData().getSrc());
                     videoDetail.setSrc(videoDetailResult.getData().getSrc());
                     player.setMediaItem(mediaItem);
@@ -726,7 +742,22 @@ public class VideoPresenter extends BasePresenter {
                 });
     }
 
-    public void getInstantVideos(InstantFragment instantFragment) {
+    //预先加载10个instant video，放入DataHolder
+    public void loadInstantVideos() {
+        getVideoService().getInstantVideos(getAppKey(), 10, getToken())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> DataHolder.getInstance().setPreLoadInstantVideos(result.getData()));
+        //同时加载几个广告
+        AdManager.getInstance().loadAds(5);
+    }
+
+    public void getInstantVideos(InstantFragment instantFragment, boolean init) {
+        instantFragment.loading = true;
         getVideoService().getInstantVideos(getAppKey(), instantFragment.limit, getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -736,7 +767,11 @@ public class VideoPresenter extends BasePresenter {
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> instantFragment.showData(result.getData()));
+                .subscribe(result -> {
+                    instantFragment.showData(result.getData(), init);
+                    instantFragment.loading = false;
+                });
+        AdManager.getInstance().loadAds(instantFragment.limit / 5);
     }
 
     public void downloadVideo(long videoId) {
@@ -889,7 +924,7 @@ public class VideoPresenter extends BasePresenter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
-                        ToastUtil.show("已添加到稍后观看列表");
+                        ToastUtil.show("添加成功");
                     DialogManager.getInstance().dismissPending();
                 });
     }

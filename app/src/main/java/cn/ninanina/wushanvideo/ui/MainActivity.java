@@ -78,12 +78,16 @@ public class MainActivity extends AppCompatActivity {
 
         //初始化fragments
         initFragments();
+
         //初始化底部导航栏
         initBottomNavigation();
 
         //初始化下载服务
         final Intent intent = new Intent(this, DownloadService.class);
         bindService(intent, downloadServiceConn, Service.BIND_AUTO_CREATE);
+
+        //预加载instant videos
+        VideoPresenter.getInstance().loadInstantVideos();
 
         WushanApp.getInstance().addActivity(this);
     }
