@@ -108,7 +108,7 @@ public class ProfileActivity extends AppCompatActivity {
     private void bindEvents() {
         back.setOnClickListener(v -> ProfileActivity.this.finish());
         logout.setOnClickListener(v -> {
-            CommonPresenter.getInstance().logout(this);
+            DialogManager.getInstance().newLogoutDialog(this).show();
         });
         swipeRefreshLayout.setOnRefreshListener(() -> swipeRefreshLayout.setRefreshing(false));
         passwordLayout.setOnClickListener(v -> DialogManager.getInstance().newEditPasswordDialog(ProfileActivity.this).show());

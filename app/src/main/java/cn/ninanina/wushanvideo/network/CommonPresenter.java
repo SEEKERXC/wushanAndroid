@@ -1,5 +1,6 @@
 package cn.ninanina.wushanvideo.network;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import java.util.Objects;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.common.Constants;
 import cn.ninanina.wushanvideo.model.bean.common.ResultMsg;
 import cn.ninanina.wushanvideo.model.bean.common.User;
 import cn.ninanina.wushanvideo.ui.MainActivity;
@@ -49,7 +51,7 @@ public class CommonPresenter extends BasePresenter {
         if (StringUtils.isEmpty(appKey)) {
             SharedPreferences.Editor editor = profile.edit();
             long currentMinute = System.currentTimeMillis() / 1000 / 60;
-            String secret = EncodeUtil.encodeSHA(currentMinute + "jdfohewk");
+            String secret = EncodeUtil.encodeSHA(currentMinute + Constants.SECRET_KEY);
             getCommonService().genAppkey(secret)
                     .subscribeOn(Schedulers.io())
                     .doOnError(throwable -> {
@@ -246,7 +248,7 @@ public class CommonPresenter extends BasePresenter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(nullResult -> {
                     ToastUtil.show("成功退出登录");
-                    editor.remove("token").remove("userId").remove("username").remove("password").remove("n+ickname")
+                    editor.remove("token").remove("userId").remove("username").remove("password").remove("nickname").remove("photo")
                             .remove("userAge").remove("gender").remove("registerTime").remove("lastLoginTime").apply();
                     activity.finish();
                 });
@@ -282,6 +284,88 @@ public class CommonPresenter extends BasePresenter {
                     } else if (userResult.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) {
                         ToastUtil.show("会话已过期，请重新打开APP");
                     }
+                });
+    }
+
+    /**
+     * 检查最新版本
+     */
+    public void checkVersion(Context context) {
+        SharedPreferences constants = WushanApp.getConstants();
+        String nowVersion = constants.getString("version", Constants.VERSION);
+        getCommonService().getVersion()
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getData() != null) {
+                        DataHolder.getInstance().setNewVersion(result.getData());
+                    }
+                    if (result.getData() != null && !result.getData().getVersionCode().equals(nowVersion)) {
+                        DialogManager.getInstance().newUpdateDialog(context, result.getData()).show();
+                    }
+                });
+    }
+
+    /**
+     * 提交反馈
+     */
+    public void sendFeedback(Activity activity, String content) {
+        DialogManager.getInstance().showPending(activity, "");
+        getCommonService().sendFeedback(getAppKey(), getToken(), content)
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    ToastUtil.show("网络开小差了~");
+                    DialogManager.getInstance().dismissPending();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
+                        ToastUtil.show("提交成功");
+                    else if (result.getRspCode().equals(ResultMsg.EMPTY_CONTENT.getCode()))
+                        ToastUtil.show("空内容错误");
+                    else if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode()))
+                        ToastUtil.show("会话已过期");
+                    DialogManager.getInstance().dismissPending();
+                });
+    }
+
+    /**
+     * 获取联系方式
+     */
+    public void getContact(TextView textView) {
+        getCommonService().getContact(getAppKey())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
+                        textView.setText(result.getData());
+                });
+    }
+
+    /**
+     * 获取用户协议
+     */
+    public void getProtocol() {
+        getCommonService().getProtocol(getAppKey())
+                .subscribeOn(Schedulers.io())
+                .doOnError(throwable -> {
+                    Looper.prepare();
+                    Looper.loop();
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    if (result.getRspCode().equals(ResultMsg.SUCCESS.getCode()))
+                        DataHolder.getInstance().setProtocol(result.getData());
                 });
     }
 

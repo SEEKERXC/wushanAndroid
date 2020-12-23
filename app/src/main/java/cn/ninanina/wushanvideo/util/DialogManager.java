@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -22,7 +23,6 @@ import android.widget.PopupWindow;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -30,7 +30,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.flyco.dialog.widget.MaterialDialog;
-import com.google.android.exoplayer2.C;
 import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,18 +40,19 @@ import java.util.List;
 
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
-import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.OptionAdapter;
+import cn.ninanina.wushanvideo.adapter.PlaylistAdapter;
 import cn.ninanina.wushanvideo.adapter.listener.CollectPlaylistClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.model.bean.common.Option;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
+import cn.ninanina.wushanvideo.model.bean.common.VersionInfo;
 import cn.ninanina.wushanvideo.model.bean.video.Comment;
+import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.ToWatch;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
-import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
@@ -60,10 +60,8 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
 import cn.ninanina.wushanvideo.ui.me.LoginActivity;
-import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.me.ProfileActivity;
 import cn.ninanina.wushanvideo.ui.video.CommentFragment;
-import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
 
 /**
  * 管理对话框。
@@ -298,6 +296,23 @@ public class DialogManager {
     }
 
     /**
+     * 退出登录提示对话框
+     */
+    public MaterialDialog newLogoutDialog(ProfileActivity activity) {
+        MaterialDialog loginDialog = new MaterialDialog(activity).title("确定退出登录吗?")
+                .titleTextSize(15.0f)
+                .btnNum(2)
+                .btnText("取消", "确定")
+                .btnTextSize(14.0f, 14.0f)
+                .btnTextColor(Color.BLACK, Color.BLACK);
+        loginDialog.setOnBtnClickL(null, () -> {
+            loginDialog.dismiss();
+            CommonPresenter.getInstance().logout(activity);
+        });
+        return loginDialog;
+    }
+
+    /**
      * 清空历史记录对话框
      */
     public MaterialDialog newDeleteAllHistoryDialog(HistoryActivity activity) {
@@ -453,7 +468,7 @@ public class DialogManager {
      * 下载视频文件信息
      */
     public MaterialDialog newFileInfoDialog(Context context, VideoDetail videoDetail) {
-        StringBuilder content = new StringBuilder("");
+        StringBuilder content = new StringBuilder();
         DBHelper dbHelper = WushanApp.getInstance().getDbHelper();
         File file = new File(FileUtil.getVideoDir() + "/" + dbHelper.getNameById(videoDetail.getId()));
         if (file.exists()) {
@@ -484,7 +499,6 @@ public class DialogManager {
                 .setIcon(R.drawable.edit)
                 .setView(frameLayout)
                 .setPositiveButton("完成", (dialog, which) -> {
-                    assert editText != null;
                     String name = editText.getText().toString().trim();
                     if (name.length() <= 0) return;
                     if (!name.endsWith(".mp4")) name += ".mp4";
@@ -505,14 +519,13 @@ public class DialogManager {
                 })
                 .create();
         renameDialog.setOnShowListener(dialog -> {
-            if (editText != null) {
-                editText.requestFocus();
-                editText.postDelayed(() -> {
-                    InputMethodManager inputManager = (InputMethodManager) editText
-                            .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputManager.showSoftInput(editText, 0);
-                }, 50);
-            }
+            editText.requestFocus();
+            editText.postDelayed(() -> {
+                InputMethodManager inputManager = (InputMethodManager) editText
+                        .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.showSoftInput(editText, 0);
+            }, 50);
+
         });
         return renameDialog;
     }
@@ -567,7 +580,7 @@ public class DialogManager {
                 .btnNum(2)
                 .btnText("取消", "确认")
                 .btnTextSize(13.0f, 13.0f)
-                .btnTextColor(R.color.red, R.color.red);
+                .btnTextColor(Color.BLACK, Color.RED);
         dialog.setOnBtnClickL(null, () -> {
             VideoPresenter.getInstance().deletePlaylist(activity, playlist);
             dialog.dismiss();
@@ -655,7 +668,6 @@ public class DialogManager {
                 .setIcon(R.drawable.nickname)
                 .setView(frameLayout)
                 .setPositiveButton("完成", (dialog, which) -> {
-                    assert editText != null;
                     String name = editText.getText().toString().trim();
                     if (name.length() <= 0) return;
                     SharedPreferences.Editor editor = WushanApp.getProfile().edit();
@@ -671,14 +683,12 @@ public class DialogManager {
                 })
                 .create();
         nicknameDialog.setOnShowListener(dialog -> {
-            if (editText != null) {
-                editText.requestFocus();
-                editText.postDelayed(() -> {
-                    InputMethodManager inputManager = (InputMethodManager) editText
-                            .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputManager.showSoftInput(editText, 0);
-                }, 50);
-            }
+            editText.requestFocus();
+            editText.postDelayed(() -> {
+                InputMethodManager inputManager = (InputMethodManager) editText
+                        .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.showSoftInput(editText, 0);
+            }, 50);
         });
         return nicknameDialog;
     }
@@ -824,7 +834,8 @@ public class DialogManager {
         List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
             add(v -> {
                 dialog.dismiss();
-                // TODO: 2020/12/17 0017 举报评论 
+                // TODO: 2020/12/17 0017 举报评论
+                ToastUtil.show("下个版本上线，敬请期待！");
             });
         }};
         recyclerView.setAdapter(new OptionAdapter(options, listeners));
@@ -837,10 +848,9 @@ public class DialogManager {
     public MaterialDialog newWatchPromptDialog(Context context, VideoDetail videoDetail, VideoClickListener videoClickListener) {
         String todayWatchTime = TimeUtil.getDurationZh(PlayTimeManager.getTodayWatchTime());
         MaterialDialog dialog = new MaterialDialog(context)
-                .titleTextSize(16.0f)
                 .title("今天已经看了" + todayWatchTime + "，确定继续吗？")
                 .titleTextSize(15.0f)
-                .content("\n做个自律好宝宝(๑•̀ㅂ•́)و✧\n")
+                .content("做个自律好宝宝(๑•̀ㅂ•́)و✧\n")
                 .contentTextSize(13.0f)
                 .btnNum(2)
                 .btnText("立即关闭APP", "继续看")
@@ -850,6 +860,73 @@ public class DialogManager {
             dialog.dismiss();
             videoClickListener.playVideo(videoDetail);
         });
+        return dialog;
+    }
+
+    /**
+     * 反馈对话框
+     */
+    public Dialog newFeedbackDialog(Activity activity) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_feedback, null, false);
+        EditText editText = frameLayout.findViewById(R.id.edit);
+        editText.setHint("请简单描述,10字以上");
+        TextView title = new TextView(activity);
+        title.setText("反馈问题");
+        title.setPadding(LayoutUtil.dip2px(activity, 20), LayoutUtil.dip2px(activity, 15), LayoutUtil.dip2px(activity, 20), 0);
+        title.setTextColor(activity.getColor(android.R.color.black));
+        title.setTextSize(16.0f);
+        title.setMaxLines(1);
+        title.setEllipsize(TextUtils.TruncateAt.END);
+        AlertDialog dialog = new AlertDialog.Builder(activity)
+                .setCustomTitle(title)
+                .setIcon(R.drawable.nickname)
+                .setView(frameLayout)
+                .setPositiveButton("提交", (d, which) -> {
+                    String content = editText.getText().toString();
+                    if (content.trim().length() < 10) {
+                        ToastUtil.show("字数请不少于10");
+                        return;
+                    }
+                    CommonPresenter.getInstance().sendFeedback(activity, content.trim());
+                    d.dismiss();
+                })
+                .setNegativeButton("取消", null)
+                .setOnDismissListener(d -> {
+                    InputMethodManager im = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (im != null) {
+                        im.toggleSoftInput(InputMethodManager.HIDE_NOT_ALWAYS, 0);
+                    }
+                })
+                .create();
+        dialog.setOnShowListener(d -> {
+            editText.requestFocus();
+            editText.postDelayed(() -> {
+                InputMethodManager inputManager = (InputMethodManager) editText
+                        .getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.showSoftInput(editText, 0);
+            }, 50);
+
+        });
+        return dialog;
+    }
+
+    /**
+     * 更新对话框
+     */
+    public Dialog newUpdateDialog(Context context, VersionInfo versionInfo) {
+        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_new_version, null, false);
+        TextView content = frameLayout.findViewById(R.id.content);
+        FrameLayout install = frameLayout.findViewById(R.id.install_now);
+        FrameLayout nextTime = frameLayout.findViewById(R.id.next_time);
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setView(frameLayout)
+                .create();
+        content.setText("新版本：" + versionInfo.getVersionCode() + "\n" + versionInfo.getUpdateInfo());
+        install.setOnClickListener(v -> {
+            dialog.dismiss();
+            MainActivity.getInstance().downloadService.downloadApk(versionInfo.getAppUrl(), "v_" + versionInfo.getVersionCode() + ".apk");
+        });
+        nextTime.setOnClickListener(v -> dialog.dismiss());
         return dialog;
     }
 

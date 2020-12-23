@@ -22,6 +22,13 @@ public class TimeUtil {
         return result;
     }
 
+    //MM-dd
+    public static String getSimpleDate(long millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(millis);
+        return (calendar.get(Calendar.MONTH) + 1) + "-" + calendar.get(Calendar.DAY_OF_MONTH);
+    }
+
     public static String getDate(long millis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(millis);
@@ -31,7 +38,8 @@ public class TimeUtil {
     public static String getTime(long millis) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(millis);
-        return calendar.get(Calendar.HOUR_OF_DAY) + ":" + (calendar.get(Calendar.MINUTE) < 10 ? "0" + calendar.get(Calendar.MINUTE) : calendar.get(Calendar.MINUTE));
+        return calendar.get(Calendar.HOUR_OF_DAY) < 10 ? "0" + calendar.get(Calendar.HOUR_OF_DAY) : calendar.get(Calendar.HOUR_OF_DAY)
+                + ":" + (calendar.get(Calendar.MINUTE) < 10 ? "0" + calendar.get(Calendar.MINUTE) : calendar.get(Calendar.MINUTE));
     }
 
     /**
@@ -66,5 +74,9 @@ public class TimeUtil {
             if (minutes > 0) return hours + "小时" + minutes + "分钟";
             else return hours + "小时";
         }
+    }
+
+    public static boolean isToday(long millis) {
+        return getSimpleDate(System.currentTimeMillis()).equals(getSimpleDate(millis));
     }
 }

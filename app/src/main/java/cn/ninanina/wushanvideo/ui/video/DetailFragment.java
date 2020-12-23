@@ -1,6 +1,10 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,12 +29,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
 import com.google.android.gms.common.util.CollectionUtils;
+import com.nex3z.flowlayout.FlowLayout;
 
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,13 +40,15 @@ import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.TagClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.common.VersionInfo;
 import cn.ninanina.wushanvideo.model.bean.video.Tag;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.network.AdManager;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
-import me.gujun.android.taggroup.TagGroup;
+import cn.ninanina.wushanvideo.util.LayoutUtil;
+import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class DetailFragment extends Fragment {
 
@@ -82,8 +84,10 @@ public class DetailFragment extends Fragment {
     ImageView dislikeImg;
     @BindView(R.id.video_detail_dislike_num)
     TextView dislikeNum;
-    @BindView(R.id.video_detail_tags)
-    TagGroup videoTags;
+    @BindView(R.id.video_detail_share_button)
+    ConstraintLayout shareButton;
+    @BindView(R.id.tags)
+    FlowLayout tagLayout;
     @BindView(R.id.detail_related_videos)
     RecyclerView relatedVideos;
 
@@ -133,23 +137,15 @@ public class DetailFragment extends Fragment {
             titleBuilder.append("（机翻：").append(videoDetail.getTitleZh()).append("）");
         titleTextView.setText(titleBuilder.toString());
         if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
-            Collections.sort(videoDetail.getTags(), (o1, o2) -> o2.getVideoCount() - o1.getVideoCount());
-            if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
-                List<String> strTags = new ArrayList<>();
-                for (Tag tag : videoDetail.getTags()) {
-                    if (strTags.contains(tag.getTagZh()) || strTags.contains(tag.getTag()))
-                        continue;
-                    if (!StringUtils.isEmpty(tag.getTagZh())) strTags.add(tag.getTagZh());
-                    else strTags.add(tag.getTag());
-                }
-                videoTags.setTags(strTags);
-                videoTags.setOnTagClickListener(tag -> {
-                    for (Tag tag1 : videoDetail.getTags()) {
-                        if ((!StringUtils.isEmpty(tag1.getTagZh()) && tag1.getTagZh().equals(tag)) || tag1.getTag().equals(tag)) {
-                            new TagClickListener(getContext()).onTagClicked(tag1);
-                        }
-                    }
-                });
+            for (Tag tag : videoDetail.getTags()) {
+                TextView textView = new TextView(getContext());
+                textView.setPadding(LayoutUtil.dip2px(getContext(), 12), LayoutUtil.dip2px(getContext(), 6), LayoutUtil.dip2px(getContext(), 12), LayoutUtil.dip2px(getContext(), 6));
+                textView.setTextSize(12);
+                textView.setBackgroundResource(R.drawable.tag_shape);
+                if (StringUtils.isEmpty(tag.getTagZh())) textView.setText(tag.getTag());
+                else textView.setText(tag.getTagZh());
+                textView.setOnClickListener(v -> new TagClickListener(getContext()).onTagClicked(tag));
+                tagLayout.addView(textView);
             }
         }
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
@@ -190,6 +186,14 @@ public class DetailFragment extends Fragment {
         downloadButton.setOnClickListener(downloadListener);
         dislikeButton.setOnClickListener(dislikeListener);
         likeButton.setOnClickListener(likeListener);
+        shareButton.setOnClickListener(v -> {
+            VersionInfo versionInfo = DataHolder.getInstance().getNewVersion();
+            if (versionInfo == null) return;
+            ClipboardManager clipboard = (ClipboardManager) MainActivity.getInstance().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText(null, versionInfo.getAppUrl());
+            clipboard.setPrimaryClip(clipData);
+            ToastUtil.show("已复制链接到剪切板");
+        });
     }
 
     View.OnClickListener collectListener = new View.OnClickListener() {

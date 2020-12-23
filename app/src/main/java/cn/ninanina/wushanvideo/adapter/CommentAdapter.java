@@ -69,7 +69,10 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             } else photo.setActualImageResource(R.drawable.photo_female);
         }
         commentHolder.nickname.setText(user.getNickname());
-        commentHolder.time.setText(TimeUtil.getFullTime(comment.getTime()));
+        if (TimeUtil.isToday(comment.getTime()))
+            commentHolder.time.setText(TimeUtil.getTime(comment.getTime()));
+        else
+            commentHolder.time.setText(TimeUtil.getSimpleDate(comment.getTime()));
         if (comment.getParent() != null) {
             SpannableString spannableString = new SpannableString("回复 @" + comment.getParent().getUser().getNickname() + " :" + comment.getContent());
             spannableString.setSpan(new ForegroundColorSpan(Color.BLUE), 3, comment.getParent().getUser().getNickname().length() + 4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -122,6 +125,7 @@ public class CommentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         int index = commentList.indexOf(comment);
         commentList.remove(index);
         notifyItemRemoved(index);
+        notifyDataSetChanged();
     }
 
     public List<Comment> getCommentList() {

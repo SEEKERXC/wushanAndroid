@@ -3,8 +3,10 @@ package cn.ninanina.wushanvideo.model.api;
 import org.apache.commons.lang3.ObjectUtils;
 
 import cn.ninanina.wushanvideo.model.bean.Result;
+import cn.ninanina.wushanvideo.model.bean.common.Feedback;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.common.User;
+import cn.ninanina.wushanvideo.model.bean.common.VersionInfo;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -49,5 +51,19 @@ public interface CommonService {
                                         @Query("nickname") String nickname,
                                         @Query("age") Integer age,
                                         @Query("straight") Boolean straight);
+
+    @GET("common/version")
+    Observable<Result<VersionInfo>> getVersion();
+
+    @POST("common/feedback")
+    Observable<Result<Feedback>> sendFeedback(@Query("appKey") String appKey,
+                                              @Query("token") String token,
+                                              @Query("content") String content);
+
+    @GET("common/contact")
+    Observable<Result<String>> getContact(@Query("appKey") String appKey);
+
+    @GET("common/protocol")
+    Observable<Result<String>> getProtocol(@Query("appKey") String appKey);
 
 }

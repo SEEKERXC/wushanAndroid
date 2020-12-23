@@ -225,22 +225,26 @@
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/protocol"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:layout_gravity="center"
         android:layout_marginTop="40dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingStart="50dp"
+        android:paddingEnd="50dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:text="@string/zhucebiaoshi"
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/protocol"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
             android:text="@string/yonghuxieyi"
             android:textColor="@color/colorPrimaryDark" />
     </LinearLayout>

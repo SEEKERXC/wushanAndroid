@@ -25,6 +25,7 @@ import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
+import com.google.android.gms.common.util.CollectionUtils;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -86,19 +87,21 @@ public class VideoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             else videoCardHolder.videoTitle.setText(videoDetail.getTitleZh());
             videoCardHolder.videoViews.setText(CommonUtils.getViewsString(videoDetail.getViewed() / 100));
             videoCardHolder.videoDuration.setText(CommonUtils.getDurationString(videoDetail.getDuration()));
-            StringBuilder strTag = new StringBuilder();
-            for (Tag tag : videoDetail.getTags()) {
-                if (!StringUtils.isEmpty(tag.getTagZh())) {
-                    strTag.append(tag.getTagZh()).append("·");
+            if (!CollectionUtils.isEmpty(videoDetail.getTags())) {
+                StringBuilder strTag = new StringBuilder();
+                for (Tag tag : videoDetail.getTags()) {
+                    if (!StringUtils.isEmpty(tag.getTagZh())) {
+                        strTag.append(tag.getTagZh()).append("·");
+                    }
+                    if (strTag.length() >= 12)
+                        break;
                 }
-                if (strTag.length() >= 12)
-                    break;
+                if (strTag.toString().isEmpty() && videoDetail.getTags().size() > 0)
+                    strTag.append(videoDetail.getTags().get(0).getTag());
+                String sTag = strTag.toString();
+                if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
+                videoCardHolder.label.setText(sTag);
             }
-            if (strTag.toString().isEmpty() && videoDetail.getTags().size() > 0)
-                strTag.append(videoDetail.getTags().get(0).getTag());
-            String sTag = strTag.toString();
-            if (sTag.endsWith("·")) sTag = sTag.substring(0, sTag.length() - 1);
-            videoCardHolder.label.setText(sTag);
             videoCardHolder.itemView.setOnClickListener(v -> listener.onClick((VideoDetail) dataList.get(holder.getLayoutPosition())));
             videoCardHolder.videoMore.setOnClickListener(v -> optionsClickListener.onClick((VideoDetail) dataList.get(holder.getLayoutPosition())));
             videoCardHolder.itemView.setOnLongClickListener(v -> {

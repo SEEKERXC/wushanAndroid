@@ -45,6 +45,8 @@ public class SearchActivity extends AppCompatActivity {
     EditText searchEdit;
     @BindView(R.id.search_cancel)
     TextView cancel;
+    @BindView(R.id.selector)
+    public LinearLayout selector;
     @BindView(R.id.search_rank_button)
     ConstraintLayout rankButton;
     @BindView(R.id.search_rank)
@@ -120,10 +122,9 @@ public class SearchActivity extends AppCompatActivity {
                 if (loading || loadingFinished) return true;
                 //关闭软键盘
                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                if (!StringUtils.isEmpty(query))
-                    return true;
                 query = searchEdit.getText().toString().trim();
-                if (query.length() <= 0) return true; //editText规定了字数最大长度为15
+                if (StringUtils.isEmpty(query))
+                    return true;
                 page = 0;
                 VideoPresenter.getInstance().searchForVideo(this, true);
                 return true;
@@ -137,7 +138,7 @@ public class SearchActivity extends AppCompatActivity {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager manager = (LinearLayoutManager) recyclerView.getLayoutManager();
                 //列表中LastVisibleItem为倒数第二行时，加载更多
-                if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !loading && !loadingFinished && !StringUtils.isEmpty(query.trim())) {
+                if (manager.findLastVisibleItemPosition() + 1 >= manager.getItemCount() && !loading && !loadingFinished && !StringUtils.isEmpty(query)) {
                     page++;
                     VideoPresenter.getInstance().searchForVideo(SearchActivity.this, false);
                 }

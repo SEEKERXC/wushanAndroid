@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -120,7 +121,7 @@ public class PlaylistAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         @BindView(R.id.finish_text)
         TextView finishText;
         @BindView(R.id.action)
-        ImageView action;
+        FrameLayout action;
 
         public PlaylistHolder(@NonNull View itemView) {
             super(itemView);

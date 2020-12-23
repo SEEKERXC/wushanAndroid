@@ -91,7 +91,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/profile"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -132,7 +132,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/password"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -197,7 +197,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/nickname"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -249,7 +249,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/gender"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -300,7 +300,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/age"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -352,7 +352,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/orientation"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -414,7 +414,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/register_time"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 
@@ -453,7 +453,7 @@
                             android:paddingStart="12dp"
                             android:paddingEnd="0dp"
                             android:text="@string/last_login_time"
-                            android:textSize="18sp"
+                            android:textSize="16sp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
 

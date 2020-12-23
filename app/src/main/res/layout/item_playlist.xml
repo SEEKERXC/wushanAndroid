@@ -61,16 +61,23 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <ImageView
+    <FrameLayout
         android:id="@+id/action"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginEnd="6dp"
-        android:src="@drawable/more"
-        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:src="@drawable/more" />
+
+    </FrameLayout>
+
 
     <TextView
         android:id="@+id/finish_text"

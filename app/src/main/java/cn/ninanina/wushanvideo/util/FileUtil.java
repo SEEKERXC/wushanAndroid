@@ -17,6 +17,10 @@ public class FileUtil {
         return ContextCompat.getExternalFilesDirs(WushanApp.getInstance(), Environment.DIRECTORY_MOVIES)[0];
     }
 
+    public static File getDownloadDir() {
+        return ContextCompat.getExternalFilesDirs(WushanApp.getInstance(), Environment.DIRECTORY_DOWNLOADS)[0];
+    }
+
     public static File getCoverDir() {
         return ContextCompat.getExternalFilesDirs(WushanApp.getInstance(), Environment.DIRECTORY_PICTURES)[0];
     }

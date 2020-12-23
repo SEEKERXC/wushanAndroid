@@ -96,8 +96,8 @@ public class MeFragment extends Fragment {
     LinearLayout menuLike;
     //    @BindView(R.id.menu_calendar)
 //    LinearLayout menuCalendar;
-    @BindView(R.id.menu_setting)
-    LinearLayout menuSetting;
+//    @BindView(R.id.menu_setting)
+//    LinearLayout menuSetting;
     @BindView(R.id.menu_info)
     LinearLayout menuInfo;
 
@@ -187,10 +187,10 @@ public class MeFragment extends Fragment {
             }
 
         });
-        menuSetting.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), SettingsActivity.class);
-            startActivity(intent);
-        });
+//        menuSetting.setOnClickListener(v -> {
+//            Intent intent = new Intent(getContext(), SettingsActivity.class);
+//            startActivity(intent);
+//        });
         menuCollect.setOnClickListener(v -> {
             showPlaylists = !showPlaylists;
             refreshPlaylist();
@@ -261,6 +261,10 @@ public class MeFragment extends Fragment {
         });
         notification.setOnClickListener(v -> {
             ToastUtil.show("暂无通知");
+        });
+        menuInfo.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), AboutActivity.class);
+            startActivity(intent);
         });
     }
 

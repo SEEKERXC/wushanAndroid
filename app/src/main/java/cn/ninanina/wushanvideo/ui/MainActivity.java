@@ -5,13 +5,8 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.view.Gravity;
 import android.view.MenuItem;
-import android.widget.PopupWindow;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +25,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.network.CommonPresenter;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.instant.InstantFragment;
@@ -37,7 +33,6 @@ import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
-import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.PlayTimeManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -88,6 +83,12 @@ public class MainActivity extends AppCompatActivity {
 
         //预加载instant videos
         VideoPresenter.getInstance().loadInstantVideos();
+
+        //检查版本
+        CommonPresenter.getInstance().checkVersion(this);
+
+        //获取用户协议
+        CommonPresenter.getInstance().getProtocol();
 
         WushanApp.getInstance().addActivity(this);
     }

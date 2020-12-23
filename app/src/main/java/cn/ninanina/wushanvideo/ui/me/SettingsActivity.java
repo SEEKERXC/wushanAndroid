@@ -16,17 +16,13 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.settings_activity);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.settings, new SettingsFragment())
-                .commit();
+        setContentView(R.layout.activity_settings);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle("设置");
         }
-        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
         WushanApp.getInstance().addActivity(this);
     }
 
@@ -36,10 +32,4 @@ public class SettingsActivity extends AppCompatActivity {
         WushanApp.getInstance().removeActivity(this);
     }
 
-    public static class SettingsFragment extends PreferenceFragmentCompat {
-        @Override
-        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            setPreferencesFromResource(R.xml.root_preferences, rootKey);
-        }
-    }
 }

@@ -1,6 +1,7 @@
 package cn.ninanina.wushanvideo.ui.me;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
+import cn.ninanina.wushanvideo.util.DialogManager;
 
 public class RegisterFragment extends Fragment {
     @BindView(R.id.root)
@@ -49,6 +51,8 @@ public class RegisterFragment extends Fragment {
     ImageView nicknameOKIcon;
     @BindView(R.id.register_button)
     Button registerButton;
+    @BindView(R.id.protocol)
+    LinearLayout protocol;
 
     private boolean usernameOK;
     private boolean passwordOK;
@@ -123,6 +127,10 @@ public class RegisterFragment extends Fragment {
                 im.toggleSoftInput(InputMethodManager.HIDE_NOT_ALWAYS, 0);
             }
             CommonPresenter.getInstance().register(RegisterFragment.this);
+        });
+        protocol.setOnClickListener(v -> {
+            Intent intent = new Intent(getContext(), ProtocolActivity.class);
+            startActivity(intent);
         });
 
         //测量并保存软键盘高度

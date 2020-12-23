@@ -2,13 +2,16 @@ package cn.ninanina.wushanvideo.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 
 import com.arialyy.annotations.Download;
 import com.arialyy.aria.core.Aria;
@@ -36,6 +39,8 @@ public class DownloadService extends Service {
     private DownloadBinder binder = new DownloadBinder();
 
     private Map<String, DownloadInfo> tasks = new HashMap<>();
+    private String apkUrl;
+    private String apkName;
 
     public class DownloadBinder extends Binder {
         public DownloadService getService() {
@@ -65,6 +70,16 @@ public class DownloadService extends Service {
             downloadInfo.setStatus(DownloadInfo.waiting);
             tasks.put(videoDetail.getSrc(), downloadInfo);
         }
+    }
+
+    public void downloadApk(String apkUrl, String name) {
+        Aria.download(this)
+                .load(apkUrl)
+                .setFilePath(FileUtil.getDownloadDir().getAbsolutePath() + "/" + name)
+                .ignoreFilePathOccupy()
+                .create();
+        this.apkUrl = apkUrl;
+        this.apkName = name;
     }
 
     public void resumeTask(DownloadInfo downloadInfo) {
@@ -101,7 +116,9 @@ public class DownloadService extends Service {
 
     @Download.onTaskStart
     public void onTaskStart(DownloadTask task) {
-
+        if (task.getKey().equals(apkUrl)) {
+            ToastUtil.show("开始下载APK");
+        }
     }
 
     @Download.onTaskStop
@@ -139,29 +156,46 @@ public class DownloadService extends Service {
     @Download.onTaskComplete
     public void onTaskComplete(DownloadTask task) {
         if (task == null || tasks.get(task.getKey()) == null) return;
-        VideoDetail videoDetail = tasks.get(task.getKey()).getVideo();
-        WushanApp.getInstance().getDbHelper().saveVideo(videoDetail);
-        tasks.remove(task.getKey());
-        ToastUtil.show(task.getDownloadEntity().getFileName() + " 下载完成");
-        Handler handler = DownloadedFragment.handler;
-        if (handler != null) {
-            Message message = new Message();
-            message.what = DownloadedFragment.update;
-            handler.sendMessage(message);
-        }
-        if (!MainActivity.getInstance().videoActivityStack.empty()) {
-            VideoDetailActivity detailActivity = null;
-            for (VideoDetailActivity activity : MainActivity.getInstance().videoActivityStack) {
-                if (activity.video.getSrc().equals(task.getKey())) detailActivity = activity;
-            }
-            if (detailActivity == null) return;
-            DetailFragment fragment = (DetailFragment) detailActivity.fragments.get(0);
-            Handler handler1 = fragment.handler;
-            if (handler1 != null && task.getKey().equals(fragment.videoDetail.getSrc())) {
+        if (tasks.containsKey(task.getKey())) {
+            VideoDetail videoDetail = tasks.get(task.getKey()).getVideo();
+            WushanApp.getInstance().getDbHelper().saveVideo(videoDetail);
+            tasks.remove(task.getKey());
+            ToastUtil.show(task.getDownloadEntity().getFileName() + " 下载完成");
+            Handler handler = DownloadedFragment.handler;
+            if (handler != null) {
                 Message message = new Message();
-                message.what = DetailFragment.downloadFinish;
-                handler1.sendMessage(message);
+                message.what = DownloadedFragment.update;
+                handler.sendMessage(message);
             }
+            if (!MainActivity.getInstance().videoActivityStack.empty()) {
+                VideoDetailActivity detailActivity = null;
+                for (VideoDetailActivity activity : MainActivity.getInstance().videoActivityStack) {
+                    if (activity.video.getSrc().equals(task.getKey())) detailActivity = activity;
+                }
+                if (detailActivity == null) return;
+                DetailFragment fragment = (DetailFragment) detailActivity.fragments.get(0);
+                Handler handler1 = fragment.handler;
+                if (handler1 != null && task.getKey().equals(fragment.videoDetail.getSrc())) {
+                    Message message = new Message();
+                    message.what = DetailFragment.downloadFinish;
+                    handler1.sendMessage(message);
+                }
+            }
+        }
+        if (task.getKey().equals(apkUrl)) {
+            File file = new File(FileUtil.getDownloadDir().getAbsolutePath() + "/" + apkName);
+            Intent install = new Intent();
+            install.setAction(Intent.ACTION_VIEW);
+            install.addCategory(Intent.CATEGORY_DEFAULT);
+            install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Uri apkUri = FileProvider.getUriForFile(WushanApp.getInstance(), "com.xxx.fileprovider", file);//在AndroidManifest中的android:authorities值
+                install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);//添加这一句表示对目标应用临时授权该Uri所代表的文件
+                install.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            } else {
+                install.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+            }
+            WushanApp.getInstance().startActivity(install);
         }
     }
 

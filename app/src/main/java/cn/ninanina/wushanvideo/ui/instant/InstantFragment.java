@@ -48,6 +48,8 @@ import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.util.CommonUtils;
+import cn.ninanina.wushanvideo.util.DialogManager;
+import cn.ninanina.wushanvideo.util.PlayTimeManager;
 
 /**
  * 这一页展示当下所有有现成链接的视频，以列表的形式呈现出来，模仿西瓜视频首页的形式，用户滑动即可立即播放
@@ -95,6 +97,7 @@ public class InstantFragment extends Fragment {
         swipe.setRefreshing(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.getRecycledViewPool().setMaxRecycledViews(InstantVideoAdapter.TYPE_VIDEO, 50);
+        recyclerView.setItemViewCacheSize(50);
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             Set<Object> ads = new HashSet<>();
 
@@ -113,13 +116,13 @@ public class InstantFragment extends Fragment {
                 if (firstCompletePosition == firstCompletelyVisible) return;
                 firstCompletelyVisible = firstCompletePosition;
                 //停止上面的和下面的player
-                if (firstCompletePosition - ads.size() - 4 >= 0 && firstCompletePosition - ads.size() - 4 < players.size()) {
-                    players.get(firstCompletePosition - ads.size() - 4).stop();
-                    covers.get(firstCompletePosition - ads.size() - 4).setVisibility(View.VISIBLE);
+                if (firstCompletePosition - ads.size() - 3 >= 0 && firstCompletePosition - ads.size() - 3 < players.size()) {
+                    players.get(firstCompletePosition - ads.size() - 3).release();
+                    covers.get(firstCompletePosition - ads.size() - 3).setVisibility(View.VISIBLE);
                 }
-                if (players.size() - firstCompletePosition > 4) {
+                if (players.size() - firstCompletePosition > 3) {
                     for (int i = players.size() - 1; i > players.size() - firstCompletePosition; i--) {
-                        players.get(i).stop();
+                        players.get(i).release();
                     }
                 }
                 //暂停播放之前的视频
@@ -137,6 +140,9 @@ public class InstantFragment extends Fragment {
                     SimpleExoPlayer player = (SimpleExoPlayer) playerView.getPlayer();
                     assert player != null;
                     if (player.isPlaying()) return;
+                    if (PlayTimeManager.getTodayWatchTime() > 60 * 90) {
+                        return;
+                    }
                     //判断src是否有效
                     InstantVideoAdapter adapter = (InstantVideoAdapter) recyclerView.getAdapter();
                     VideoDetail videoDetail = (VideoDetail) adapter.getDataList().get(firstCompletePosition);

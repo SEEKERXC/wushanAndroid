@@ -116,7 +116,7 @@
                             android:layout_height="130dp"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
-                            app:placeholderImage="@drawable/cover1"
+                            app:placeholderImage="@drawable/tv"
                             fresco:viewAspectRatio="1" />
                     </androidx.cardview.widget.CardView>
                 </FrameLayout>

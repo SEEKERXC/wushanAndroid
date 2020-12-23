@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.model.bean.common.VersionInfo;
 import cn.ninanina.wushanvideo.model.bean.video.Playlist;
 import cn.ninanina.wushanvideo.model.bean.video.VideoDetail;
 import cn.ninanina.wushanvideo.model.bean.video.VideoUserViewed;
@@ -39,6 +40,10 @@ public class DataHolder {
     List<VideoUserViewed> allViewed;
     //预加载instant videos
     List<VideoDetail> preLoadInstantVideos;
+    //最新版本
+    VersionInfo newVersion;
+    //用户协议
+    String protocol;
 
     public Playlist getPlaylistVideos(long id) {
         for (Playlist playlist : playlists) {

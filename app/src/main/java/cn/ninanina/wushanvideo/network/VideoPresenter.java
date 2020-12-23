@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -201,6 +202,7 @@ public class VideoPresenter extends BasePresenter {
                     else adapter.reset(listResult.getData());
                     searchActivity.loading = false;
                     searchActivity.swipe.setRefreshing(false);
+                    searchActivity.selector.setVisibility(View.VISIBLE);
                 });
     }
 
@@ -690,7 +692,6 @@ public class VideoPresenter extends BasePresenter {
                         adapter.insert(dataList);
                     } else if (adapter != null && op == RecyclerViewOp.SWIPE) {
                         adapter.insertToStart(dataList);
-
                     }
                     activity.setLoading(false);
                     activity.swipe.setRefreshing(false);

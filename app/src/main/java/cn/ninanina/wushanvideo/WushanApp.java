@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.common.VersionInfo;
 import cn.ninanina.wushanvideo.network.AdManager;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.util.AppOpenManager;
@@ -65,7 +66,7 @@ public class WushanApp extends Application {
     }
 
     public static String getAppKey() {
-        return getProfile().getString("appKey", "jdfohewk");
+        return getProfile().getString("appKey", "d19dd096b926be60ef069493f277711c7a979f2e073b364d8a3aead2d85aa543");
     }
 
     public static boolean loggedIn() {

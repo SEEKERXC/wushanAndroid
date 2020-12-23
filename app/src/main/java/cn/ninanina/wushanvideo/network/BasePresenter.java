@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public abstract class BasePresenter {
     private Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("http://45.76.206.232/")
+            .baseUrl("https://wushantv.online/")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();

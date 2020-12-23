@@ -161,6 +161,20 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                             videoHolder.playButton.setOnClickListener(v -> {
                                 if (player.isPlaying()) player.stop();
                                 else {
+                                    if (PlayTimeManager.getTodayWatchTime() > 60 * 60) {
+                                        DialogManager.getInstance().newWatchPromptDialog(activity, videoDetail, new VideoClickListener() {
+                                            @Override
+                                            public void onClick(VideoDetail videoDetail) {
+                                            }
+
+                                            @Override
+                                            public void playVideo(VideoDetail videoDetail) {
+                                                player.prepare();
+                                                player.play();
+                                            }
+                                        }).show();
+                                        return;
+                                    }
                                     player.prepare();
                                     player.play();
                                 }
@@ -240,11 +254,8 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         DialogManager.getInstance().newLoginDialog(activity).show();
                         return;
                     }
+                    player.stop();
                     player.release();
-                    int index = dataList.indexOf(videoDetail);
-                    dataList.remove(videoDetail);
-                    notifyItemRemoved(index);
-                    ToastUtil.show("将减少类似推荐");
                     VideoPresenter.getInstance().dislikeVideo(activity, videoDetail);
                 });
                 if (videoDetail.getDisliked() > 0)
