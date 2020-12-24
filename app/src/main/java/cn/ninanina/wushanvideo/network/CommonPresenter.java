@@ -130,7 +130,7 @@ public class CommonPresenter extends BasePresenter {
                         user.setPassword(password);
                         updateUserProfile(user);
                         MainActivity.getInstance().initData();
-                        for (int i = 1; i < 20; i++) {
+                        for (int i = 1; i < 50; i++) {
                             fragment.getPasswordEdit().postDelayed(() -> {
                                 if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
                                     fragment.getActivity().finish();
@@ -222,7 +222,7 @@ public class CommonPresenter extends BasePresenter {
                             user.setPassword(password);
                             updateUserProfile(user);
                             MainActivity.getInstance().initData();
-                            for (int i = 1; i < 20; i++) {
+                            for (int i = 1; i < 50; i++) {
                                 fragment.getPasswordEdit().postDelayed(() -> {
                                     if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
                                         DialogManager.getInstance().dismissPending();

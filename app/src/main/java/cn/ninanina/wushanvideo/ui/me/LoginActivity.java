@@ -1,8 +1,11 @@
 package cn.ninanina.wushanvideo.ui.me;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +15,9 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.githang.statusbar.StatusBarCompat;
+import com.google.android.gms.ads.formats.MediaView;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.youth.banner.Banner;
@@ -25,20 +31,16 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.adapter.InstantVideoAdapter;
+import cn.ninanina.wushanvideo.network.AdManager;
 
 public class LoginActivity extends AppCompatActivity {
     @BindView(R.id.login_banner)
-    Banner<Integer, ImageAdapter> banner;
+    Banner<Integer, BannerAdAdapter> banner;
     @BindView(R.id.login_tab)
     TabLayout tabLayout;
     @BindView(R.id.login_viewpager)
     ViewPager2 viewPager2;
-
-    List<Integer> covers = new ArrayList<Integer>() {{
-        add(R.drawable.cover1);
-        add(R.drawable.cover2);
-        add(R.drawable.cover3);
-    }};
 
     private List<String> tabTitles = new ArrayList<String>() {{
         add("注册");
@@ -54,9 +56,12 @@ public class LoginActivity extends AppCompatActivity {
         StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
         ButterKnife.bind(this);
         initFragments();
-        banner.addBannerLifecycleObserver(this)
-                .setAdapter(new ImageAdapter(covers))
-                .setIndicator(new CircleIndicator(this));
+        if (AdManager.getInstance().size() >= 3) {
+            List<UnifiedNativeAd> ads = AdManager.getInstance().nextAds(3);
+            banner.addBannerLifecycleObserver(this)
+                    .setAdapter(new BannerAdAdapter(ads))
+                    .setIndicator(new CircleIndicator(this));
+        }
         WushanApp.getInstance().addActivity(this);
     }
 
@@ -86,38 +91,37 @@ public class LoginActivity extends AppCompatActivity {
         new TabLayoutMediator(tabLayout, viewPager2, (tab, position) -> tab.setText(tabTitles.get(position))).attach();
     }
 
-    static class ImageAdapter extends BannerAdapter<Integer, ImageAdapter.BannerViewHolder> {
-
-        public ImageAdapter(List<Integer> mDatas) {
-            //设置数据，也可以调用banner提供的方法,或者自己在adapter中实现
-            super(mDatas);
-        }
-
-        //创建ViewHolder，可以用viewType这个字段来区分不同的ViewHolder
-        @Override
-        public BannerViewHolder onCreateHolder(ViewGroup parent, int viewType) {
-            ImageView imageView = new ImageView(parent.getContext());
-            //注意，必须设置为match_parent，这个是viewpager2强制要求的
-            imageView.setLayoutParams(new ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            return new BannerViewHolder(imageView);
+    static class BannerAdAdapter extends BannerAdapter<UnifiedNativeAd, BannerAdAdapter.AdViewHolder> {
+        public BannerAdAdapter(List<UnifiedNativeAd> data) {
+            super(data);
         }
 
         @Override
-        public void onBindView(BannerViewHolder holder, Integer data, int position, int size) {
-            holder.imageView.setImageResource(data);
+        public AdViewHolder onCreateHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_banner_ad, parent, false);
+            return new BannerAdAdapter.AdViewHolder(view);
         }
 
-        class BannerViewHolder extends RecyclerView.ViewHolder {
-            ImageView imageView;
+        @Override
+        public void onBindView(BannerAdAdapter.AdViewHolder holder, UnifiedNativeAd data, int position, int size) {
+            holder.adView.setNativeAd(data);
+            holder.headline.setText(data.getHeadline());
+        }
 
-            public BannerViewHolder(@NonNull ImageView view) {
-                super(view);
-                this.imageView = view;
+        static class AdViewHolder extends RecyclerView.ViewHolder {
+            @BindView(R.id.ad_view)
+            UnifiedNativeAdView adView;
+            @BindView(R.id.ad_media)
+            MediaView mediaView;
+            @BindView(R.id.ad_headline)
+            TextView headline;
+
+            public AdViewHolder(@NonNull View itemView) {
+                super(itemView);
+                ButterKnife.bind(this, itemView);
+                adView.setMediaView(mediaView);
+                adView.setHeadlineView(headline);
             }
         }
     }
-
 }

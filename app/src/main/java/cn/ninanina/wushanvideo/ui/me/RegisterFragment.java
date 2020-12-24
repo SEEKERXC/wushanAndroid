@@ -89,6 +89,7 @@ public class RegisterFragment extends Fragment {
                 } else {
                     usernameOK = false;
                     usernameOKIcon.setVisibility(View.INVISIBLE);
+                    usernameExists.setVisibility(View.INVISIBLE);
                 }
                 showHideRegister();
             }

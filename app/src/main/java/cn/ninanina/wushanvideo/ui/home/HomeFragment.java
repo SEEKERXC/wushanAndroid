@@ -70,6 +70,7 @@ public class HomeFragment extends Fragment {
         tabLayout.setSelectedTabIndicatorColor(getResources().getColor(R.color.colorPrimary, null));
         tabLayout.setTabIndicatorFullWidth(false);
         viewPager2.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        viewPager2.setOffscreenPageLimit(2);
         viewPager2.setAdapter(new FragmentStateAdapter(this) {
             @NonNull
             @Override

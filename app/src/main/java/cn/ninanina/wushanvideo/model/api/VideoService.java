@@ -133,13 +133,6 @@ public interface VideoService {
                                                         @Query("dirId") Long dirId,
                                                         @Query("token") String token);
 
-    //重命名播单
-    @POST("video/playlist/rename")
-    Observable<Result<Playlist>> renamePlaylist(@Query("appKey") String appKey,
-                                                @Query("dirId") Long dirId,
-                                                @Query("name") String name,
-                                                @Query("token") String token);
-
     //获取播单列表
     @GET("video/playlist")
     Observable<Result<List<Playlist>>> getPlaylist(@Query("appKey") String appKey,
