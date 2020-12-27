@@ -502,8 +502,8 @@ public class VideoPresenter extends BasePresenter {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(listResult -> {
                         playlist.setVideoDetails(listResult.getData());
-                        MainActivity.getInstance().playlistLoadingFinished++;
-                        if (DataHolder.getInstance().getPlaylists().size() == MainActivity.getInstance().playlistLoadingFinished) {
+                        WushanApp.getInstance().playlistLoadingFinished++;
+                        if (DataHolder.getInstance().getPlaylists().size() == WushanApp.getInstance().playlistLoadingFinished) {
                             MessageUtils.updatePlaylist();
                         }
                     });
@@ -861,20 +861,24 @@ public class VideoPresenter extends BasePresenter {
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> DataHolder.getInstance().setLikedVideos(result.getData()));
+                .subscribe(result -> {
+                    if (!CollectionUtils.isEmpty(result.getData()))
+                        DataHolder.getInstance().setLikedVideos(result.getData());
+                });
         getVideoService().dislikedVideo(getAppKey(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> DataHolder.getInstance().setDislikedVideos(result.getData()));
+                .subscribe(result -> {
+                    if (!CollectionUtils.isEmpty(result.getData()))
+                        DataHolder.getInstance().setDislikedVideos(result.getData());
+                });
     }
 
     public void getLikedVideos(LikeActivity likeActivity) {
@@ -908,7 +912,10 @@ public class VideoPresenter extends BasePresenter {
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(result -> DataHolder.getInstance().setAllViewed(result.getData()));
+                .subscribe(result -> {
+                    if (!CollectionUtils.isEmpty(result.getData()))
+                        DataHolder.getInstance().setAllViewed(result.getData());
+                });
     }
 
     //增加稍后观看
@@ -984,7 +991,7 @@ public class VideoPresenter extends BasePresenter {
                 .subscribe(result -> {
                     DetailFragment detailFragment = (DetailFragment) activity.fragments.get(0);
                     String info = detailFragment.infoTextView.getText().toString();
-                    if (result.getData() > 0) {
+                    if (result.getData() != null && result.getData() > 0) {
                         info += "，当前" + result.getData() + "人在看";
                     }
                     detailFragment.infoTextView.setText(info);

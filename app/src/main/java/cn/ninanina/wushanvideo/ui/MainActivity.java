@@ -154,16 +154,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    //标注加载完视频的收藏夹数量
-    public int playlistLoadingFinished = 0;
-
-    //在登录之后初始化数据
-    public void initData() {
-        VideoPresenter.getInstance().loadPlaylists();
-        VideoPresenter.getInstance().loadLikedAndDisliked();
-        VideoPresenter.getInstance().loadAllHistory();
-    }
-
     @Override
     protected void onStart() {
         super.onStart();

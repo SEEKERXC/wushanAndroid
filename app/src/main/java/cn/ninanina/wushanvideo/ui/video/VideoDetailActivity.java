@@ -288,8 +288,6 @@ public class VideoDetailActivity extends AppCompatActivity {
         if (!CommonUtils.isSrcValid(video.getSrc()))
             VideoPresenter.getInstance().getSrcForDetail(this, video.getId());
         else {
-            ((DetailFragment) fragments.get(0)).enableDownload();
-            ((DetailFragment) fragments.get(0)).videoDetail.setSrc(video.getSrc());
             startPlaying(video.getSrc());
         }
     }
@@ -350,12 +348,10 @@ public class VideoDetailActivity extends AppCompatActivity {
         bottomShadow.setVisibility(View.INVISIBLE);
         bottomController.setVisibility(View.INVISIBLE);
         video.setSrc(src);
-
         detailPlayer.postDelayed(() -> {
             ((DetailFragment) fragments.get(0)).enableDownload();
             ((DetailFragment) fragments.get(0)).videoDetail.setSrc(src);
         }, 1000);
-        detailPlayer.performClick();
         // Build the media item.
         MediaItem mediaItem = MediaItem.fromUri(src);
         // Set the media item to be played.

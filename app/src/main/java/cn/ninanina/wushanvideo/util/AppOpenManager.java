@@ -17,8 +17,6 @@ import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.appopen.AppOpenAd;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Date;
 
 import cn.ninanina.wushanvideo.WushanApp;
@@ -32,7 +30,7 @@ import static androidx.lifecycle.Lifecycle.Event.ON_START;
  */
 public class AppOpenManager implements Application.ActivityLifecycleCallbacks, LifecycleObserver {
     private static final String LOG_TAG = "AppOpenManager";
-    private static final String AD_UNIT_ID = "ca-app-pub-3940256099942544/3419835294";
+    private static final String AD_UNIT_ID = "ca-app-pub-2117487515590175/9549940398";
     private AppOpenAd appOpenAd = null;
 
     private AppOpenAd.AppOpenAdLoadCallback loadCallback;
@@ -138,7 +136,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, L
         CommonPresenter.getInstance().requestForProfile(wushanApp.getProfile());
 
         if (WushanApp.loggedIn()) {
-            CommonPresenter.getInstance().checkForLogin(currentActivity);
+            CommonPresenter.getInstance().checkForLogin();
         }
     }
 

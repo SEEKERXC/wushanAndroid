@@ -61,8 +61,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_like_img"
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/like_enabled"
@@ -78,7 +78,7 @@
                         android:gravity="center_vertical"
                         android:text="@string/like"
                         android:textColor="@color/tabColor"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_like_img"
                         app:layout_constraintStart_toStartOf="@id/video_detail_like_img"
                         app:layout_constraintTop_toBottomOf="@id/video_detail_like_img" />
@@ -95,8 +95,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_dislike_img"
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:layout_marginStart="8dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
@@ -113,7 +113,7 @@
                         android:gravity="center_vertical"
                         android:text="@string/dislike"
                         android:textColor="@color/tabColor"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_dislike_img"
                         app:layout_constraintStart_toStartOf="@id/video_detail_dislike_img"
                         app:layout_constraintTop_toBottomOf="@id/video_detail_dislike_img" />
@@ -131,8 +131,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_collect_img"
-                        android:layout_width="23dp"
-                        android:layout_height="23dp"
+                        android:layout_width="21dp"
+                        android:layout_height="21dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/shoucang_enabled"
@@ -144,10 +144,10 @@
                         android:id="@+id/video_detail_collect_num"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="5dp"
                         android:text="@string/collect"
                         android:textColor="@color/tabColor"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_collect_img"
                         app:layout_constraintStart_toStartOf="@id/video_detail_collect_img"
                         app:layout_constraintTop_toBottomOf="@id/video_detail_collect_img" />
@@ -165,8 +165,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_download_img"
-                        android:layout_width="23dp"
-                        android:layout_height="23dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/download_disabled"
@@ -182,7 +182,7 @@
                         android:gravity="center_vertical"
                         android:text="@string/download"
                         android:textColor="@color/disabled"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_download_img"
                         app:layout_constraintStart_toStartOf="@id/video_detail_download_img"
                         app:layout_constraintTop_toBottomOf="@id/video_detail_download_img" />
@@ -199,8 +199,8 @@
 
                     <ImageView
                         android:id="@+id/video_detail_share_img"
-                        android:layout_width="25dp"
-                        android:layout_height="25dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:background="@android:color/transparent"
                         android:scaleType="centerInside"
                         android:src="@drawable/share_enabled"
@@ -216,7 +216,7 @@
                         android:gravity="center_vertical"
                         android:text="@string/share"
                         android:textColor="@color/tabColor"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         app:layout_constraintEnd_toEndOf="@id/video_detail_share_img"
                         app:layout_constraintStart_toStartOf="@id/video_detail_share_img"
                         app:layout_constraintTop_toBottomOf="@id/video_detail_share_img" />

@@ -19,6 +19,8 @@ import com.arialyy.aria.core.download.DownloadEntity;
 import com.arialyy.aria.core.download.DownloadReceiver;
 import com.arialyy.aria.core.task.DownloadTask;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ import cn.ninanina.wushanvideo.ui.MainActivity;
 import cn.ninanina.wushanvideo.ui.video.DetailFragment;
 import cn.ninanina.wushanvideo.ui.video.DownloadedFragment;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.CommonUtils;
 import cn.ninanina.wushanvideo.util.FileUtil;
 import cn.ninanina.wushanvideo.util.PermissionUtils;
 import cn.ninanina.wushanvideo.util.ToastUtil;
@@ -41,6 +44,7 @@ public class DownloadService extends Service {
     private Map<String, DownloadInfo> tasks = new HashMap<>();
     private String apkUrl;
     private String apkName;
+    private boolean installed = false;
 
     public class DownloadBinder extends Binder {
         public DownloadService getService() {
@@ -155,8 +159,10 @@ public class DownloadService extends Service {
 
     @Download.onTaskComplete
     public void onTaskComplete(DownloadTask task) {
-        if (task == null || tasks.get(task.getKey()) == null) return;
+        if (task == null) return;
         if (tasks.containsKey(task.getKey())) {
+            if (tasks.get(task.getKey()) == null || tasks.get(task.getKey()).getVideo() == null)
+                return;
             VideoDetail videoDetail = tasks.get(task.getKey()).getVideo();
             WushanApp.getInstance().getDbHelper().saveVideo(videoDetail);
             tasks.remove(task.getKey());
@@ -189,13 +195,16 @@ public class DownloadService extends Service {
             install.addCategory(Intent.CATEGORY_DEFAULT);
             install.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                Uri apkUri = FileProvider.getUriForFile(WushanApp.getInstance(), "com.xxx.fileprovider", file);//在AndroidManifest中的android:authorities值
+                Uri apkUri = FileProvider.getUriForFile(WushanApp.getInstance(), "cn.ninanina.wushanvideo.fileProvider", file);
                 install.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);//添加这一句表示对目标应用临时授权该Uri所代表的文件
                 install.setDataAndType(apkUri, "application/vnd.android.package-archive");
             } else {
                 install.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
             }
-            WushanApp.getInstance().startActivity(install);
+            if (MainActivity.getInstance() != null && !installed) {
+                MainActivity.getInstance().startActivity(install);
+                installed = true;
+            }
         }
     }
 
@@ -217,7 +226,8 @@ public class DownloadService extends Service {
         if (!MainActivity.getInstance().videoActivityStack.empty()) {
             VideoDetailActivity activity = null;
             for (VideoDetailActivity detailActivity : MainActivity.getInstance().videoActivityStack) {
-                if (detailActivity.video.getSrc().equals(task.getKey())) activity = detailActivity;
+                if (CommonUtils.isSrcValid(detailActivity.video.getSrc()) && detailActivity.video.getSrc().equals(task.getKey()))
+                    activity = detailActivity;
             }
             if (activity == null) return;
             DetailFragment fragment = (DetailFragment) activity.fragments.get(0);

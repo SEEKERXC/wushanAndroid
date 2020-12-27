@@ -152,7 +152,7 @@ public class DetailFragment extends Fragment {
         manager.setSmoothScrollbarEnabled(true);
         relatedVideos.setLayoutManager(manager);
         relatedVideos.setNestedScrollingEnabled(false);
-        AdManager.getInstance().loadAds(1);
+        AdManager.getInstance().loadAd();
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), true);
         page++;
         VideoPresenter.getInstance().getRelatedVideos(this, videoDetail.getId(), false);
@@ -219,10 +219,6 @@ public class DetailFragment extends Fragment {
         @Override
         public void onClick(View v) {
             if (!downloadEnabled) return;
-            if (!WushanApp.loggedIn()) {
-                DialogManager.getInstance().newLoginDialog(getContext()).show();
-                return;
-            }
             if (downloaded) {
                 Toast.makeText(getContext(), "已经下载了", Toast.LENGTH_SHORT).show();
             } else {

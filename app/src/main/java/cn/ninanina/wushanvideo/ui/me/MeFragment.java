@@ -25,15 +25,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.facebook.drawee.generic.RoundingParams;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.common.util.CollectionUtils;
-import com.luck.picture.lib.PictureSelector;
-import com.luck.picture.lib.config.PictureMimeType;
-import com.luck.picture.lib.entity.LocalMedia;
-import com.luck.picture.lib.listener.OnResultCallbackListener;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,9 +41,7 @@ import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.LikeActivity;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
-import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
-import cn.ninanina.wushanvideo.util.GlideEngine;
 import cn.ninanina.wushanvideo.util.ToastUtil;
 
 public class MeFragment extends Fragment {
@@ -201,13 +194,8 @@ public class MeFragment extends Fragment {
             else DialogManager.getInstance().newLoginDialog(getActivity()).show();
         });
         menuDownload.setOnClickListener(v -> {
-            if (WushanApp.loggedIn()) {
-                Intent intent = new Intent(getContext(), DownloadActivity.class);
-                startActivity(intent);
-            } else {
-                Intent intent = new Intent(getContext(), LoginActivity.class);
-                startActivity(intent);
-            }
+            Intent intent = new Intent(getContext(), LoginActivity.class);
+            startActivity(intent);
         });
         menuHistory.setOnClickListener(v -> {
             if (!WushanApp.loggedIn()) {
@@ -241,24 +229,25 @@ public class MeFragment extends Fragment {
             startActivity(intent);
             //todo:下个版本：个人主页，以及评论点击头像跳转到他人主页
         });
-        photo.setOnClickListener(v -> {
-            PictureSelector.create(this)
-                    .openGallery(PictureMimeType.ofAll())
-                    .imageEngine(GlideEngine.createGlideEngine())
-                    .maxSelectNum(1)
-                    .forResult(new OnResultCallbackListener<LocalMedia>() {
-                        @Override
-                        public void onResult(List<LocalMedia> result) {
-                            SharedPreferences.Editor editor = WushanApp.getProfile().edit();
-                            editor.putString("photo", result.get(0).getPath()).apply();
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            // onCancel Callback
-                        }
-                    });
-        });
+        // TODO: 2020/12/26 0026 下个版本实现自定义头像 
+//        photo.setOnClickListener(v -> {
+//            PictureSelector.create(this)
+//                    .openGallery(PictureMimeType.ofAll())
+//                    .imageEngine(GlideEngine.createGlideEngine())
+//                    .maxSelectNum(1)
+//                    .forResult(new OnResultCallbackListener<LocalMedia>() {
+//                        @Override
+//                        public void onResult(List<LocalMedia> result) {
+//                            SharedPreferences.Editor editor = WushanApp.getProfile().edit();
+//                            editor.putString("photo", result.get(0).getPath()).apply();
+//                        }
+//
+//                        @Override
+//                        public void onCancel() {
+//                            // onCancel Callback
+//                        }
+//                    });
+//        });
         notification.setOnClickListener(v -> {
             ToastUtil.show("暂无通知");
         });

@@ -28,6 +28,16 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS video(_id INTEGER PRIMARY KEY, " +
+                "title VARCHAR(255), " +
+                "titleZh VARCHAR(255), " +
+                "name VARCHAR(255), " +
+                "coverUrl VARCHAR(255), " +
+                "duration VARCHAR(255))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS watch(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "videoId INTEGER, " +
+                "day VARCHAR(255), " +
+                "time INTEGER)");
     }
 
     @Override

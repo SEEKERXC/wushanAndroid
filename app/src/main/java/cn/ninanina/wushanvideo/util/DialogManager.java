@@ -144,24 +144,32 @@ public class DialogManager {
         List<View.OnClickListener> listeners = new ArrayList<View.OnClickListener>() {{
             add(v -> {
                 videoOptionDialog.dismiss();
-                if (!WushanApp.loggedIn()) newLoginDialog(activity).show();
+                if (!WushanApp.loggedIn()) {
+                    newLoginDialog(activity).show();
+                    return;
+                }
                 VideoPresenter.getInstance().addToWatch(activity, videoDetail.getId());
             });
             add(v -> {
                 videoOptionDialog.dismiss();
-                if (!WushanApp.loggedIn()) newLoginDialog(activity).show();
+                if (!WushanApp.loggedIn()) {
+                    newLoginDialog(activity).show();
+                    return;
+                }
                 newCollectDialog(activity, videoDetail).show();
             });
             add(v -> {
                 videoOptionDialog.dismiss();
-                if (!WushanApp.loggedIn()) newLoginDialog(activity).show();
+                if (!WushanApp.loggedIn()) {
+                    newLoginDialog(activity).show();
+                    return;
+                }
                 VideoPresenter.getInstance().dislikeVideo(activity, videoDetail);
             });
         }};
         if (options.size() == 4)
             listeners.add(v -> {
                 videoOptionDialog.dismiss();
-                if (!WushanApp.loggedIn()) newLoginDialog(activity).show();
                 ToastUtil.show("加入下载队列");
                 VideoPresenter.getInstance().getSrcForDownload(videoDetail);
             });
@@ -869,7 +877,7 @@ public class DialogManager {
     public Dialog newFeedbackDialog(Activity activity) {
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_feedback, null, false);
         EditText editText = frameLayout.findViewById(R.id.edit);
-        editText.setHint("请简单描述,10字以上");
+        editText.setHint("请给出您的手机型号，操作过程以及出现的问题，谢谢！");
         TextView title = new TextView(activity);
         title.setText("反馈问题");
         title.setPadding(LayoutUtil.dip2px(activity, 20), LayoutUtil.dip2px(activity, 15), LayoutUtil.dip2px(activity, 20), 0);
@@ -914,12 +922,12 @@ public class DialogManager {
      * 更新对话框
      */
     public Dialog newUpdateDialog(Context context, VersionInfo versionInfo) {
-        FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(context).inflate(R.layout.dialog_new_version, null, false);
-        TextView content = frameLayout.findViewById(R.id.content);
-        FrameLayout install = frameLayout.findViewById(R.id.install_now);
-        FrameLayout nextTime = frameLayout.findViewById(R.id.next_time);
+        LinearLayout linearLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_new_version, null, false);
+        TextView content = linearLayout.findViewById(R.id.content);
+        FrameLayout install = linearLayout.findViewById(R.id.install_now);
+        FrameLayout nextTime = linearLayout.findViewById(R.id.next_time);
         AlertDialog dialog = new AlertDialog.Builder(context)
-                .setView(frameLayout)
+                .setView(linearLayout)
                 .create();
         content.setText("新版本：" + versionInfo.getVersionCode() + "\n" + versionInfo.getUpdateInfo());
         install.setOnClickListener(v -> {

@@ -129,7 +129,7 @@ public class CommonPresenter extends BasePresenter {
                         User user = pairResult.getData().getSecond();
                         user.setPassword(password);
                         updateUserProfile(user);
-                        MainActivity.getInstance().initData();
+                        WushanApp.getInstance().initData();
                         for (int i = 1; i < 50; i++) {
                             fragment.getPasswordEdit().postDelayed(() -> {
                                 if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {
@@ -146,18 +146,17 @@ public class CommonPresenter extends BasePresenter {
     /**
      * 检查登录状态，保证开启应用的时候处于登录
      */
-    public void checkForLogin(Context context) {
+    public void checkForLogin() {
         getCommonService().checkLogin(getAppKey(), getToken())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
                     Looper.prepare();
-                    ToastUtil.show("网络开小差了~");
                     Looper.loop();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     if (result.getRspCode().equals(ResultMsg.NOT_LOGIN.getCode())) login();
-                    else MainActivity.getInstance().initData();
+                    else WushanApp.getInstance().initData();
                 });
     }
 
@@ -174,21 +173,20 @@ public class CommonPresenter extends BasePresenter {
                     .subscribeOn(Schedulers.io())
                     .doOnError(throwable -> {
                         Looper.prepare();
-                        ToastUtil.show("网络开小差了~");
                         Looper.loop();
                     })
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(pairResult -> {
                         String resCode = pairResult.getRspCode();
                         if (resCode.equals(ResultMsg.FAILED.getCode())) {
-                            ToastUtil.show("登录失败，用户名或密码不对");
+                            ToastUtil.show("登录失败，请手动登录");
                         } else if (resCode.equals(ResultMsg.SUCCESS.getCode())) {
                             SharedPreferences.Editor editor = WushanApp.getProfile().edit();
                             editor.putString("token", pairResult.getData().getFirst()).apply();
                             User user = pairResult.getData().getSecond();
                             user.setPassword(password);
                             updateUserProfile(user);
-                            MainActivity.getInstance().initData();
+                            WushanApp.getInstance().initData();
                         }
                     });
     }
@@ -221,7 +219,7 @@ public class CommonPresenter extends BasePresenter {
                             User user = pairResult.getData().getSecond();
                             user.setPassword(password);
                             updateUserProfile(user);
-                            MainActivity.getInstance().initData();
+                            WushanApp.getInstance().initData();
                             for (int i = 1; i < 50; i++) {
                                 fragment.getPasswordEdit().postDelayed(() -> {
                                     if (fragment.getActivity() != null && !CollectionUtils.isEmpty(DataHolder.getInstance().getPlaylists())) {

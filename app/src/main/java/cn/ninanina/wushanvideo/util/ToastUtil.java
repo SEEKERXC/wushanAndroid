@@ -3,6 +3,7 @@ package cn.ninanina.wushanvideo.util;
 import android.content.Context;
 import android.widget.Toast;
 
+import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.ui.MainActivity;
 
 public class ToastUtil {
@@ -11,7 +12,7 @@ public class ToastUtil {
     public synchronized static void show(String text) {
         MainActivity.getInstance().runOnUiThread(() -> {
             if (toast == null) {
-                toast = Toast.makeText(MainActivity.getInstance().getApplicationContext(), text, Toast.LENGTH_SHORT);
+                toast = Toast.makeText(WushanApp.getInstance().getApplicationContext(), text, Toast.LENGTH_SHORT);
             } else {
                 toast.setText(text);
             }

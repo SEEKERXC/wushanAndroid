@@ -1,5 +1,7 @@
 package cn.ninanina.wushanvideo.model;
 
+import com.google.android.gms.common.util.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +91,7 @@ public class DataHolder {
      */
     public boolean recordViewed(long videoId) {
         if (!WushanApp.loggedIn()) return false;
+        if (CollectionUtils.isEmpty(allViewed)) return false;
         for (VideoUserViewed viewed : allViewed) {
             if (viewed.getVideoId() == videoId) {
                 if (System.currentTimeMillis() - viewed.getTime() < 6 * 3600 * 1000)

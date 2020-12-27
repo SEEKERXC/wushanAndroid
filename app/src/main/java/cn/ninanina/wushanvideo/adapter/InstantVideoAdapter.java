@@ -220,13 +220,7 @@ public class InstantVideoAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 });
                 if (videoDetail.getCollected() > 0)
                     videoHolder.collectText.setText(String.valueOf(videoDetail.getCollected()));
-                videoHolder.downloadButton.setOnClickListener(v -> {
-                    if (!WushanApp.loggedIn()) {
-                        DialogManager.getInstance().newLoginDialog(activity).show();
-                        return;
-                    }
-                    downloadListener.onClick(videoDetail);
-                });
+                videoHolder.downloadButton.setOnClickListener(v -> downloadListener.onClick(videoDetail));
                 if (videoDetail.getDownloaded() > 0)
                     videoHolder.downloadText.setText(String.valueOf(videoDetail.getDownloaded()));
                 final boolean[] liked = {DataHolder.getInstance().likedVideo(videoDetail.getId())};

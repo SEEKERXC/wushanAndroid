@@ -1,6 +1,7 @@
 package cn.ninanina.wushanvideo.ui.video;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -133,6 +134,15 @@ public class CommentFragment extends Fragment {
             }
         });
         ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) footer.getLayoutParams();
+        input.setShowSoftInputOnFocus(true);
+        input.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus) {
+                layoutParams.bottomMargin = keyboardHeight;
+            } else {
+                layoutParams.bottomMargin = 0;
+                footer.setLayoutParams(layoutParams);
+            }
+        });
         //当键盘弹出隐藏的时候会 调用此方法。
         root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             Rect r = new Rect();
@@ -150,19 +160,6 @@ public class CommentFragment extends Fragment {
                 editor.putInt("keyboardHeight", keyboardHeight).apply();
             }
         });
-        input.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) {
-                layoutParams.bottomMargin = keyboardHeight;
-            } else {
-                layoutParams.bottomMargin = 0;
-                footer.setLayoutParams(layoutParams);
-            }
-        });
-        input.setOnClickListener(v -> {
-            if (!WushanApp.loggedIn()) {
-                DialogManager.getInstance().newLoginDialog(getContext()).show();
-            }
-        });
         softKeyBoardListener = new SoftKeyBoardListener(getActivity());
         //软键盘状态监听
         softKeyBoardListener.setListener(new SoftKeyBoardListener.OnSoftKeyBoardChangeListener() {
@@ -178,7 +175,6 @@ public class CommentFragment extends Fragment {
             }
         });
     }
-
 
     public VideoDetail getVideoDetail() {
         return videoDetail;

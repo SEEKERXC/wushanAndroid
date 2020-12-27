@@ -34,6 +34,9 @@ public class WushanApp extends Application {
     private SharedPreferences profile;
     private SharedPreferences constants;
 
+    //标注加载完视频的收藏夹数量
+    public int playlistLoadingFinished = 0;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -73,6 +76,10 @@ public class WushanApp extends Application {
         return !StringUtils.isEmpty(getProfile().getString("username", ""));
     }
 
+    public List<Activity> getActivities() {
+        return activities;
+    }
+
     private List<Activity> activities = new ArrayList<>();
 
     public void addActivity(Activity activity) {
@@ -93,6 +100,13 @@ public class WushanApp extends Application {
         }
 
         System.exit(0);
+    }
+
+    //在登录之后初始化数据
+    public void initData() {
+        VideoPresenter.getInstance().loadPlaylists();
+        VideoPresenter.getInstance().loadLikedAndDisliked();
+        VideoPresenter.getInstance().loadAllHistory();
     }
 
     public DBHelper getDbHelper() {

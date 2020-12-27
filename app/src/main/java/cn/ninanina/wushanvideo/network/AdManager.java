@@ -31,17 +31,13 @@ public class AdManager {
         VideoOptions videoOptions = new VideoOptions.Builder()
                 .setStartMuted(true)
                 .build();
-        adLoader = new AdLoader.Builder(WushanApp.getInstance(), "ca-app-pub-3940256099942544/2247696110")
-                .forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
-                    @Override
-                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
-                        adQueue.offer(unifiedNativeAd);
-                    }
-                })
+        adLoader = new AdLoader.Builder(WushanApp.getInstance(), "ca-app-pub-2117487515590175/2795818027")
+                .forUnifiedNativeAd(unifiedNativeAd -> adQueue.offer(unifiedNativeAd))
                 .withAdListener(new AdListener() {
+
                     @Override
                     public void onAdFailedToLoad(int errorCode) {
-                        // Handle the failure by logging, altering the UI, and so on.
+                        System.out.println(errorCode);
                     }
                 })
                 .withNativeAdOptions(new NativeAdOptions.Builder()
@@ -51,8 +47,12 @@ public class AdManager {
                 .build();
     }
 
+    public void loadAd() {
+        adLoader.loadAd(new AdRequest.Builder().build());
+    }
+
     public void loadAds(int n) {
-        adLoader.loadAds(new AdRequest.Builder().build(), n);
+        for (int i = 0; i < n; i++) adLoader.loadAd(new AdRequest.Builder().build());
     }
 
     public UnifiedNativeAd nextAd() {

@@ -81,7 +81,7 @@ dependencies {
     implementation 'com.arialyy.aria:core:3.8.5'
     annotationProcessor 'com.arialyy.aria:compiler:3.8.5'
     //图片选择
-    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.6.0'
+//    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.6.0'
     //原生广告模板
     implementation project(':nativetemplates')
 }

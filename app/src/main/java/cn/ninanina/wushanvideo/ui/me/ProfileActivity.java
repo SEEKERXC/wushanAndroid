@@ -67,7 +67,7 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.transparent, null), true);
+        StatusBarCompat.setStatusBarColor(this, getResources().getColor(android.R.color.white, null), true);
         ButterKnife.bind(this);
         bindEvents();
         refresh();
