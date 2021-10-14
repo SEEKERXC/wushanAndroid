@@ -87,10 +87,29 @@
             android:paddingStart="15dp"
             android:paddingEnd="15dp"
             android:paddingBottom="15dp"
-            android:text="90后，湖南人。
+            android:text="95后，湖南人。
         \n坚定的爱国爱党青年。
         \n无用的杰出做题家。
         \n相信勤劳能致富的打工人。"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:text="与我联系"
+            android:textColor="@android:color/black"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineHeight="24dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:paddingBottom="15dp"
+            android:text="请发送到邮箱：AStupidMan100@gmail.com，我会尽快与您回复。"
+            android:textIsSelectable="true"
             android:textSize="15sp" />
 
         <TextView

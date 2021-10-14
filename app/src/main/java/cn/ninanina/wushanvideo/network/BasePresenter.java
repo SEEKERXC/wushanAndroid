@@ -1,8 +1,11 @@
 package cn.ninanina.wushanvideo.network;
 
+import java.net.Socket;
+
 import cn.ninanina.wushanvideo.WushanApp;
 import cn.ninanina.wushanvideo.model.api.CommonService;
 import cn.ninanina.wushanvideo.model.api.VideoService;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;

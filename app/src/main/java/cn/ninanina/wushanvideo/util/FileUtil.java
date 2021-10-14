@@ -21,10 +21,6 @@ public class FileUtil {
         return ContextCompat.getExternalFilesDirs(WushanApp.getInstance(), Environment.DIRECTORY_DOWNLOADS)[0];
     }
 
-    public static File getCoverDir() {
-        return ContextCompat.getExternalFilesDirs(WushanApp.getInstance(), Environment.DIRECTORY_PICTURES)[0];
-    }
-
     public static String getVideoFileName(VideoDetail videoDetail) {
         String fileName;
         if (StringUtils.isEmpty(videoDetail.getTitleZh())) fileName = videoDetail.getTitle();

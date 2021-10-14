@@ -41,6 +41,7 @@ import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.ui.home.HistoryActivity;
 import cn.ninanina.wushanvideo.ui.home.LikeActivity;
 import cn.ninanina.wushanvideo.ui.home.WatchLaterActivity;
+import cn.ninanina.wushanvideo.ui.video.DownloadActivity;
 import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.ToastUtil;
 
@@ -194,7 +195,7 @@ public class MeFragment extends Fragment {
             else DialogManager.getInstance().newLoginDialog(getActivity()).show();
         });
         menuDownload.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), LoginActivity.class);
+            Intent intent = new Intent(getContext(), DownloadActivity.class);
             startActivity(intent);
         });
         menuHistory.setOnClickListener(v -> {

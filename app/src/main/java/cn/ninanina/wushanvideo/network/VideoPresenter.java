@@ -7,11 +7,16 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdCallback;
 import com.google.android.gms.common.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -98,9 +103,9 @@ public class VideoPresenter extends BasePresenter {
                         ToastUtil.show("没有更多了~");
                         return;
                     }
-                    //1个广告+3个视频（开头也是广告）
+                    //1个广告+5个视频
                     List<Object> dataList = new ArrayList<>(videoDetails);
-                    for (int i = 0; i < fragment.size / 5; i++) {
+                    for (int i = 0; i < dataList.size() / 5; i++) {
                         UnifiedNativeAd ad = AdManager.getInstance().nextAd();
                         if (ad != null) {
                             dataList.add(5 * (i + 1), ad);
@@ -255,22 +260,90 @@ public class VideoPresenter extends BasePresenter {
     /**
      * 在未观看的情况下点击下载按钮，并且下载视频
      */
-    public void getSrcForDownload(VideoDetail videoDetail) {
-        getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), false, false)
-                .subscribeOn(Schedulers.io())
-                .timeout(5, TimeUnit.SECONDS)
-                .doOnError(throwable -> {
-                    Looper.prepare();
-                    Looper.loop();
-                })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(videoDetailResult -> {
-                    if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc())) return;
-                    videoDetail.setSrc(videoDetailResult.getData().getSrc());
-                    DefaultDownloadClickListener listener = new DefaultDownloadClickListener(MainActivity.getInstance().downloadService);
-                    listener.showMessage = false;
-                    listener.onClick(videoDetail);
-                });
+    public void getSrcForDownload(VideoDetail videoDetail, Activity activity) {
+        RewardedAd rewardedAd = MainActivity.getInstance().rewardedAd;
+        if (rewardedAd.isLoaded()) {
+            RewardedAdCallback adCallback = new RewardedAdCallback() {
+                boolean downloaded = false;
+
+                @Override
+                public void onRewardedAdOpened() {
+                    // Ad opened.
+                }
+
+                @Override
+                public void onRewardedAdClosed() {
+                    MainActivity.getInstance().rewardedAd = MainActivity.getInstance().createAndLoadRewardedAd();
+                }
+
+                @Override
+                public void onUserEarnedReward(@NonNull RewardItem reward) {
+                    if (downloaded) return;
+                    ToastUtil.show("加入下载队列");
+                    getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), false, false)
+                            .subscribeOn(Schedulers.io())
+                            .timeout(5, TimeUnit.SECONDS)
+                            .doOnError(throwable -> {
+                                Looper.prepare();
+                                Looper.loop();
+                            })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(videoDetailResult -> {
+                                if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc()))
+                                    return;
+                                videoDetail.setSrc(videoDetailResult.getData().getSrc());
+                                DefaultDownloadClickListener listener = new DefaultDownloadClickListener(MainActivity.getInstance().downloadService, activity);
+                                listener.showMessage = false;
+                                listener.onClick(videoDetail);
+                                downloaded = true;
+                            });
+                }
+
+                @Override
+                public void onRewardedAdFailedToShow(AdError adError) {
+                    if (downloaded) return;
+                    ToastUtil.show("加入下载队列");
+                    getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), false, false)
+                            .subscribeOn(Schedulers.io())
+                            .timeout(5, TimeUnit.SECONDS)
+                            .doOnError(throwable -> {
+                                Looper.prepare();
+                                Looper.loop();
+                            })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(videoDetailResult -> {
+                                if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc()))
+                                    return;
+                                videoDetail.setSrc(videoDetailResult.getData().getSrc());
+                                DefaultDownloadClickListener listener = new DefaultDownloadClickListener(MainActivity.getInstance().downloadService, activity);
+                                listener.showMessage = false;
+                                listener.onClick(videoDetail);
+                                downloaded = true;
+                            });
+                    MainActivity.getInstance().rewardedAd = MainActivity.getInstance().createAndLoadRewardedAd();
+                }
+            };
+            rewardedAd.show(activity, adCallback);
+        } else {
+            ToastUtil.show("加入下载队列");
+            getVideoService().getVideoDetail(getAppKey(), videoDetail.getId(), getToken(), false, false)
+                    .subscribeOn(Schedulers.io())
+                    .timeout(5, TimeUnit.SECONDS)
+                    .doOnError(throwable -> {
+                        Looper.prepare();
+                        Looper.loop();
+                    })
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(videoDetailResult -> {
+                        if (!CommonUtils.isSrcValid(videoDetailResult.getData().getSrc()))
+                            return;
+                        videoDetail.setSrc(videoDetailResult.getData().getSrc());
+                        DefaultDownloadClickListener listener = new DefaultDownloadClickListener(MainActivity.getInstance().downloadService, activity);
+                        listener.showMessage = false;
+                        listener.onClick(videoDetail);
+                    });
+            MainActivity.getInstance().rewardedAd = MainActivity.getInstance().createAndLoadRewardedAd();
+        }
     }
 
     /**
@@ -669,6 +742,7 @@ public class VideoPresenter extends BasePresenter {
         activity.swipe.setRefreshing(true);
         Tag tag = activity.getTag();
         VideoSortBy sortBy = activity.getSort();
+        AdManager.getInstance().loadAds(2);
         getVideoService().getTagVideos(getAppKey(), tag.getId(), activity.getPage() * activity.size, activity.size, sortBy.getCode())
                 .subscribeOn(Schedulers.io())
                 .doOnError(throwable -> {
@@ -681,9 +755,16 @@ public class VideoPresenter extends BasePresenter {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {
                     List<Object> dataList = new ArrayList<>(result.getData());
+
                     if (dataList.size() <= 0) {
                         activity.setLoadingFinished(true);
                         ToastUtil.show("没有更多啦");
+                    }
+                    for (int i = 0; i < dataList.size() / 5; i++) {
+                        UnifiedNativeAd ad = AdManager.getInstance().nextAd();
+                        if (ad != null) {
+                            dataList.add(5 * i, ad);
+                        }
                     }
                     SingleVideoListAdapter adapter = (SingleVideoListAdapter) activity.getContent().getAdapter();
                     if (op == RecyclerViewOp.INIT && adapter == null) {

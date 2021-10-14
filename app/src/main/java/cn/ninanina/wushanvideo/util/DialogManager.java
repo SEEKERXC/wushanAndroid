@@ -2,6 +2,8 @@ package cn.ninanina.wushanvideo.util;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -46,6 +48,7 @@ import cn.ninanina.wushanvideo.adapter.listener.CollectPlaylistClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.DefaultDownloadClickListener;
 import cn.ninanina.wushanvideo.adapter.listener.VideoClickListener;
 import cn.ninanina.wushanvideo.model.DataHolder;
+import cn.ninanina.wushanvideo.model.bean.common.Constants;
 import cn.ninanina.wushanvideo.model.bean.common.Option;
 import cn.ninanina.wushanvideo.model.bean.common.Pair;
 import cn.ninanina.wushanvideo.model.bean.common.VersionInfo;
@@ -170,8 +173,7 @@ public class DialogManager {
         if (options.size() == 4)
             listeners.add(v -> {
                 videoOptionDialog.dismiss();
-                ToastUtil.show("加入下载队列");
-                VideoPresenter.getInstance().getSrcForDownload(videoDetail);
+                VideoPresenter.getInstance().getSrcForDownload(videoDetail, activity);
             });
         recyclerView.setAdapter(new OptionAdapter(options, listeners));
         return videoOptionDialog;
@@ -198,8 +200,7 @@ public class DialogManager {
         if (options.size() == 3) {
             listeners.add(v -> {
                 videoOptionDialog.dismiss();
-                ToastUtil.show("加入下载队列");
-                VideoPresenter.getInstance().getSrcForDownload(videoDetail);
+                VideoPresenter.getInstance().getSrcForDownload(videoDetail, activity);
             });
         }
         listeners.add(v -> {
@@ -343,7 +344,6 @@ public class DialogManager {
      * 收藏夹选项对话框
      */
     public Dialog newPlaylistOptionDialog(Activity activity, Playlist playlist) {
-        DBHelper dbHelper = WushanApp.getInstance().getDbHelper();
         FrameLayout frameLayout = (FrameLayout) LayoutInflater.from(activity).inflate(R.layout.dialog_list, null, false);
         RecyclerView recyclerView = frameLayout.findViewById(R.id.content);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity));
@@ -360,35 +360,11 @@ public class DialogManager {
                 .setIcon(R.drawable.shoucang_folder)
                 .create();
         List<Option> options = new ArrayList<>();
-        List<VideoDetail> toDownload = new ArrayList<>();
-        for (VideoDetail videoDetail : playlist.getVideoDetails()) {
-            if (dbHelper.downloaded(videoDetail.getId())) continue;
-            if (MainActivity.getInstance().downloadService.getTasks().containsKey(videoDetail.getSrc()))
-                continue;
-            toDownload.add(videoDetail);
-        }
-        if (toDownload.size() > 0)
-            options.add(new Option(R.drawable.download, "下载全部"));
         options.add(new Option(R.drawable.edit, "重命名"));
         if (playlist.getIsPublic()) options.add(new Option(R.drawable.lock, "设为私有"));
         else options.add(new Option(R.drawable.lock, "设为公开"));
         options.add(new Option(R.drawable.delete, "删除"));
         List<View.OnClickListener> listeners = new ArrayList<>();
-        if (options.size() == 4) {
-            listeners.add(v -> {   //TODO:对下载全部限制点击频率
-                dialog.dismiss();
-                ToastUtil.show(toDownload.size() + "个视频添加到下载队列");
-                for (VideoDetail videoDetail : toDownload) {
-                    if (CommonUtils.isSrcValid(videoDetail.getSrc())) {
-                        DefaultDownloadClickListener listener = new DefaultDownloadClickListener(MainActivity.getInstance().downloadService);
-                        listener.showMessage = false;
-                        listener.onClick(videoDetail);
-                        continue;
-                    }
-                    VideoPresenter.getInstance().getSrcForDownload(videoDetail);
-                }
-            });
-        }
         listeners.add(v -> {
             dialog.dismiss();
             newRenamePlaylistDialog(activity, playlist).show();
@@ -559,8 +535,7 @@ public class DialogManager {
         if (options.size() == 3) {
             listeners.add(v -> {
                 videoOptionDialog.dismiss();
-                ToastUtil.show("加入下载队列");
-                VideoPresenter.getInstance().getSrcForDownload(pair.getSecond());
+                VideoPresenter.getInstance().getSrcForDownload(pair.getSecond(), activity);
             });
         }
         listeners.add(v -> {
@@ -929,12 +904,35 @@ public class DialogManager {
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setView(linearLayout)
                 .create();
-        content.setText("新版本：" + versionInfo.getVersionCode() + "\n" + versionInfo.getUpdateInfo());
+        content.setText("当前版本即将不可用，请及时更新。\n当前版本：" + Constants.VERSION + "\n新版本：" + versionInfo.getVersionCode() + "\n" + versionInfo.getUpdateInfo());
         install.setOnClickListener(v -> {
             dialog.dismiss();
             MainActivity.getInstance().downloadService.downloadApk(versionInfo.getAppUrl(), "v_" + versionInfo.getVersionCode() + ".apk");
         });
         nextTime.setOnClickListener(v -> dialog.dismiss());
+        return dialog;
+    }
+
+    /**
+     * 分享对话框
+     */
+    public Dialog newShareDialog(Context context) {
+        SharedPreferences.Editor editor = WushanApp.getConstants().edit();
+        editor.putLong("lastShowShare", System.currentTimeMillis()).apply();
+        LinearLayout linearLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.dialog_share, null, false);
+        FrameLayout copy = linearLayout.findViewById(R.id.copy);
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setView(linearLayout)
+                .create();
+        copy.setOnClickListener(v -> {
+            dialog.dismiss();
+            VersionInfo versionInfo = DataHolder.getInstance().getNewVersion();
+            if (versionInfo == null) return;
+            ClipboardManager clipboard = (ClipboardManager) MainActivity.getInstance().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText(null, "免费精品艾薇都在这，快复制到浏览器下载吧：" + versionInfo.getAppUrl());
+            clipboard.setPrimaryClip(clipData);
+            ToastUtil.show("已复制下载链接到剪切板");
+        });
         return dialog;
     }
 

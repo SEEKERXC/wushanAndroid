@@ -84,7 +84,7 @@ public class AboutActivity extends AppCompatActivity {
             VersionInfo versionInfo = DataHolder.getInstance().getNewVersion();
             if (versionInfo == null) return;
             ClipboardManager clipboard = (ClipboardManager) MainActivity.getInstance().getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clipData = ClipData.newPlainText(null, versionInfo.getAppUrl());
+            ClipData clipData = ClipData.newPlainText(null, "免费精品艾薇都在这，快复制到浏览器下载吧：" + versionInfo.getAppUrl());
             clipboard.setPrimaryClip(clipData);
             ToastUtil.show("已复制下载链接到剪切板");
         });

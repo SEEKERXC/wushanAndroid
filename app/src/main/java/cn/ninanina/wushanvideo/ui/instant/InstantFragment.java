@@ -243,7 +243,7 @@ public class InstantFragment extends Fragment {
         if (recyclerView.getAdapter() == null) {
             InstantVideoAdapter adapter = new InstantVideoAdapter((AppCompatActivity) getActivity(), dataList)
                     .setVideoClickListener(new DefaultVideoClickListener(getContext()))
-                    .setDownloadListener(new DefaultDownloadClickListener(downloadService));
+                    .setDownloadListener(new DefaultDownloadClickListener(downloadService, getActivity()));
             recyclerView.setAdapter(adapter);
         } else {
             InstantVideoAdapter adapter = (InstantVideoAdapter) recyclerView.getAdapter();

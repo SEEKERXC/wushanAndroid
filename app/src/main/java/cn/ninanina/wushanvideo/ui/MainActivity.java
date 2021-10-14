@@ -16,6 +16,10 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.githang.statusbar.StatusBarCompat;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Objects;
@@ -25,6 +29,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import cn.ninanina.wushanvideo.R;
 import cn.ninanina.wushanvideo.WushanApp;
+import cn.ninanina.wushanvideo.model.DataHolder;
 import cn.ninanina.wushanvideo.network.CommonPresenter;
 import cn.ninanina.wushanvideo.network.VideoPresenter;
 import cn.ninanina.wushanvideo.service.DownloadService;
@@ -33,6 +38,8 @@ import cn.ninanina.wushanvideo.ui.home.HomeFragment;
 import cn.ninanina.wushanvideo.ui.me.MeFragment;
 import cn.ninanina.wushanvideo.ui.tag.TagFragment;
 import cn.ninanina.wushanvideo.ui.video.VideoDetailActivity;
+import cn.ninanina.wushanvideo.util.DBHelper;
+import cn.ninanina.wushanvideo.util.DialogManager;
 import cn.ninanina.wushanvideo.util.PlayTimeManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -63,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
     public Stack<VideoDetailActivity> videoActivityStack = new Stack<>();
 
+    //激励广告
+    public RewardedAd rewardedAd;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,8 +100,12 @@ public class MainActivity extends AppCompatActivity {
         //获取用户协议
         CommonPresenter.getInstance().getProtocol();
 
+        //初始化激励广告
+        initAd();
+
         WushanApp.getInstance().addActivity(this);
     }
+
 
     private void initFragments() {
         homeFragment = new HomeFragment();
@@ -154,9 +168,48 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void initAd() {
+        rewardedAd = new RewardedAd(this,
+                "ca-app-pub-2117487515590175/7015685519");
+        RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
+            @Override
+            public void onRewardedAdLoaded() {
+                // Ad successfully loaded.
+            }
+
+            @Override
+            public void onRewardedAdFailedToLoad(LoadAdError adError) {
+
+            }
+        };
+        rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
+    }
+
+    public RewardedAd createAndLoadRewardedAd() {
+        RewardedAd rewardedAd = new RewardedAd(this,
+                "ca-app-pub-2117487515590175/7015685519");
+        RewardedAdLoadCallback adLoadCallback = new RewardedAdLoadCallback() {
+            @Override
+            public void onRewardedAdLoaded() {
+                // Ad successfully loaded.
+            }
+
+            @Override
+            public void onRewardedAdFailedToLoad(LoadAdError adError) {
+                // Ad failed to load.
+            }
+        };
+        rewardedAd.loadAd(new AdRequest.Builder().build(), adLoadCallback);
+        return rewardedAd;
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
+        long lastShowShareTime = WushanApp.getConstants().getLong("lastShowShare", 0);
+        if (PlayTimeManager.getTodayWatchTime() > 10 * 60 && System.currentTimeMillis() - lastShowShareTime > 6 * 3600 * 1000) {
+            DialogManager.getInstance().newShareDialog(this).show();
+        }
     }
 
     @Override

@@ -20,7 +20,7 @@ import cn.ninanina.wushanvideo.ui.video.DownloadedFragment;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "video";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
 
     public DBHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -181,7 +181,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * 获取视频的总播放时长
+     * 获取视频的总播放时长，按秒计数
      */
     public int getWatch(long videoId) {
         int count = 0;
@@ -195,7 +195,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * 获取某天的总播放时长
+     * 获取某天的总播放时长，按秒计数
      */
     public int getWatchOfDay(String day) {
         int count = 0;
